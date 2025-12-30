@@ -1,0 +1,111 @@
+/* Login.css */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #111827;
+}
+
+.login-card {
+    max-width: 28rem;
+    width: 100%;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 2rem;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-title {
+    font-size: 1.875rem;
+    font-weight: bold;
+    color: #111827;
+}
+
+.login-subtitle {
+    color: #6B7280;
+    margin-top: 0.5rem;
+}
+
+.login-error {
+    background-color: #FEE2E2;
+    border: 1px solid #F87171;
+    color: #991B1B;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.login-form {
+    width: 100%;
+}
+
+.login-form-group {
+    margin-bottom: 1rem;
+}
+
+.login-form-group-password {
+    margin-bottom: 1.5rem;
+}
+
+.login-label {
+    display: block;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.login-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: #DC2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.login-button {
+    width: 100%;
+    background-color: #DC2626;
+    color: white;
+    font-weight: bold;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.login-button:hover:not(:disabled) {
+    background-color: #B91C1C;
+}
+
+.login-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.login-demo-credentials {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6B7280;
+}
+
+.login-demo-credentials p {
+    margin: 0.25rem 0;
+}

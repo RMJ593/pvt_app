@@ -1,0 +1,352 @@
+.category-detail-page {
+    background-color: #000000;
+    min-height: 100vh;
+}
+
+/* Hero Section */
+.category-hero {
+    position: relative;
+    height: 50vh;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.category-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #ffffff;
+}
+
+.category-hero-subtitle {
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--main-color, #e4e590);
+    margin-bottom: 20px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.category-divider,
+.products-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.category-divider span,
+.products-divider span {
+    color: var(--main-color, #e4e590);
+    font-size: 12px;
+}
+
+.category-hero-title {
+    font-size: 64px;
+    font-weight: 300;
+    font-family: 'Playfair Display', serif;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+/* Products Section */
+.category-products-section {
+    background-color: #000000;
+}
+
+.category-section-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 40px;
+}
+
+.products-subtitle {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--main-color, #e4e590);
+    margin-bottom: 15px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.products-title {
+    text-align: center;
+    font-size: 48px;
+    font-weight: 300;
+    color: #ffffff;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 60px;
+    text-transform: uppercase;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.product-card {
+    display: flex;
+    gap: 20px;
+    background-color: #0a0a0a;
+    border: 1px solid rgba(228, 229, 144, 0.1);
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    border-color: var(--main-color, #e4e590);
+    transform: translateY(-3px);
+}
+
+.product-image {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.product-name {
+    font-size: 22px;
+    color: #ffffff;
+    margin: 0 0 10px;
+    font-family: 'Playfair Display', serif;
+}
+
+.product-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 15px;
+    line-height: 1.6;
+}
+
+.product-price {
+    font-size: 20px;
+    color: var(--main-color, #e4e590);
+    font-weight: 600;
+    margin: 0;
+}
+
+.no-products {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* View More Button */
+.view-more-btn {
+    display: block;
+    margin: 40px auto;
+    padding: 15px 50px;
+    background-color: transparent;
+    border: 2px solid var(--main-color, #e4e590);
+    color: var(--main-color, #e4e590);
+    font-size: 14px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.view-more-btn:hover {
+    background-color: var(--main-color, #e4e590);
+    color: #000000;
+}
+
+/* Chef's Selection */
+.chef-selections {
+    margin-top: 80px;
+}
+
+.chef-section-title {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--main-color, #e4e590);
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 60px;
+    text-transform: uppercase;
+}
+
+.chef-card {
+    display: flex;
+    gap: 40px;
+    background-color: #0a0a0a;
+    border: 1px solid rgba(228, 229, 144, 0.2);
+    padding: 40px;
+    margin-bottom: 40px;
+}
+
+.chef-card-image {
+    width: 50%;
+    height: 400px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.chef-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chef-card-content {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+}
+
+.chef-badge {
+    width: 50px;
+    height: 50px;
+    background-color: var(--main-color, #e4e590);
+    color: #000000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.chef-label {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--main-color, #e4e590);
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.chef-name {
+    font-size: 36px;
+    color: #ffffff;
+    margin: 0 0 20px;
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+}
+
+.chef-description {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 25px;
+    line-height: 1.8;
+}
+
+.chef-price {
+    font-size: 28px;
+    color: var(--main-color, #e4e590);
+    font-weight: 600;
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 100px 20px;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.6);
+    background-color: #000000;
+    min-height: 100vh;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chef-card {
+        flex-direction: column;
+    }
+
+    .chef-card-image,
+    .chef-card-content {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .category-hero-title {
+        font-size: 48px;
+    }
+
+    .products-title {
+        font-size: 36px;
+    }
+
+    .category-section-container {
+        padding: 60px 20px;
+    }
+
+    .product-card {
+        flex-direction: column;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+    }
+
+    .chef-card {
+        padding: 25px;
+    }
+
+    .chef-card-image {
+        height: 300px;
+    }
+
+    .chef-name {
+        font-size: 28px;
+    }
+
+    .chef-section-title {
+        font-size: 28px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .category-hero-title {
+        font-size: 36px;
+    }
+
+    .products-title {
+        font-size: 28px;
+    }
+
+    .product-name {
+        font-size: 18px;
+    }
+
+    .chef-name {
+        font-size: 24px;
+    }
+}
