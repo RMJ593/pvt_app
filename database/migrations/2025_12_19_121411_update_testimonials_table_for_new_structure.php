@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::table('testimonials', function (Blueprint $table) {
             // Drop old columns
-            $table->dropColumn(['rating', 'is_featured']);
+            if (Schema::hasColumn('testimonials', 'rating')) {
+                $table->dropColumn('rating');
+            }
+            if (Schema::hasColumn('testimonials', 'is_featured')) {
+                $table->dropColumn('is_featured');
+            }
             
             // Add new column
             $table->boolean('is_active')->default(true)->after('customer_image');
