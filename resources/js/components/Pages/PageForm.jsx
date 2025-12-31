@@ -39,12 +39,7 @@ function PageForm() {
         if (isEditMode) {
             fetchPage();
         }
-        initializeEditor();
     }, [id, isEditMode]);
-
-    const initializeEditor = () => {
-        // Simple contenteditable div with toolbar
-    };
 
     const fetchHeroBanners = async () => {
         try {
@@ -134,62 +129,58 @@ function PageForm() {
         setLoading(true);
         setError('');
 
-        console.log('Submitting page:', formData);
-
         try {
             const token = localStorage.getItem('auth_token');
             const submitData = new FormData();
 
-            Object.keys(formData).forEach(key => {
-                if (formData[key] !== null && formData[key] !== '') {
-                    submitData.append(key, formData[key]);
-                }
-            });
-
-            let response;
-
-            if (isEditMode) {
-                submitData.append('_method', 'PUT');
-                response = await axios.post(
-                    `${API_BASE_URL}/pages/${id}`,
-                    submitData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    }
-                );
-            } else {
-                response = await axios.post(
-                    `${API_BASE_URL}/pages`,
-                    submitData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    }
-                );
+            // Append text fields
+            submitData.append('page_title', formData.page_title || '');
+            submitData.append('small_heading', formData.small_heading || '');
+            submitData.append('title', formData.title || '');
+            submitData.append('slug', formData.slug || '');
+            submitData.append('location', formData.location || '');
+            submitData.append('content', formData.content || '');
+            submitData.append('seo_title', formData.seo_title || '');
+            submitData.append('meta_keywords', formData.meta_keywords || '');
+            submitData.append('meta_description', formData.meta_description || '');
+            submitData.append('robots', formData.robots || 'index,follow');
+            submitData.append('og_type', formData.og_type || 'website');
+            
+            if (formData.hero_banner_id) {
+                submitData.append('hero_banner_id', formData.hero_banner_id);
             }
 
-            console.log('Response:', response);
+            if (formData.banner_image instanceof File) {
+                submitData.append('banner_image', formData.banner_image);
+            }
+            
+            if (formData.meta_image instanceof File) {
+                submitData.append('meta_image', formData.meta_image);
+            }
+
+            let response;
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            };
+
+            if (isEditMode) {
+                response = await axios.post(`${API_BASE_URL}/pages/${id}`, submitData, config);
+            } else {
+                response = await axios.post(`${API_BASE_URL}/pages`, submitData, config);
+            }
 
             if (response.status === 200 || response.status === 201) {
-                console.log('Success! Redirecting to list page...');
                 window.location.href = '/staff/pages';
-            } else {
-                setError('Failed to save page');
             }
         } catch (error) {
             console.error('Error saving page:', error);
-            console.error('Error response:', error.response?.data);
 
             if (error.response) {
                 const errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
                 const errors = error.response.data?.errors;
-                
-                console.log('Validation errors:', errors);
                 
                 if (errors) {
                     const errorMessages = Object.entries(errors).map(([field, messages]) => {
@@ -199,8 +190,6 @@ function PageForm() {
                 } else {
                     setError(errorMessage);
                 }
-            } else if (error.request) {
-                setError('No response from server. Please check your connection.');
             } else {
                 setError('Failed to save page');
             }
@@ -218,7 +207,7 @@ function PageForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Page' : 'Add Page'}</h1>
                 <button type="button" onClick={handleBackClick} className="btn-back">
-                 Back to List
+                    Back to List
                 </button>
             </div>
 
@@ -341,19 +330,19 @@ function PageForm() {
                             <u>U</u>
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('justifyLeft')} title="Align Left">
-                            na
+                            ◄
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('justifyCenter')} title="Align Center">
-                            na
+                            ═
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('justifyRight')} title="Align Right">
-                            na
+                            ►
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('insertUnorderedList')} title="Bullet List">
-                            na
+                            •
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('insertOrderedList')} title="Numbered List">
-                            ye
+                            #
                         </button>
                     </div>
                     <div
@@ -461,4 +450,3 @@ function PageForm() {
 }
 
 export default PageForm;
-

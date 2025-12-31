@@ -52,6 +52,21 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
         // Check if it's a page link
         if (link.page_id && pages[link.page_id]) {
             const page = pages[link.page_id];
+            
+            // Special handling for Contact Us page
+            if (page.slug === 'contact-us' || page.slug === 'contact') {
+                navigate('/contact');
+                onClose();
+                return;
+            }
+            
+            // Special handling for About Us page
+            if (page.slug === 'about-us' || page.slug === 'about') {
+                navigate('/about');
+                onClose();
+                return;
+            }
+            
             navigate(`/page/${page.slug}`, { state: { page } });
         } 
         // Check if URL starts with # (internal section)
@@ -75,6 +90,21 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
         onClose();
     };
 
+    const handleOurMenusClick = () => {
+        navigate('/our-menus');
+        onClose();
+    };
+
+    const handleAboutClick = () => {
+        navigate('/about');
+        onClose();
+    };
+
+    const handleContactClick = () => {
+        navigate('/contact');
+        onClose();
+    };
+
     return (
         <>
             {/* Overlay */}
@@ -85,8 +115,36 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
                 <button className="sidebar-close" onClick={onClose}>×</button>
                 
                 <nav className="sidebar-nav">
+                    {/* Main Navigation - Always show first */}
+                    <h3 className="sidebar-section-title">Explore</h3>
+                    
+                    <button
+                        onClick={handleAboutClick}
+                        className="sidebar-link sidebar-link-highlight"
+                    >
+                        <span className="diamond">◆</span>
+                        About Us
+                    </button>
+
+                    <button
+                        onClick={handleOurMenusClick}
+                        className="sidebar-link sidebar-link-highlight"
+                    >
+                        <span className="diamond">◆</span>
+                        Our Menus
+                    </button>
+
+                    <button
+                        onClick={handleContactClick}
+                        className="sidebar-link sidebar-link-highlight"
+                    >
+                        <span className="diamond">◆</span>
+                        Contact Us
+                    </button>
+
                     {topMenuLinks.length > 0 && (
                         <>
+                            <div className="sidebar-divider"></div>
                             <h3 className="sidebar-section-title">Menu</h3>
                             
                             {topMenuLinks.map((link) => (
@@ -131,4 +189,3 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
 }
 
 export default Sidebar;
-

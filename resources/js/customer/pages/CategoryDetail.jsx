@@ -1,35 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TopBar from '../components/TopBar';
-import Footer from '../components/Footer';
 import './CategoryDetail.css';
 
 function CategoryDetail() {
     const { categoryId } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
-    const [category, setCategory] = useState(location.state?.category || null);
-    const [settings, setSettings] = useState(null);
-    const [menuBackground, setMenuBackground] = useState(null);
+    
+    const [category, setCategory] = useState(null);
     const [products, setProducts] = useState([]);
-    const [chefSelection, setChefSelection] = useState([]);
-    const [displayedCount, setDisplayedCount] = useState(4);
+    const [chefSelections, setChefSelections] = useState([]);
+    const [defaultImage, setDefaultImage] = useState(null);
+    const [mainColor, setMainColor] = useState('#d4af37');
     const [loading, setLoading] = useState(true);
 
     const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
     useEffect(() => {
-        fetchData();
+        fetchAllData();
     }, [categoryId]);
 
-    const fetchData = async () => {
+    const fetchAllData = async () => {
         try {
             await Promise.all([
+                fetchCategoryData(),
+                fetchProducts(),
                 fetchSettings(),
-                fetchMenuBackground(),
-                !category && fetchCategory(),
-                fetchProducts()
+                fetchDomainSettings()
             ]);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -38,43 +35,10 @@ function CategoryDetail() {
         }
     };
 
-    const fetchSettings = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/settings`);
-            const settingsData = response.data.data || response.data;
-            setSettings(settingsData);
-            
-            if (settingsData.main_color) {
-                document.documentElement.style.setProperty('--main-color', settingsData.main_color);
-            }
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        }
-    };
-
-    const fetchMenuBackground = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/gallery-images`);
-            const images = response.data.data || response.data;
-            
-            // Ensure images is an array
-            const imagesArray = Array.isArray(images) ? images : [];
-            
-            const bgImage = imagesArray.find(img => 
-                img.name?.toLowerCase().includes('menu background') && img.is_active
-            );
-            if (bgImage) {
-                setMenuBackground(bgImage);
-            }
-        } catch (error) {
-            console.error('Error fetching menu background:', error);
-        }
-    };
-
-    const fetchCategory = async () => {
+    const fetchCategoryData = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/categories/${categoryId}`);
-            setCategory(response.data.data);
+            setCategory(response.data.data || response.data);
         } catch (error) {
             console.error('Error fetching category:', error);
         }
@@ -85,14 +49,46 @@ function CategoryDetail() {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
             const allProducts = response.data.data || response.data;
             
-            const categoryProducts = allProducts.filter(p => p.category_id === parseInt(categoryId));
-            const chefSelectionProducts = categoryProducts.filter(p => p.is_chef_selection);
-            const regularProducts = categoryProducts.filter(p => !p.is_chef_selection);
+            const categoryProducts = allProducts.filter(
+                product => product.category_id === parseInt(categoryId)
+            );
             
-            setProducts(regularProducts);
-            setChefSelection(chefSelectionProducts);
+            const chefItems = categoryProducts.filter(product => product.is_chef_selection);
+            const regularItems = categoryProducts.filter(product => !product.is_chef_selection);
+            
+            setProducts(regularItems);
+            setChefSelections(chefItems);
         } catch (error) {
             console.error('Error fetching products:', error);
+        }
+    };
+
+    const fetchSettings = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/settings`);
+            const settings = response.data.data || response.data;
+            console.log('Settings response:', settings);
+            console.log('Default image:', settings.default_image);
+            if (settings.default_image) {
+                setDefaultImage(settings.default_image);
+            }
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+        }
+    };
+
+    const fetchDomainSettings = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await axios.get(`${API_BASE_URL}/domain-settings`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const domainSettings = response.data.data || response.data;
+            if (domainSettings.main_color) {
+                setMainColor(domainSettings.main_color);
+            }
+        } catch (error) {
+            console.error('Error fetching domain settings:', error);
         }
     };
 
@@ -102,125 +98,161 @@ function CategoryDetail() {
         return `http://127.0.0.1:8000/storage/${imagePath}`;
     };
 
-    const getBackgroundStyle = () => {
-        if (menuBackground?.image) {
-            return {
-                backgroundImage: `url(${getImageUrl(menuBackground.image)})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed'
-            };
-        }
-        return {};
-    };
-
-    const handleViewMore = () => {
-        setDisplayedCount(prev => prev + 4);
-    };
-
-    const displayedProducts = products.slice(0, displayedCount);
-    const hasMore = displayedCount < products.length;
-
-    if (loading) {
-        return <div className="loading">Loading...</div>;
-    }
-
-    if (!category) {
-        return <div className="loading">Category not found</div>;
+    if (loading || !category) {
+        return (
+            <div className="category-detail-loading">
+                <p>Loading...</p>
+            </div>
+        );
     }
 
     return (
         <div className="category-detail-page">
-            <TopBar settings={settings} />
-
-            {/* Hero Section */}
-            <section className="category-hero" style={getBackgroundStyle()}>
-                <div className="category-hero-overlay"></div>
-                <div className="category-hero-content">
-                    <p className="category-hero-subtitle">{category.small_heading || 'OUR PRODUCTS'}</p>
-                    <div className="category-divider">
+            {/* Hero Section with Background Image */}
+            <section 
+                className="category-hero"
+                style={{
+                    backgroundImage: defaultImage 
+                        ? `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${getImageUrl(defaultImage)})`
+                        : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                }}
+            >
+                <button 
+                    className="back-button" 
+                    onClick={() => navigate(-1)}
+                    style={{ borderColor: mainColor }}
+                >
+                    <span>←</span> Back
+                </button>
+                
+                <div className="hero-content">
+                    <p 
+                        className="category-subtitle"
+                        style={{ color: mainColor }}
+                    >
+                        {category.small_heading || 'OUR PRODUCTS'}
+                    </p>
+                    
+                    <div 
+                        className="category-divider"
+                        style={{ color: mainColor }}
+                    >
                         <span>◆</span>
                         <span>◆</span>
                         <span>◆</span>
                     </div>
-                    <h1 className="category-hero-title">{category.name}</h1>
+                    
+                    <h1 className="category-main-title">{category.name}</h1>
                 </div>
             </section>
 
-            {/* Products Section */}
-            <section className="category-products-section">
-                <div className="category-section-container">
-                    <p className="products-subtitle">{category.small_heading || category.name}</p>
-                    <div className="products-divider">
-                        <span>◆</span>
-                        <span>◆</span>
-                        <span>◆</span>
-                    </div>
-                    <h2 className="products-title">{category.name}</h2>
-
-                    {displayedProducts.length > 0 ? (
-                        <>
-                            <div className="products-grid">
-                                {displayedProducts.map((product) => (
-                                    <div key={product.id} className="product-card">
+            {/* Regular Products Grid */}
+            {products.length > 0 && (
+                <section className="products-section">
+                    <div className="products-container">
+                        <div className="products-grid">
+                            {products.map((product) => (
+                                <div 
+                                    key={product.id} 
+                                    className="product-card"
+                                    style={{ borderColor: `${mainColor}1A` }}
+                                >
+                                    <div className="product-image-wrapper">
                                         {product.image && (
-                                            <div className="product-image">
-                                                <img src={getImageUrl(product.image)} alt={product.name} />
-                                            </div>
-                                        )}
-                                        <div className="product-info">
-                                            <h3 className="product-name">{product.name}</h3>
-                                            {product.description && (
-                                                <p className="product-description">{product.description}</p>
-                                            )}
-                                            <p className="product-price">£{parseFloat(product.price).toFixed(2)}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {hasMore && (
-                                <button className="view-more-btn" onClick={handleViewMore}>
-                                    VIEW MORE
-                                </button>
-                            )}
-                        </>
-                    ) : (
-                        <p className="no-products">No products available in this category.</p>
-                    )}
-
-                    {/* Chef's Selection */}
-                    {chefSelection.length > 0 && (
-                        <div className="chef-selections">
-                            <h3 className="chef-section-title">Chef's Selection</h3>
-                            {chefSelection.map((product) => (
-                                <div key={product.id} className="chef-card">
-                                    <div className="chef-card-image">
-                                        {product.image && (
-                                            <img src={getImageUrl(product.image)} alt={product.name} />
+                                            <img 
+                                                src={getImageUrl(product.image)} 
+                                                alt={product.name}
+                                                className="product-image"
+                                            />
                                         )}
                                     </div>
-                                    <div className="chef-card-content">
-                                        <div className="chef-badge">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                                            </svg>
-                                        </div>
-                                        <p className="chef-label">CHEF SELECTION</p>
-                                        <h3 className="chef-name">{product.name}</h3>
+                                    
+                                    <div className="product-info">
+                                        <h3 className="product-name">{product.name}</h3>
+                                        
                                         {product.description && (
-                                            <p className="chef-description">{product.description}</p>
+                                            <p className="product-description">{product.description}</p>
                                         )}
-                                        <p className="chef-price">£{parseFloat(product.price).toFixed(2)}</p>
+                                        
+                                        <div 
+                                            className="product-footer"
+                                            style={{ borderColor: `${mainColor}33` }}
+                                        >
+                                            <span 
+                                                className="product-price"
+                                                style={{ color: mainColor }}
+                                            >
+                                                £{parseFloat(product.price).toFixed(2)}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    )}
-                </div>
-            </section>
+                    </div>
+                </section>
+            )}
 
-            <Footer />
+            {/* Chef Selection Section */}
+            {chefSelections.length > 0 && (
+                <section className="chef-selection-section">
+                    <div className="chef-selection-container">
+                        {chefSelections.map((product) => (
+                            <div 
+                                key={product.id} 
+                                className="chef-selection-item"
+                                style={{ 
+                                    background: `linear-gradient(135deg, ${mainColor}0D 0%, ${mainColor}1A 100%)`,
+                                    borderColor: `${mainColor}4D`
+                                }}
+                            >
+                                <div className="chef-selection-image-wrapper">
+                                    {product.image && (
+                                        <img 
+                                            src={getImageUrl(product.image)} 
+                                            alt={product.name}
+                                            className="chef-selection-image"
+                                        />
+                                    )}
+                                </div>
+                                
+                                <div className="chef-selection-content">
+                                    <div 
+                                        className="chef-badge"
+                                        style={{ 
+                                            background: `linear-gradient(135deg, ${mainColor} 0%, ${mainColor}CC 100%)`
+                                        }}
+                                    >
+                                        <span>★</span>
+                                        <p>CHEF SELECTION</p>
+                                    </div>
+                                    
+                                    <h2 className="chef-selection-name">{product.name}</h2>
+                                    
+                                    {product.description && (
+                                        <p className="chef-selection-description">{product.description}</p>
+                                    )}
+                                    
+                                    <div className="chef-selection-price">
+                                        <span style={{ color: mainColor }}>
+                                            £{parseFloat(product.price).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Empty State */}
+            {products.length === 0 && chefSelections.length === 0 && (
+                <section className="empty-state">
+                    <div className="empty-content">
+                        <p>No products available in this category yet.</p>
+                    </div>
+                </section>
+            )}
         </div>
     );
 }

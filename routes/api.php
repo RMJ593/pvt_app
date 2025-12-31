@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/blogs', [BlogController::class, 'store']);
     Route::put('/blogs/{blog}', [BlogController::class, 'update']);
     Route::delete('/blogs/{blog}', [BlogController::class, 'destroy']);
+    Route::get('/blogs/{id}', [BlogController::class, 'show']);
 
     // Blog Categories (Admin) - apiResource handles all CRUD
     Route::apiResource('blog-categories', BlogCategoryController::class);

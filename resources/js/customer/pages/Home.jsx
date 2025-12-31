@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/Sidebar';
 import WhatsAppButton from '../components/WhatsAppButton';
-import AboutSection from '../components/AboutSection';
+import AboutUsSection from '../components/AboutUsSection';
 import MenuSection from '../components/MenuSection';
-import TestimonialsSection from '../components/TestimonialsSection';
-import GallerySection from '../components/GallerySection';
-import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
+import SpecialDishesSection from '../components/SpecialDishesSection';
+import ChefsSelectionSection from '../components/ChefsSelectionSection';
+import SpecialOffersSection from '../components/SpecialOffersSection';
+import BookingFormContent from '../components/BookingFormContent';
+import BlogsSection from '../components/BlogsSection';
+import VideoStatsSection from '../components/VideoStatsSection';
 
 function Home() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [settings, setSettings] = useState(null);
     const [heroBanner, setHeroBanner] = useState(null);
     const [menuItems, setMenuItems] = useState([]);
+    const navigate = useNavigate();
 
     const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
@@ -74,6 +78,15 @@ function Home() {
         }
     };
 
+    // Updated handler to navigate to OurMenus page for menu
+    const handleNavigation = (sectionId) => {
+        if (sectionId === 'menu') {
+            navigate('/our-menus');
+        } else {
+            scrollToSection(sectionId);
+        }
+    };
+
     // Get video URL from hero banner
     const getVideoUrl = () => {
         if (!heroBanner) return null;
@@ -85,7 +98,6 @@ function Home() {
 
     // Get logo URL from settings
     const getLogoUrl = () => {
-        // Check for website_logo key (the actual key in database)
         const logoPath = settings?.website_logo || settings?.logo;
         if (!logoPath) return null;
         if (logoPath.startsWith('http')) return logoPath;
@@ -101,7 +113,7 @@ function Home() {
                 onClose={() => setSidebarOpen(false)}
                 menuItems={menuItems}
                 settings={settings}
-                onNavigate={scrollToSection}
+                onNavigate={handleNavigation}
             />
 
             <nav className="main-nav">
@@ -125,7 +137,7 @@ function Home() {
                     </div>
 
                     <button 
-                        onClick={() => scrollToSection('booking')} 
+                        onClick={() => navigate('/booking')} 
                         className="find-table-btn"
                     >
                         FIND A TABLE
@@ -168,7 +180,7 @@ function Home() {
                     </p>
 
                     <button 
-                        onClick={() => scrollToSection('menu')} 
+                        onClick={() => navigate('/our-menus')}
                         className="view-menu-btn"
                     >
                         {heroBanner?.button_text || 'VIEW OUR MENU'}
@@ -176,12 +188,27 @@ function Home() {
                 </div>
             </section>
 
-            {/* Changed order: Menu comes first, then About */}
             <MenuSection id="menu" />
-            <AboutSection id="about" />
-            <TestimonialsSection id="testimonials" />
-            <GallerySection id="gallery" />
-            <ContactSection id="booking" />
+            <AboutUsSection id="about" />
+            
+            {/* Special Dishes Section - for is_special toggle */}
+            <SpecialDishesSection id="special-dishes" />
+            
+            {/* Chef's Selection Section - for is_special_selection toggle */}
+            <ChefsSelectionSection id="chefs-selection" />
+            
+            {/* Special Offers Section - for has_offer/is_offer toggle */}
+            <SpecialOffersSection id="special-offers" />
+            
+            {/* Booking Form Section - embedded without hero/header/footer */}
+            <BookingFormContent />
+            
+            {/* Video and Stats Section */}
+            <VideoStatsSection />
+            
+            {/* Blogs Section - Latest blogs */}
+            <BlogsSection />
+            
             <Footer />
             <WhatsAppButton phone={settings?.whatsapp_number || '876543219'} />
         </div>
