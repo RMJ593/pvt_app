@@ -1,10 +1,26 @@
-public function run()
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class AdminUserSeeder extends Seeder
 {
-    \App\Models\User::create([
-        'name' => 'Admin',
-        'email' => 'admin@example.com',
-        'password' => bcrypt('Admin@123'),
-        'role_id' => 1,
-        'status' => 'active',
-    ]);
+    use WithoutModelEvents;
+
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        \App\Models\User::create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('Admin@123'),
+            'role_id' => 1,
+            'status' => 'active',
+        ]);
+    }
 }
