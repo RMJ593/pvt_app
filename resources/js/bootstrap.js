@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Set base URL
-axios.defaults.baseURL = 'http://127.0.0.1:8000';
+// Set base URL from environment or use current origin
+const baseURL = import.meta.env.VITE_API_URL || window.location.origin;
+axios.defaults.baseURL = baseURL;
 
 // Enable credentials
 axios.defaults.withCredentials = true;
