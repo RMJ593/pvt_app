@@ -4,6 +4,7 @@ import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import './CategoryMenu.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function CategoryMenu() {
     const { categoryId } = useParams();
@@ -19,8 +20,7 @@ function CategoryMenu() {
     const [displayedCount, setDisplayedCount] = useState(4);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchCategoryAndProducts();
     }, [categoryId]);
@@ -102,9 +102,7 @@ function CategoryMenu() {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     const getBackgroundStyle = () => {

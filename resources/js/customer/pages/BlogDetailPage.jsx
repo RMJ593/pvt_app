@@ -6,6 +6,8 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import WhatsAppButton from '../components/WhatsAppButton';
 import './BlogDetailPage.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
+
 
 function BlogDetailPage() {
     const { id, slug } = useParams();
@@ -16,8 +18,7 @@ function BlogDetailPage() {
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+   
     useEffect(() => {
         fetchSettings();
         fetchMenuItems();

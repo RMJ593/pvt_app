@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ChefsSelectionSection.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api'; // ✅ Add getStorageUrl
 
 function ChefsSelectionSection({ id }) {
     const [categories, setCategories] = useState([]);
     const [activeCategory, setActiveCategory] = useState(null);
     const [chefSelectionDishes, setChefSelectionDishes] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
     useEffect(() => {
         fetchCategories();
@@ -34,7 +33,6 @@ function ChefsSelectionSection({ id }) {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
             const items = response.data.data || response.data || [];
             
-            // Filter for chef's selection dishes
             const chefDishes = items.filter(item => 
                 item.is_special_selection === true || 
                 item.is_special_selection === 1
@@ -48,10 +46,9 @@ function ChefsSelectionSection({ id }) {
         }
     };
 
+    // ✅ FIXED: Use getStorageUrl helper
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     const filteredDishes = activeCategory 
@@ -92,7 +89,6 @@ function ChefsSelectionSection({ id }) {
                     <h2 className="section-title">Delicious Menu</h2>
                 </div>
 
-                {/* Category Tabs */}
                 <div className="category-tabs">
                     {categories.map((category) => (
                         <button
@@ -105,7 +101,6 @@ function ChefsSelectionSection({ id }) {
                     ))}
                 </div>
 
-                {/* Dishes Grid */}
                 <div className="chefs-dishes-grid">
                     {filteredDishes.map((dish) => (
                         <div key={dish.id} className="chef-dish-card">

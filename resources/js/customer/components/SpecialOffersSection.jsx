@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './SpecialOffersSection.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function SpecialOffersSection({ id }) {
     const [offerDishes, setOfferDishes] = useState([]);
@@ -10,8 +11,7 @@ function SpecialOffersSection({ id }) {
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchOfferDishes();
     }, []);
@@ -38,9 +38,7 @@ function SpecialOffersSection({ id }) {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     // Mouse drag handlers

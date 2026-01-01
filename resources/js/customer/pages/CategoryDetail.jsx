@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './CategoryDetail.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
+
 
 function CategoryDetail() {
     const { categoryId } = useParams();
@@ -13,8 +15,6 @@ function CategoryDetail() {
     const [defaultImage, setDefaultImage] = useState(null);
     const [mainColor, setMainColor] = useState('#d4af37');
     const [loading, setLoading] = useState(true);
-
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
     useEffect(() => {
         fetchAllData();
@@ -93,9 +93,7 @@ function CategoryDetail() {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     if (loading || !category) {

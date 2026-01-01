@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './VideoStatsSection.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function VideoStatsSection() {
     const [settings, setSettings] = useState(null);
     const [galleryImage, setGalleryImage] = useState(null);
     const [hasAnimated, setHasAnimated] = useState(false);
     const sectionRef = useRef(null);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchSettings();
         fetchGalleryImage();
@@ -119,9 +119,7 @@ function VideoStatsSection() {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     const getYoutubeEmbedUrl = (url) => {

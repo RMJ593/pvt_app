@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import WhatsAppButton from '../components/WhatsAppButton';
 import './BookingPage.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function BookingPage() {
     const navigate = useNavigate();
@@ -27,8 +28,7 @@ function BookingPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     const countryCodes = [
         { code: '+44', country: 'UK' },
         { code: '+1', country: 'USA' },

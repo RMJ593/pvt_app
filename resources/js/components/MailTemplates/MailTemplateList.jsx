@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 import './MailTemplates.css';
 
 function MailTemplateList() {
@@ -8,8 +9,7 @@ function MailTemplateList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchTemplates();
     }, []);

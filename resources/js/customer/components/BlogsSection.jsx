@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BlogsSection.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function BlogsSection() {
     const navigate = useNavigate();
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchBlogs();
     }, []);
@@ -45,7 +45,7 @@ function BlogsSection() {
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     const formatDate = (dateString) => {

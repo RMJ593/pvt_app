@@ -13,6 +13,7 @@ import SpecialOffersSection from '../components/SpecialOffersSection';
 import BookingFormContent from '../components/BookingFormContent';
 import BlogsSection from '../components/BlogsSection';
 import VideoStatsSection from '../components/VideoStatsSection';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function Home() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,8 +22,7 @@ function Home() {
     const [menuItems, setMenuItems] = useState([]);
     const navigate = useNavigate();
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchSettings();
         fetchHeroBanner();

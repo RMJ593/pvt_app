@@ -2,13 +2,13 @@
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Sidebar.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
     const navigate = useNavigate();
     const [topMenuLinks, setTopMenuLinks] = useState([]);
     const [pages, setPages] = useState([]);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         if (isOpen) {
             fetchTopMenuLinks();

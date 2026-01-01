@@ -4,6 +4,7 @@ import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import './MainMenu.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function MainMenu() {
     const navigate = useNavigate();
@@ -14,8 +15,6 @@ function MainMenu() {
     const [specialOffers, setSpecialOffers] = useState([]);
     const [chefSelection, setChefSelection] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
     useEffect(() => {
         fetchData();
@@ -92,11 +91,8 @@ function MainMenu() {
             console.error('Error fetching products:', error);
         }
     };
-
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     const getBackgroundStyle = () => {

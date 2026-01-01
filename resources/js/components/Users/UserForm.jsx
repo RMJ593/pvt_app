@@ -2,6 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Users.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function UserForm() {
     const navigate = useNavigate();
@@ -18,8 +19,7 @@ function UserForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchRoles();
         if (isEditMode) {

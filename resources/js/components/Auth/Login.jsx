@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getApiUrl } from '../../config/api';
 import './login.css';
 
 function Login({ onLogin }) {
@@ -16,9 +17,11 @@ function Login({ onLogin }) {
         setError('');
         
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/login', {
+            const response = await axios.post(getApiUrl('api/login'), {
                 email: email,
                 password: password
+            }, {
+                withCredentials: true // Important for sessions/cookies
             });
             
             if (response.data.success && response.data.data) {
@@ -30,7 +33,7 @@ function Login({ onLogin }) {
             }
         } catch (error) {
             console.error('Login error:', error);
-            setError(error.response?.data?.message || 'Invalid credentials');
+            setError(error.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -60,7 +63,7 @@ function Login({ onLogin }) {
                             onChange={(e) => setEmail(e.target.value)}
                             className="login-input"
                             style={inputStyle}
-                            placeholder="admin@test.com"
+                            placeholder="admin@example.com"
                             required
                         />
                     </div>
@@ -73,7 +76,7 @@ function Login({ onLogin }) {
                             onChange={(e) => setPassword(e.target.value)}
                             className="login-input"
                             style={inputStyle}
-                            placeholder="password"
+                            placeholder="Enter your password"
                             required
                         />
                     </div>
@@ -82,10 +85,6 @@ function Login({ onLogin }) {
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
-                
-                <div className="login-demo-credentials">
-                    <p>Demo: admin@test.com / password</p>
-                </div>
             </div>
         </div>
     );

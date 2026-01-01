@@ -2,13 +2,12 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function FooterLinksList() {
     const [footerLinks, setFooterLinks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
     useEffect(() => {
         fetchFooterLinks();

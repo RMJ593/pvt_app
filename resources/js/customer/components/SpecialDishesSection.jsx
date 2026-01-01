@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SpecialDishesSection.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function SpecialDishesSection({ id }) {
     const [specialDishes, setSpecialDishes] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchSpecialDishes();
     }, []);
@@ -31,9 +31,7 @@ function SpecialDishesSection({ id }) {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     if (loading) {

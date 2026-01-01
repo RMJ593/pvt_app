@@ -2,14 +2,14 @@
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './MenuSection.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function MenuSection() {
     const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchCategories();
     }, []);
@@ -36,9 +36,7 @@ function MenuSection() {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     if (loading) {

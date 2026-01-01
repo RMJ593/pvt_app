@@ -37,6 +37,7 @@ import UserList from './components/Users/UserList';
 import UserForm from './components/Users/UserForm';
 import UserResponseList from './components/UserResponses/UserResponseList';
 import TableBookingList from './components/TableBookings/TableBookingList';
+import { getApiUrl } from './config/api';
 import axios from 'axios';
 
 function AdminApp() {
@@ -55,7 +56,7 @@ function AdminApp() {
     const fetchUserDetails = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('http://127.0.0.1:8000/api/me', {
+            const response = await axios.get(getApiUrl('api/me'), {
                 headers: { Authorization: `Bearer ${token}` }
             });
             

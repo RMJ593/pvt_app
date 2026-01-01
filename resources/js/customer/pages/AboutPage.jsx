@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Footer from '../components/Footer'; // Import your existing Footer component
 import './AboutPage.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function AboutPage() {
     const [settings, setSettings] = useState(null);
@@ -9,8 +10,7 @@ function AboutPage() {
     const [aboutImage, setAboutImage] = useState(null);
     const [hasAnimated, setHasAnimated] = useState(false);
     const statsRef = useRef(null);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchSettings();
         fetchGalleryImages();
@@ -95,9 +95,7 @@ function AboutPage() {
     };
 
     const getImageUrl = (imagePath) => {
-        if (!imagePath) return null;
-        if (imagePath.startsWith('http')) return imagePath;
-        return `http://127.0.0.1:8000/storage/${imagePath}`;
+        return getStorageUrl(imagePath);
     };
 
     const stats = [
@@ -262,8 +260,7 @@ function AboutPage() {
 // Chef Section Component
 function ChefSection({ getImageUrl }) {
     const [chefImage, setChefImage] = useState(null);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+   
     useEffect(() => {
         fetchChefImage();
     }, []);
@@ -319,8 +316,7 @@ function ChefSection({ getImageUrl }) {
 // Experience Section Component
 function ExperienceSection({ getImageUrl }) {
     const [experienceImage, setExperienceImage] = useState(null);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         fetchExperienceImage();
     }, []);
@@ -376,8 +372,6 @@ function ExperienceSection({ getImageUrl }) {
 // Services Section Component
 function ServicesSection({ getImageUrl }) {
     const [serviceImage, setServiceImage] = useState(null);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
     useEffect(() => {
         fetchServiceImage();
     }, []);
@@ -461,8 +455,6 @@ function ServicesSection({ getImageUrl }) {
 function GallerySlider({ getImageUrl }) {
     const [galleryImages, setGalleryImages] = useState([]);
     const sliderRef = useRef(null);
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
     useEffect(() => {
         fetchGalleryImages();
     }, []);

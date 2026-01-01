@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './PageView.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function PageView() {
     const { slug } = useParams();
@@ -10,8 +11,7 @@ function PageView() {
     const [page, setPage] = useState(location.state?.page || null);
     const [loading, setLoading] = useState(!page);
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     useEffect(() => {
         if (!page) {
             fetchPageBySlug();

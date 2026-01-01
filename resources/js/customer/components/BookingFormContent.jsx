@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BookingFormContent.css';
+import { API_BASE_URL } from '../../config/api';
 
 function BookingFormContent() {
     const navigate = useNavigate();
@@ -21,8 +22,7 @@ function BookingFormContent() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     const countryCodes = [
         { code: '+44', country: 'UK' },
         { code: '+1', country: 'USA' },

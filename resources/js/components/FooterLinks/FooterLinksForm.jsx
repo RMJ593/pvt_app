@@ -2,6 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 
 function FooterLinksForm() {
     const navigate = useNavigate();
@@ -20,8 +21,7 @@ function FooterLinksForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
+    
     const pageTypes = ['Page', 'Blog', 'Portfolio', 'Gallery', 'Contact', 'Custom'];
 
     useEffect(() => {
