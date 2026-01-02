@@ -92,7 +92,7 @@ function Home() {
     const getVideoUrl = () => {
         if (!heroBanner) return null;
         if (heroBanner.image_path) {
-            return `http://127.0.0.1:8000/storage/${heroBanner.image_path}`;
+            return getStorageUrl(heroBanner.image_path);  // ✅ USE HELPER
         }
         return null;
     };
@@ -101,8 +101,7 @@ function Home() {
     const getLogoUrl = () => {
         const logoPath = settings?.website_logo || settings?.logo;
         if (!logoPath) return null;
-        if (logoPath.startsWith('http')) return logoPath;
-        return `http://127.0.0.1:8000/storage/${logoPath}`;
+        return getStorageUrl(logoPath);  // ✅ USE HELPER
     };
 
     return (
