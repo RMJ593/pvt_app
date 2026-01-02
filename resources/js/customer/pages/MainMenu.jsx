@@ -4,7 +4,7 @@ import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import './MainMenu.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function MainMenu() {
     const navigate = useNavigate();
@@ -52,10 +52,7 @@ function MainMenu() {
     const fetchMenuBackground = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/gallery-images`);
-            const images = response.data.data || response.data;
-            
-            // Ensure images is an array
-            const imagesArray = Array.isArray(images) ? images : [];
+            const imagesArray = extractArray(response);
             
             const bgImage = imagesArray.find(img => 
                 img.name?.toLowerCase().includes('menu background') && img.is_active
@@ -71,24 +68,28 @@ function MainMenu() {
     const fetchCategories = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/categories`);
-            const allCategories = response.data.data || response.data;
+            const allCategories = extractArray(response);
             const royaltyCategories = allCategories.filter(cat => cat.is_royalty);
             setCategories(royaltyCategories);
         } catch (error) {
             console.error('Error fetching categories:', error);
+            setCategories([]);
         }
     };
 
     const fetchProducts = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
-            const allProducts = response.data.data || response.data;
+            const allProducts = extractArray(response);
             
             setProducts(allProducts);
             setSpecialOffers(allProducts.filter(p => p.is_special_offer));
             setChefSelection(allProducts.filter(p => p.is_chef_selection));
         } catch (error) {
             console.error('Error fetching products:', error);
+            setProducts([]);
+            setSpecialOffers([]);
+            setChefSelection([]);
         }
     };
     const getImageUrl = (imagePath) => {

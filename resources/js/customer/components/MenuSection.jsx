@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './MenuSection.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function MenuSection() {
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ function MenuSection() {
     const fetchCategories = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/categories`);
-            const allCategories = response.data.data || response.data;
+            const allCategories = extractArray(response);
             
             // Filter categories that have is_royalty set to true
             const royaltyCategories = allCategories.filter(cat => cat.is_royalty);
@@ -25,6 +25,7 @@ function MenuSection() {
             setCategories(royaltyCategories);
         } catch (error) {
             console.error('Error fetching categories:', error);
+            setCategories([]);
         } finally {
             setLoading(false);
         }

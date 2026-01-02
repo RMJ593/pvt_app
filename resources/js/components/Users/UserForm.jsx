@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Users.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function UserForm() {
     const navigate = useNavigate();
@@ -34,10 +34,11 @@ function UserForm() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            const rolesData = response.data.success ? response.data.data : response.data;
-            setRoles(Array.isArray(rolesData) ? rolesData : []);
+            const rolesData = extractArray(response);
+            setRoles(rolesData);
         } catch (error) {
             console.error('Error fetching roles:', error);
+            setRoles([]);
         }
     };
 

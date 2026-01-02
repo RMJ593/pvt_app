@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './CategoryDetail.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 
 function CategoryDetail() {
@@ -44,10 +44,11 @@ function CategoryDetail() {
         }
     };
 
+    
     const fetchProducts = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
-            const allProducts = response.data.data || response.data;
+            const allProducts = extractArray(response);
             
             const categoryProducts = allProducts.filter(
                 product => product.category_id === parseInt(categoryId)
@@ -60,9 +61,10 @@ function CategoryDetail() {
             setChefSelections(chefItems);
         } catch (error) {
             console.error('Error fetching products:', error);
+            setProducts([]);
+            setChefSelections([]);
         }
     };
-
     const fetchSettings = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/settings`);

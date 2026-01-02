@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SpecialDishesSection.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function SpecialDishesSection({ id }) {
     const [specialDishes, setSpecialDishes] = useState([]);
@@ -15,7 +15,7 @@ function SpecialDishesSection({ id }) {
     const fetchSpecialDishes = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
-            const items = response.data.data || response.data || [];
+            const items = extractArray(response);
             
             // Filter for special dishes (is_special toggle)
             const specials = items.filter(item => 
@@ -25,6 +25,7 @@ function SpecialDishesSection({ id }) {
             setSpecialDishes(specials);
         } catch (error) {
             console.error('Error fetching special dishes:', error);
+            setSpecialDishes([]);
         } finally {
             setLoading(false);
         }

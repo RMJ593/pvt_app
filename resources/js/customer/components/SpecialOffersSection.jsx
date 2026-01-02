@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './SpecialOffersSection.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function SpecialOffersSection({ id }) {
     const [offerDishes, setOfferDishes] = useState([]);
@@ -19,7 +19,7 @@ function SpecialOffersSection({ id }) {
     const fetchOfferDishes = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
-            const items = response.data.data || response.data || [];
+            const items = extractArray(response);
             
             // Filter for items with special offers
             const offers = items.filter(item => 
@@ -32,6 +32,7 @@ function SpecialOffersSection({ id }) {
             setOfferDishes(offers);
         } catch (error) {
             console.error('Error fetching offer dishes:', error);
+            setOfferDishes([]);
         } finally {
             setLoading(false);
         }

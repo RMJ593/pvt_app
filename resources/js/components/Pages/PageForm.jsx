@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Pages.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function PageForm() {
     const navigate = useNavigate();
@@ -47,10 +47,11 @@ function PageForm() {
             const response = await axios.get(`${API_BASE_URL}/hero-banners`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            const bannersData = response.data.success ? response.data.data : response.data;
-            setHeroBanners(Array.isArray(bannersData) ? bannersData : []);
+            const bannersData = extractArray(response);
+            setHeroBanners(bannersData);
         } catch (error) {
             console.error('Error fetching hero banners:', error);
+            setHeroBanners([]);
         }
     };
 

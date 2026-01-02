@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Pages.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function PageList() {
     const [pages, setPages] = useState([]);
@@ -24,16 +24,12 @@ function PageList() {
 
             console.log('Fetched pages:', response.data);
 
-            if (response.data.success) {
-                setPages(response.data.data || []);
-            } else if (Array.isArray(response.data)) {
-                setPages(response.data);
-            } else {
-                setPages([]);
-            }
+            const pagesData = extractArray(response);
+            setPages(pagesData);
         } catch (error) {
             console.error('Error fetching pages:', error);
             setError('Failed to load pages');
+            setPages([]);
         } finally {
             setLoading(false);
         }

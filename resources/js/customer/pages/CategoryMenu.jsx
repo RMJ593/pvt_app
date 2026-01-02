@@ -4,7 +4,7 @@ import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import './CategoryMenu.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function CategoryMenu() {
     const { categoryId } = useParams();
@@ -57,8 +57,7 @@ function CategoryMenu() {
     const fetchMenuBackground = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/gallery-images`);
-            const images = response.data.data || response.data;
-            const imagesArray = Array.isArray(images) ? images : [];
+            const imagesArray = extractArray(response);
             
             const bgImage = imagesArray.find(img => 
                 img.name?.toLowerCase().includes('menu background') && img.is_active
@@ -83,7 +82,7 @@ function CategoryMenu() {
     const fetchProducts = async () => {
         try {
             const productsResponse = await axios.get(`${API_BASE_URL}/menu-items`);
-            const allProducts = productsResponse.data.data || productsResponse.data;
+            const allProducts = extractArray(productsResponse);
             
             // Filter products by category
             const categoryProducts = allProducts.filter(
@@ -98,6 +97,8 @@ function CategoryMenu() {
             setChefSelection(chefSelectionProducts);
         } catch (error) {
             console.error('Error fetching products:', error);
+            setProducts([]);
+            setChefSelection([]);
         }
     };
 

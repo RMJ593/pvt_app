@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ChefsSelectionSection.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api'; // ✅ Add getStorageUrl
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api'; // ✅ Add getStorageUrl
 
 function ChefsSelectionSection({ id }) {
     const [categories, setCategories] = useState([]);
@@ -17,7 +17,7 @@ function ChefsSelectionSection({ id }) {
     const fetchCategories = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/categories`);
-            const cats = response.data.data || response.data || [];
+            const cats = extractArray(response);
             const activeCats = cats.filter(cat => cat.is_active);
             setCategories(activeCats);
             if (activeCats.length > 0) {
@@ -25,13 +25,14 @@ function ChefsSelectionSection({ id }) {
             }
         } catch (error) {
             console.error('Error fetching categories:', error);
+            setCategories([]);
         }
     };
 
     const fetchChefSelectionDishes = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
-            const items = response.data.data || response.data || [];
+            const items = extractArray(response);
             
             const chefDishes = items.filter(item => 
                 item.is_special_selection === true || 
@@ -41,6 +42,7 @@ function ChefsSelectionSection({ id }) {
             setChefSelectionDishes(chefDishes);
         } catch (error) {
             console.error('Error fetching chef selection dishes:', error);
+            setChefSelectionDishes([]);
         } finally {
             setLoading(false);
         }

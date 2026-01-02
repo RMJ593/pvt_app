@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function FooterLinksForm() {
     const navigate = useNavigate();
@@ -38,13 +38,11 @@ function FooterLinksForm() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            if (response.data.success) {
-                setPages(response.data.data || []);
-            } else if (Array.isArray(response.data)) {
-                setPages(response.data);
-            }
+            const pagesData = extractArray(response);
+            setPages(pagesData);
         } catch (error) {
             console.error('Error fetching pages:', error);
+            setPages([]);
         }
     };
 

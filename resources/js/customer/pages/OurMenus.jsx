@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Footer from '../components/Footer';
 import './OurMenus.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function OurMenus() {
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ function OurMenus() {
     const fetchProducts = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-items`);
-            const allProducts = response.data.data || response.data;
+            const allProducts = extractArray(response);
             
             // Filter special offers
             const offers = allProducts.filter(product => product.is_special_offer);
@@ -65,16 +65,19 @@ function OurMenus() {
             setCategorizedProducts(grouped);
         } catch (error) {
             console.error('Error fetching products:', error);
+            setSpecialOffers([]);
+            setCategorizedProducts({});
         }
     };
 
     const fetchCategories = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/categories`);
-            const allCategories = response.data.data || response.data;
+            const allCategories = extractArray(response);
             setCategories(allCategories);
         } catch (error) {
             console.error('Error fetching categories:', error);
+            setCategories([]);
         }
     };
 

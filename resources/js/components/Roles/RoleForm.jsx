@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Roles.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL } from '../../config/api';
 
 function RoleForm() {
     const navigate = useNavigate();

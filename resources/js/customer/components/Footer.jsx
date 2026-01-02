@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Footer.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function Footer() {
     const navigate = useNavigate();
@@ -30,17 +30,18 @@ function Footer() {
     const fetchMenuLinks = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-links`);
-            const allLinks = response.data.data || response.data;
+            const allLinks = extractArray(response);
             setMenuLinks(allLinks);
         } catch (error) {
             console.error('Error fetching menu links:', error);
+            setMenuLinks([]);
         }
     };
 
     const fetchPages = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/pages`);
-            const allPages = response.data.data || response.data;
+            const allPages = extractArray(response);
             const pagesMap = {};
             allPages.forEach(page => {
                 pagesMap[page.slug] = page;
@@ -48,6 +49,7 @@ function Footer() {
             setPages(pagesMap);
         } catch (error) {
             console.error('Error fetching pages:', error);
+            setPages({});
         }
     };
 

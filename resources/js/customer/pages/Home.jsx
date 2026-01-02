@@ -13,7 +13,7 @@ import SpecialOffersSection from '../components/SpecialOffersSection';
 import BookingFormContent from '../components/BookingFormContent';
 import BlogsSection from '../components/BlogsSection';
 import VideoStatsSection from '../components/VideoStatsSection';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function Home() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,8 +49,8 @@ function Home() {
     const fetchHeroBanner = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/hero-banners`);
-            const banners = response.data.data || response.data;
-            if (Array.isArray(banners) && banners.length > 0) {
+            const banners = extractArray(response);
+            if (banners.length > 0) {
                 const activeBanner = banners.find(b => b.is_active) || banners[0];
                 setHeroBanner(activeBanner);
                 console.log('Hero Banner loaded:', activeBanner);
@@ -63,10 +63,11 @@ function Home() {
     const fetchMenuItems = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-links`);
-            const items = response.data.data || response.data || [];
+            const items = extractArray(response);
             setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
         } catch (error) {
             console.error('Error fetching menu items:', error);
+            setMenuItems([]);
         }
     };
 

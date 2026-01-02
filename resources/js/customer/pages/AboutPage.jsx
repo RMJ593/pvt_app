@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Footer from '../components/Footer'; // Import your existing Footer component
 import './AboutPage.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function AboutPage() {
     const [settings, setSettings] = useState(null);
@@ -53,13 +53,13 @@ function AboutPage() {
         try {
             const response = await axios.get(`${API_BASE_URL}/gallery`);
             
-            let galleryData = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                galleryData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                galleryData = response.data;
-            }
-
+            // let galleryData = [];
+            // if (response.data.success && Array.isArray(response.data.data)) {
+            //     galleryData = response.data.data;
+            // } else if (Array.isArray(response.data)) {
+            //     galleryData = response.data;
+            // }
+            const galleryData = extractArray(response);
             if (Array.isArray(galleryData) && galleryData.length > 0) {
                 // Find image2 for about section
                 const image2 = galleryData.find(

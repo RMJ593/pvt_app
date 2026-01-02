@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Sidebar.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
     const navigate = useNavigate();
@@ -19,7 +19,7 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
     const fetchTopMenuLinks = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-links`);
-            const allLinks = response.data.data || response.data;
+            const allLinks = extractArray(response);
             // Filter only active top menu links
             const activeTopLinks = allLinks.filter(
                 link => link.is_active && link.link_type === 'top_menu'
@@ -27,13 +27,14 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
             setTopMenuLinks(activeTopLinks);
         } catch (error) {
             console.error('Error fetching top menu links:', error);
+            setTopMenuLinks([]);
         }
     };
 
     const fetchPages = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/pages`);
-            const allPages = response.data.data || response.data;
+            const allPages = extractArray(response);
             const activePages = allPages.filter(page => page.is_active);
             
             // Create a map of pages by ID for easy lookup
@@ -45,6 +46,7 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
             setPages(pagesMap);
         } catch (error) {
             console.error('Error fetching pages:', error);
+            setPages({});
         }
     };
 

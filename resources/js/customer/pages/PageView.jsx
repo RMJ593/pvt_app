@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './PageView.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function PageView() {
     const { slug } = useParams();
@@ -21,7 +21,7 @@ function PageView() {
     const fetchPageBySlug = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/pages`);
-            const allPages = response.data.data || response.data;
+            const allPages = extractArray(response);
             const foundPage = allPages.find(p => p.slug === slug);
             
             if (foundPage) {

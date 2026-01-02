@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './VideoStatsSection.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function VideoStatsSection() {
     const [settings, setSettings] = useState(null);
@@ -50,24 +50,13 @@ function VideoStatsSection() {
     const fetchGalleryImage = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/gallery`);
-            console.log('Gallery API response:', response.data); // Debug log
+            console.log('Gallery API response:', response.data);
             
-            // Handle different response structures
-            let images = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                images = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                images = response.data;
-            } else if (response.data.data && typeof response.data.data === 'object') {
-                // If data is an object, convert to array
-                images = Object.values(response.data.data);
-            }
+            const images = extractArray(response);
+            console.log('Processed images array:', images);
 
-            console.log('Processed images array:', images); // Debug log
-
-            // Ensure images is an array before using .find()
-            if (!Array.isArray(images) || images.length === 0) {
-                console.warn('No gallery images found or invalid format');
+            if (images.length === 0) {
+                console.warn('No gallery images found');
                 return;
             }
             

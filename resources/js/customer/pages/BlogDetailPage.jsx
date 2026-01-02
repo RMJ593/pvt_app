@@ -6,7 +6,7 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import WhatsAppButton from '../components/WhatsAppButton';
 import './BlogDetailPage.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 
 function BlogDetailPage() {
@@ -44,13 +44,13 @@ function BlogDetailPage() {
     const fetchMenuItems = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/menu-links`);
-            const items = response.data.data || response.data || [];
+            const items = extractArray(response);
             setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
         } catch (error) {
             console.error('Error fetching menu items:', error);
+            setMenuItems([]);
         }
     };
-
     const fetchBlog = async () => {
         try {
             let endpoint;

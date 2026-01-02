@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './BlogsSection.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function BlogsSection() {
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ function BlogsSection() {
     const fetchBlogs = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/blogs`);
-            const allBlogs = response.data.data || response.data || [];
+            const allBlogs = extractArray(response);
             
             // Filter active blogs and get latest 6
             const activeBlogs = allBlogs
@@ -28,6 +28,7 @@ function BlogsSection() {
             setBlogs(activeBlogs);
         } catch (error) {
             console.error('Error fetching blogs:', error);
+            setBlogs([]);
         } finally {
             setLoading(false);
         }

@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Roles.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function RoleList() {
     const [roles, setRoles] = useState([]);
@@ -23,16 +23,12 @@ function RoleList() {
 
             console.log('Fetched roles:', response.data);
 
-            if (response.data.success) {
-                setRoles(response.data.data || []);
-            } else if (Array.isArray(response.data)) {
-                setRoles(response.data);
-            } else {
-                setRoles([]);
-            }
+            const rolesData = extractArray(response);
+            setRoles(rolesData);
         } catch (error) {
             console.error('Error fetching roles:', error);
             setError('Failed to load roles');
+            setRoles([]);
         } finally {
             setLoading(false);
         }

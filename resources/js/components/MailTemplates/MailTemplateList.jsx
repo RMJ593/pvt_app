@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 import './MailTemplates.css';
 
 function MailTemplateList() {
@@ -24,16 +24,12 @@ function MailTemplateList() {
 
             console.log('Fetched templates:', response.data);
 
-            if (response.data.success) {
-                setTemplates(response.data.data || []);
-            } else if (Array.isArray(response.data)) {
-                setTemplates(response.data);
-            } else {
-                setTemplates([]);
-            }
+            const templatesData = extractArray(response);
+            setTemplates(templatesData);
         } catch (error) {
             console.error('Error fetching mail templates:', error);
             setError('Failed to load mail templates');
+            setTemplates([]);
         } finally {
             setLoading(false);
         }

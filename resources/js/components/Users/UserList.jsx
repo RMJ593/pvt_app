@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Users.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function UserList() {
     const [users, setUsers] = useState([]);
@@ -24,16 +24,12 @@ function UserList() {
 
             console.log('Fetched users:', response.data);
 
-            if (response.data.success) {
-                setUsers(response.data.data || []);
-            } else if (Array.isArray(response.data)) {
-                setUsers(response.data);
-            } else {
-                setUsers([]);
-            }
+            const usersData = extractArray(response);
+            setUsers(usersData);
         } catch (error) {
             console.error('Error fetching users:', error);
             setError('Failed to load users');
+            setUsers([]);
         } finally {
             setLoading(false);
         }

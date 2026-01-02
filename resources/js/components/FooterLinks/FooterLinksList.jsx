@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
-import { API_BASE_URL, getStorageUrl } from '../../config/api';
+import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function FooterLinksList() {
     const [footerLinks, setFooterLinks] = useState([]);
@@ -23,16 +23,12 @@ function FooterLinksList() {
 
             console.log('Fetched footer links:', response.data);
 
-            if (response.data.success) {
-                setFooterLinks(response.data.data || []);
-            } else if (Array.isArray(response.data)) {
-                setFooterLinks(response.data);
-            } else {
-                setFooterLinks([]);
-            }
+            const linksData = extractArray(response);
+            setFooterLinks(linksData);
         } catch (error) {
             console.error('Error fetching footer links:', error);
             setError('Failed to load footer links');
+            setFooterLinks([]);
         } finally {
             setLoading(false);
         }
