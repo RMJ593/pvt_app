@@ -41,9 +41,11 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Run migrations and start Apache
+# Run migrations, storage link and start Apache
 CMD php artisan config:clear && \
     php artisan migrate --force && \
+    php artisan storage:link && \
+    php artisan config:cache && \
     apache2-foreground
 
 EXPOSE 80
