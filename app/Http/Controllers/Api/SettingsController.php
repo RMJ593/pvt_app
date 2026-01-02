@@ -3,20 +3,38 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class SettingsController extends Controller
 {
     public function index()
     {
         try {
-            $settings = Setting::first();
+            // Get all settings from key-value table
+            $settingsRows = DB::table('settings')->get();
             
-            if (!$settings) {
-                $settings = Setting::create([]);
+            // Convert to associative array
+            $settings = [];
+            foreach ($settingsRows as $row) {
+                $settings[$row->key] = $row->value;
+            }
+            
+            // Add additional fields from table columns
+            $settingsRecord = DB::table('settings')->first();
+            if ($settingsRecord) {
+                $settings['default_image'] = $settingsRecord->default_image;
+                $settings['popup_ad_image'] = $settingsRecord->popup_ad_image;
+                $settings['booking_schedule'] = json_decode($settingsRecord->booking_schedule, true);
+                $settings['first_value'] = $settingsRecord->first_value;
+                $settings['first_name'] = $settingsRecord->first_name;
+                $settings['second_value'] = $settingsRecord->second_value;
+                $settings['second_name'] = $settingsRecord->second_name;
+                $settings['third_value'] = $settingsRecord->third_value;
+                $settings['third_name'] = $settingsRecord->third_name;
+                $settings['fourth_value'] = $settingsRecord->fourth_value;
+                $settings['fourth_name'] = $settingsRecord->fourth_name;
             }
             
             return response()->json([
@@ -35,80 +53,53 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         try {
-            $settings = Setting::first();
-            
-            if (!$settings) {
-                $settings = Setting::create([]);
+            // Update key-value settings
+            foreach ($request->except(['popup_ad_image', 'default_image', 'website_logo']) as $key => $value) {
+                DB::table('settings')->updateOrInsert(
+                    ['key' => $key],
+                    [
+                        'value' => $value,
+                        'type' => 'text',
+                        'group' => 'general',
+                        'updated_at' => now()
+                    ]
+                );
             }
 
-            $data = $request->except(['popup_ad_image', 'default_image', 'website_logo', 'meta_image']);
+            // Handle file uploads (these go in table columns, not key-value)
+            $settingsRecord = DB::table('settings')->first();
+            $data = [];
 
-            // Handle Popup Ad Image
             if ($request->hasFile('popup_ad_image')) {
-                if ($settings->popup_ad_image) {
-                    Storage::disk('public')->delete($settings->popup_ad_image);
-                }
-                $data['popup_ad_image'] = $request->file('popup_ad_image')->store('settings/popup', 'public');
+                $path = $request->file('popup_ad_image')->store('settings/popup', 'public');
+                $data['popup_ad_image'] = $path;
             }
 
-            // Handle Default Image
             if ($request->hasFile('default_image')) {
-                if ($settings->default_image) {
-                    Storage::disk('public')->delete($settings->default_image);
-                }
-                $data['default_image'] = $request->file('default_image')->store('settings/default', 'public');
+                $path = $request->file('default_image')->store('settings/default', 'public');
+                $data['default_image'] = $path;
             }
 
-            // Handle Website Logo
             if ($request->hasFile('website_logo')) {
-                if ($settings->website_logo) {
-                    Storage::disk('public')->delete($settings->website_logo);
-                }
-                $data['website_logo'] = $request->file('website_logo')->store('settings/logo', 'public');
+                $path = $request->file('website_logo')->store('settings/logo', 'public');
+                DB::table('settings')->updateOrInsert(
+                    ['key' => 'website_logo'],
+                    [
+                        'value' => $path,
+                        'type' => 'file',
+                        'group' => 'general',
+                        'updated_at' => now()
+                    ]
+                );
             }
 
-            // Handle Meta Image
-            if ($request->hasFile('meta_image')) {
-                if ($settings->meta_image) {
-                    Storage::disk('public')->delete($settings->meta_image);
-                }
-                $data['meta_image'] = $request->file('meta_image')->store('settings/meta', 'public');
+            if (!empty($data) && $settingsRecord) {
+                DB::table('settings')->where('id', $settingsRecord->id)->update($data);
             }
-
-            // Handle boolean fields
-            $booleanFields = [
-                'enable_popup_ad',
-                'show_open_times',
-                'show_first_time',
-                'show_second_time',
-                'recaptcha_enable'
-            ];
-
-            foreach ($booleanFields as $field) {
-                if ($request->has($field)) {
-                    $data[$field] = $request->$field == '1' || $request->$field === true;
-                }
-            }
-
-            // Handle JSON fields
-            if ($request->has('booking_schedule')) {
-                $data['booking_schedule'] = is_string($request->booking_schedule) 
-                    ? json_decode($request->booking_schedule, true) 
-                    : $request->booking_schedule;
-            }
-
-            if ($request->has('special_off_days')) {
-                $data['special_off_days'] = is_string($request->special_off_days) 
-                    ? json_decode($request->special_off_days, true) 
-                    : $request->special_off_days;
-            }
-
-            $settings->update($data);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Settings updated successfully',
-                'data' => $settings
+                'message' => 'Settings updated successfully'
             ]);
 
         } catch (\Exception $e) {
