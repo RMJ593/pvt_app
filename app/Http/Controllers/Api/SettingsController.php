@@ -5,43 +5,57 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
     public function index()
     {
         try {
-            // Get all settings from key-value table
+            // Get all settings rows
             $settingsRows = DB::table('settings')->get();
             
-            // Convert to associative array
-            $settings = [];
-            foreach ($settingsRows as $row) {
-                $settings[$row->key] = $row->value;
+            if ($settingsRows->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => []
+                ]);
             }
             
-            // Add additional fields from table columns
-            $settingsRecord = DB::table('settings')->first();
-            if ($settingsRecord) {
-                $settings['default_image'] = $settingsRecord->default_image;
-                $settings['popup_ad_image'] = $settingsRecord->popup_ad_image;
-                $settings['booking_schedule'] = json_decode($settingsRecord->booking_schedule, true);
-                $settings['first_value'] = $settingsRecord->first_value;
-                $settings['first_name'] = $settingsRecord->first_name;
-                $settings['second_value'] = $settingsRecord->second_value;
-                $settings['second_name'] = $settingsRecord->second_name;
-                $settings['third_value'] = $settingsRecord->third_value;
-                $settings['third_name'] = $settingsRecord->third_name;
-                $settings['fourth_value'] = $settingsRecord->fourth_value;
-                $settings['fourth_name'] = $settingsRecord->fourth_name;
+            // Build settings array from key-value pairs
+            $settings = [];
+            $firstRow = $settingsRows->first();
+            
+            // Get all key-value pairs from all rows
+            foreach ($settingsRows as $row) {
+                if ($row->key && $row->value) {
+                    $settings[$row->key] = $row->value;
+                }
             }
+            
+            // Add the column-based settings from first row
+            $settings['default_image'] = $firstRow->default_image;
+            $settings['popup_ad_image'] = $firstRow->popup_ad_image;
+            $settings['popup_ad_url'] = $firstRow->popup_ad_url;
+            $settings['booking_schedule'] = $firstRow->booking_schedule ? json_decode($firstRow->booking_schedule, true) : null;
+            $settings['first_value'] = $firstRow->first_value;
+            $settings['first_name'] = $firstRow->first_name;
+            $settings['second_value'] = $firstRow->second_value;
+            $settings['second_name'] = $firstRow->second_name;
+            $settings['third_value'] = $firstRow->third_value;
+            $settings['third_name'] = $firstRow->third_name;
+            $settings['fourth_value'] = $firstRow->fourth_value;
+            $settings['fourth_name'] = $firstRow->fourth_name;
+            $settings['youtube_url'] = $firstRow->youtube_url ?? '';
+            $settings['facebook_url'] = $firstRow->facebook_url ?? '';
+            $settings['instagram_url'] = $firstRow->instagram_url ?? '';
             
             return response()->json([
                 'success' => true,
                 'data' => $settings
             ]);
         } catch (\Exception $e) {
+            \Log::error('Settings Error: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch settings',
@@ -53,55 +67,24 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         try {
-            // Update key-value settings
-            foreach ($request->except(['popup_ad_image', 'default_image', 'website_logo']) as $key => $value) {
-                DB::table('settings')->updateOrInsert(
-                    ['key' => $key],
-                    [
-                        'value' => $value,
-                        'type' => 'text',
-                        'group' => 'general',
-                        'updated_at' => now()
-                    ]
-                );
-            }
-
-            // Handle file uploads (these go in table columns, not key-value)
-            $settingsRecord = DB::table('settings')->first();
-            $data = [];
-
-            if ($request->hasFile('popup_ad_image')) {
-                $path = $request->file('popup_ad_image')->store('settings/popup', 'public');
-                $data['popup_ad_image'] = $path;
-            }
-
-            if ($request->hasFile('default_image')) {
-                $path = $request->file('default_image')->store('settings/default', 'public');
-                $data['default_image'] = $path;
-            }
-
-            if ($request->hasFile('website_logo')) {
-                $path = $request->file('website_logo')->store('settings/logo', 'public');
-                DB::table('settings')->updateOrInsert(
-                    ['key' => 'website_logo'],
-                    [
-                        'value' => $path,
-                        'type' => 'file',
-                        'group' => 'general',
-                        'updated_at' => now()
-                    ]
-                );
-            }
-
-            if (!empty($data) && $settingsRecord) {
-                DB::table('settings')->where('id', $settingsRecord->id)->update($data);
+            foreach ($request->all() as $key => $value) {
+                if (!is_file($value) && $key !== '_token') {
+                    DB::table('settings')->updateOrInsert(
+                        ['key' => $key],
+                        [
+                            'value' => $value,
+                            'type' => 'text',
+                            'group' => 'general',
+                            'updated_at' => now()
+                        ]
+                    );
+                }
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Settings updated successfully'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
