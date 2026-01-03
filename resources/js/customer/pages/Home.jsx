@@ -48,13 +48,26 @@ function Home() {
 
     const fetchHeroBanner = async () => {
         try {
+            console.log('Fetching hero banners from:', `${API_BASE_URL}/hero-banners`);
             const response = await axios.get(`${API_BASE_URL}/hero-banners`);
+            console.log('Hero banners response:', response.data);
+            
             const banners = extractArray(response);
+            console.log('Extracted banners:', banners);
+            
             if (banners.length > 0) {
                 const activeBanner = banners.find(b => b.is_active) || banners[0];
+                console.log('Active banner:', activeBanner);
+                console.log('Image path:', activeBanner.image_path);
+                console.log('Full URL:', activeBanner.full_url);
+                
                 setHeroBanner(activeBanner);
-                console.log('Hero Banner loaded:', activeBanner);
-                console.log('Video URL:', getVideoUrl(activeBanner));
+                
+                // Test video URL construction
+                const testUrl = getVideoUrl(activeBanner);
+                console.log('Constructed video URL:', testUrl);
+            } else {
+                console.warn('No hero banners found');
             }
         } catch (error) {
             console.error('Error fetching hero banner:', error);
@@ -163,7 +176,11 @@ function Home() {
             </nav>
 
             <section id="home" className="hero-section">
-                {heroBanner && getVideoUrl(heroBanner) && (
+                {/* Debug info - remove after fixing */}
+                {console.log('Render check - heroBanner:', heroBanner)}
+                {console.log('Render check - videoUrl:', heroBanner ? getVideoUrl(heroBanner) : 'no banner')}
+                
+                {heroBanner && getVideoUrl(heroBanner) ? (
                     <video 
                         className="hero-video" 
                         autoPlay 
@@ -179,6 +196,11 @@ function Home() {
                         <source src={getVideoUrl(heroBanner)} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
+                ) : (
+                    <div style={{padding: '20px', background: 'yellow', color: 'black'}}>
+                        DEBUG: No video - heroBanner: {heroBanner ? 'exists' : 'null'}, 
+                        videoUrl: {heroBanner ? getVideoUrl(heroBanner) || 'null' : 'no banner'}
+                    </div>
                 )}
                 
                 <div className="hero-overlay"></div>
