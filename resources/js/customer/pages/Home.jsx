@@ -48,56 +48,22 @@ function Home() {
 
     const fetchHeroBanner = async () => {
         try {
-            console.log('Fetching hero banners from:', `${API_BASE_URL}/hero-banners`);
             const response = await axios.get(`${API_BASE_URL}/hero-banners`);
-            console.log('Full response:', response);
-            console.log('Response data:', response.data);
-            console.log('Response data type:', typeof response.data);
-            console.log('Is array?', Array.isArray(response.data));
             
-            // Try to extract banners from various formats
-            let banners = [];
+            // Simple extraction - we know the format now
+            const banners = response.data?.data || [];
             
-            // Format 1: { success: true, data: [...] }
-            if (response.data?.success === true && Array.isArray(response.data?.data)) {
-                banners = response.data.data;
-                console.log('Format 1: success wrapper');
-            }
-            // Format 2: { data: [...] }
-            else if (response.data?.data && Array.isArray(response.data.data)) {
-                banners = response.data.data;
-                console.log('Format 2: data wrapper');
-            }
-            // Format 3: [...]
-            else if (Array.isArray(response.data)) {
-                banners = response.data;
-                console.log('Format 3: direct array');
-            }
-            // Format 4: Single object
-            else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
-                banners = [response.data];
-                console.log('Format 4: single object');
-            }
-            
-            console.log('Extracted banners:', banners);
-            console.log('Banners count:', banners.length);
+            console.log('Fetched banners:', banners);
             
             if (banners.length > 0) {
                 const activeBanner = banners.find(b => b.is_active) || banners[0];
-                console.log('Selected banner:', activeBanner);
-                console.log('Banner keys:', Object.keys(activeBanner));
-                console.log('Banner image_path:', activeBanner.image_path);
-                console.log('Banner full_url:', activeBanner.full_url);
-                
+                console.log('Active banner:', activeBanner);
+                console.log('Video path:', activeBanner.image_path);
+                console.log('Full URL:', activeBanner.full_url);
                 setHeroBanner(activeBanner);
-            } else {
-                console.warn('No hero banners found in response');
-                console.warn('Raw response.data:', JSON.stringify(response.data, null, 2));
             }
         } catch (error) {
             console.error('Error fetching hero banner:', error);
-            console.error('Error response:', error.response?.data);
-            console.error('Error status:', error.response?.status);
         }
     };
 
@@ -128,31 +94,24 @@ function Home() {
         }
     };
 
-    // ✅ FIXED: Updated to handle different URL formats
+    // ✅ SIMPLIFIED: Use full_url from backend or construct URL
     const getVideoUrl = (banner) => {
-        if (!banner || !banner.image_path) return null;
+        if (!banner) return null;
         
-        // If full_url is provided by backend, use it
+        // Backend provides full_url, use it directly
         if (banner.full_url) {
-            console.log('Using full_url:', banner.full_url);
+            console.log('Using backend full_url:', banner.full_url);
             return banner.full_url;
         }
         
-        // Otherwise construct the URL
-        const path = banner.image_path;
-        
-        // If path already starts with http, use as is
-        if (path.startsWith('http')) {
-            return path;
+        // Fallback: construct from image_path
+        if (banner.image_path) {
+            const url = `${API_BASE_URL}/storage/${banner.image_path}`;
+            console.log('Constructed URL:', url);
+            return url;
         }
         
-        // Remove any leading slashes or 'storage/' prefix
-        const cleanPath = path.replace(/^\/?(storage\/)?/, '');
-        
-        // Construct full URL
-        const videoUrl = `${API_BASE_URL}/storage/${cleanPath}`;
-        console.log('Constructed video URL:', videoUrl);
-        return videoUrl;
+        return null;
     };
 
     const getLogoUrl = () => {
@@ -203,30 +162,22 @@ function Home() {
             </nav>
 
             <section id="home" className="hero-section">
-                {/* Debug info - remove after fixing */}
-                {console.log('Render check - heroBanner:', heroBanner)}
-                {console.log('Render check - videoUrl:', heroBanner ? getVideoUrl(heroBanner) : 'no banner')}
-                
                 {heroBanner && getVideoUrl(heroBanner) ? (
                     <video 
+                        key={heroBanner.id}
                         className="hero-video" 
                         autoPlay 
                         loop 
                         muted 
                         playsInline
-                        onError={(e) => {
-                            console.error('Video failed to load:', e);
-                            console.error('Video src:', e.target.src);
-                        }}
-                        onLoadedData={() => console.log('Video loaded successfully')}
+                        onError={(e) => console.error('Video error:', e.target.src)}
+                        onLoadedData={() => console.log('✅ Video loaded:', heroBanner.full_url)}
                     >
                         <source src={getVideoUrl(heroBanner)} type="video/mp4" />
-                        Your browser does not support the video tag.
                     </video>
                 ) : (
-                    <div style={{padding: '20px', background: 'yellow', color: 'black'}}>
-                        DEBUG: No video - heroBanner: {heroBanner ? 'exists' : 'null'}, 
-                        videoUrl: {heroBanner ? getVideoUrl(heroBanner) || 'null' : 'no banner'}
+                    <div style={{padding: '20px', background: 'red', color: 'white'}}>
+                        ❌ No Video: {!heroBanner ? 'Banner not loaded' : 'Video URL missing'}
                     </div>
                 )}
                 
