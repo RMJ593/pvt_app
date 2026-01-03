@@ -1,4 +1,5 @@
 <?php
+// This is what your 2025_12_01_083133_create_hero_banners_table.php should look like
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -12,9 +13,10 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('subtitle')->nullable();
+            $table->text('description')->nullable();
+            $table->string('image_path')->nullable();
             $table->string('button_text')->nullable();
             $table->string('button_link')->nullable();
-            $table->string('image_path')->nullable();
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

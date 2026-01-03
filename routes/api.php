@@ -162,3 +162,41 @@ Route::middleware('auth:sanctum')->group(function () {
     // Inside auth:sanctum middleware
     Route::apiResource('mail-templates', MailTemplateController::class);
 });
+// === TEMPORARY DEBUG ROUTES - ADD AT THE END OF routes/api.php ===
+use Illuminate\Support\Facades\Storage;
+
+Route::get('/test-storage', function () {
+    return response()->json([
+        'storage_path' => storage_path('app/public'),
+        'public_path' => public_path('storage'),
+        'symlink_exists' => is_link(public_path('storage')),
+        'symlink_target' => is_link(public_path('storage')) ? readlink(public_path('storage')) : null,
+        'public_storage_exists' => file_exists(public_path('storage')),
+        'files_in_hero_banners' => Storage::disk('public')->allFiles('hero-banners'),
+        'app_url' => config('app.url'),
+        'filesystem_disk' => config('filesystems.default'),
+        'storage_url' => config('filesystems.disks.public.url'),
+    ]);
+});
+
+Route::get('/test-video/{filename}', function ($filename) {
+    $path = "hero-banners/{$filename}";
+    
+    if (!Storage::disk('public')->exists($path)) {
+        return response()->json([
+            'error' => 'File not found',
+            'path' => $path,
+            'full_path' => storage_path('app/public/' . $path),
+            'all_files' => Storage::disk('public')->allFiles('hero-banners'),
+        ], 404);
+    }
+    
+    return response()->json([
+        'exists' => true,
+        'path' => $path,
+        'url' => asset('storage/' . $path),
+        'full_url' => config('app.url') . '/storage/' . $path,
+        'size' => Storage::disk('public')->size($path),
+        'mime_type' => Storage::disk('public')->mimeType($path),
+    ]);
+});

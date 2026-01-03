@@ -17,6 +17,14 @@ class HeroBannerController extends Controller
     {
         $banners = HeroBanner::orderBy('order', 'asc')->get();
         
+        // Add full URL to image_path for easier frontend access
+        $banners->transform(function ($banner) {
+            if ($banner->image_path) {
+                $banner->full_url = asset('storage/' . $banner->image_path);
+            }
+            return $banner;
+        });
+        
         return response()->json([
             'success' => true,
             'data' => $banners
@@ -31,7 +39,8 @@ class HeroBannerController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
-            'image' => 'required|file|mimes:mp4,webm,ogg,mov,avi|max:102400', // 100MB in KB - Changed to accept videos
+            'description' => 'nullable|string',
+            'image' => 'required|file|mimes:mp4,webm,ogg,mov|max:102400', // 100MB in KB
             'button_text' => 'nullable|string|max:255',
             'button_link' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
@@ -47,18 +56,34 @@ class HeroBannerController extends Controller
         }
 
         try {
-            $data = $request->only(['title', 'subtitle', 'button_text', 'button_link', 'order']);
+            $data = $request->only(['title', 'subtitle', 'description', 'button_text', 'button_link', 'order']);
             $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : true;
 
-            // Handle video upload (field name is still 'image' for backward compatibility)
+            // Handle video upload
             if ($request->hasFile('image')) {
                 $video = $request->file('image');
-                $videoName = time() . '_' . $video->getClientOriginalName();
+                
+                // Generate unique filename
+                $videoName = time() . '_' . uniqid() . '.' . $video->getClientOriginalExtension();
+                
+                // Store in hero-banners folder
                 $videoPath = $video->storeAs('hero-banners', $videoName, 'public');
+                
+                // Save relative path (without /storage/)
                 $data['image_path'] = $videoPath;
+                
+                \Log::info('Video uploaded:', [
+                    'original_name' => $video->getClientOriginalName(),
+                    'saved_as' => $videoName,
+                    'path' => $videoPath,
+                    'full_url' => asset('storage/' . $videoPath)
+                ]);
             }
 
             $banner = HeroBanner::create($data);
+            
+            // Add full URL for response
+            $banner->full_url = asset('storage/' . $banner->image_path);
 
             return response()->json([
                 'success' => true,
@@ -67,6 +92,11 @@ class HeroBannerController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            \Log::error('Hero banner creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create hero banner',
@@ -87,6 +117,11 @@ class HeroBannerController extends Controller
                 'success' => false,
                 'message' => 'Hero banner not found'
             ], 404);
+        }
+
+        // Add full URL
+        if ($banner->image_path) {
+            $banner->full_url = asset('storage/' . $banner->image_path);
         }
 
         return response()->json([
@@ -112,7 +147,8 @@ class HeroBannerController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
-            'image' => 'nullable|file|mimes:mp4,webm,ogg,mov,avi|max:102400', // 100MB - Video optional on update
+            'description' => 'nullable|string',
+            'image' => 'nullable|file|mimes:mp4,webm,ogg,mov|max:102400', // 100MB
             'button_text' => 'nullable|string|max:255',
             'button_link' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
@@ -128,7 +164,7 @@ class HeroBannerController extends Controller
         }
 
         try {
-            $data = $request->only(['title', 'subtitle', 'button_text', 'button_link', 'order']);
+            $data = $request->only(['title', 'subtitle', 'description', 'button_text', 'button_link', 'order']);
             
             if ($request->has('is_active')) {
                 $data['is_active'] = (bool)$request->is_active;
@@ -139,15 +175,26 @@ class HeroBannerController extends Controller
                 // Delete old video if exists
                 if ($banner->image_path && Storage::disk('public')->exists($banner->image_path)) {
                     Storage::disk('public')->delete($banner->image_path);
+                    \Log::info('Old video deleted:', ['path' => $banner->image_path]);
                 }
 
                 $video = $request->file('image');
-                $videoName = time() . '_' . $video->getClientOriginalName();
+                $videoName = time() . '_' . uniqid() . '.' . $video->getClientOriginalExtension();
                 $videoPath = $video->storeAs('hero-banners', $videoName, 'public');
                 $data['image_path'] = $videoPath;
+                
+                \Log::info('New video uploaded:', [
+                    'path' => $videoPath,
+                    'full_url' => asset('storage/' . $videoPath)
+                ]);
             }
 
             $banner->update($data);
+            
+            // Add full URL
+            if ($banner->image_path) {
+                $banner->full_url = asset('storage/' . $banner->image_path);
+            }
 
             return response()->json([
                 'success' => true,
@@ -156,6 +203,11 @@ class HeroBannerController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Hero banner update failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update hero banner',
@@ -182,6 +234,7 @@ class HeroBannerController extends Controller
             // Delete video if exists
             if ($banner->image_path && Storage::disk('public')->exists($banner->image_path)) {
                 Storage::disk('public')->delete($banner->image_path);
+                \Log::info('Video deleted:', ['path' => $banner->image_path]);
             }
 
             $banner->delete();
@@ -192,6 +245,11 @@ class HeroBannerController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Hero banner deletion failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete hero banner',

@@ -10,7 +10,9 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     nodejs \
-    npm
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions (MySQL)
 RUN docker-php-ext-install pdo pdo_mysql mysqli mbstring exif pcntl bcmath gd
@@ -31,21 +33,33 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 RUN npm ci && npm run build
 
-# Set permissions
+# Set permissions FIRST (IMPORTANT - before storage:link)
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache \
+    && chmod -R 755 /var/www/html/public
+
+# Create storage directories if they don't exist
+RUN mkdir -p storage/app/public/hero-banners \
+    && mkdir -p public/storage
+
+# Create storage symlink (CRITICAL - do this during build)
+RUN php artisan storage:link || ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
 # Configure Apache DocumentRoot
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Run migrations, storage link and start Apache
-CMD php artisan config:clear && \
-    php artisan migrate --force && \
-    php artisan storage:link && \
-    php artisan config:cache && \
-    apache2-foreground
+# Create startup script
+RUN echo '#!/bin/bash\n\
+php artisan config:clear\n\
+php artisan cache:clear\n\
+php artisan migrate --force\n\
+php artisan config:cache\n\
+apache2-foreground' > /start.sh && chmod +x /start.sh
+
+# Start Apache
+CMD ["/start.sh"]
 
 EXPOSE 80
