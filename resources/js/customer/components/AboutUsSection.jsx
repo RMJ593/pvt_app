@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 import './AboutUs.css';
 
 function AboutUsSection() {
@@ -13,8 +14,8 @@ function AboutUsSection() {
 
     const fetchAboutImage = async () => {
         try {
-            const response = await axios.get('/api/gallery');
-            console.log('About Us - Gallery API response:', response.data); // Debug log
+            const response = await axios.get(`${API_BASE_URL}/api/gallery`);
+            console.log('About Us - Gallery API response:', response.data);
             
             // Handle different response structures
             let galleryData = [];
@@ -28,25 +29,24 @@ function AboutUsSection() {
             }
 
             console.log('About Us - Processed gallery data:', galleryData);
-            console.log('About Us - Looking for title: "image1"');
             
             if (Array.isArray(galleryData) && galleryData.length > 0) {
-                // Log all available titles for debugging
                 console.log('Available image titles:', galleryData.map(img => img.title));
                 
                 // Find the image with title "image1" that is active
                 const image = galleryData.find(
-                    img => img.title && img.title.toLowerCase().trim() === 'image1' && (img.is_active === 1 || img.is_active === true)
+                    img => img.title && img.title.toLowerCase().trim() === 'image1' && 
+                    (img.is_active === 1 || img.is_active === true)
                 );
                 
                 if (image) {
-                    console.log('About Us - Found image:', image);
+                    console.log('About Us - Found image1:', image);
                     setAboutImage(image);
                 } else {
-                    console.warn('About Us - No image with title "image1" found or it is not active');
+                    console.log('About Us - No active "image1" found');
                 }
             } else {
-                console.error('About Us - Gallery data is not an array or is empty:', galleryData);
+                console.log('About Us - No gallery images available');
             }
         } catch (error) {
             console.error('Error fetching about image:', error);
@@ -86,15 +86,19 @@ function AboutUsSection() {
                             <div className="image-loading">Loading...</div>
                         ) : aboutImage && aboutImage.image ? (
                             <img
-                                src={`/storage/${aboutImage.image}`}
+                                src={getStorageUrl(aboutImage.image)}
                                 alt={aboutImage.title}
                                 className="about-image"
+                                onError={(e) => {
+                                    console.error('Failed to load about image');
+                                    e.target.style.display = 'none';
+                                }}
                             />
                         ) : (
                             <div className="image-placeholder">
-                                <p>No image available</p>
-                                <p className="placeholder-hint">
-                                    Upload an image titled "image1" in the gallery
+                                <p>📷</p>
+                                <p style={{fontSize: '14px', marginTop: '10px'}}>
+                                    Upload an image titled <strong>"image1"</strong> in the gallery
                                 </p>
                             </div>
                         )}

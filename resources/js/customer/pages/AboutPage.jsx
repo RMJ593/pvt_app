@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import Footer from '../components/Footer'; // Import your existing Footer component
+import Footer from '../components/Footer';
 import './AboutPage.css';
 import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function AboutPage() {
     const [settings, setSettings] = useState(null);
-    const [bgImage, setBgImage] = useState(null);
     const [aboutImage, setAboutImage] = useState(null);
     const [hasAnimated, setHasAnimated] = useState(false);
     const statsRef = useRef(null);
@@ -40,7 +39,7 @@ function AboutPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/settings`);
+            const response = await axios.get(`${API_BASE_URL}/api/settings`);
             if (response.data.success) {
                 setSettings(response.data.data);
             }
@@ -51,21 +50,20 @@ function AboutPage() {
 
     const fetchGalleryImages = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/gallery`);
-            
-            // let galleryData = [];
-            // if (response.data.success && Array.isArray(response.data.data)) {
-            //     galleryData = response.data.data;
-            // } else if (Array.isArray(response.data)) {
-            //     galleryData = response.data;
-            // }
+            const response = await axios.get(`${API_BASE_URL}/api/gallery`);
             const galleryData = extractArray(response);
+            
+            console.log('About Page - Gallery data:', galleryData);
+            
             if (Array.isArray(galleryData) && galleryData.length > 0) {
-                // Find image2 for about section
                 const image2 = galleryData.find(
-                    img => img.title && img.title.toLowerCase().trim() === 'image2' && (img.is_active === 1 || img.is_active === true)
+                    img => img.title && img.title.toLowerCase().trim() === 'image2' && 
+                    (img.is_active === 1 || img.is_active === true)
                 );
                 setAboutImage(image2);
+                console.log('Found image2:', image2);
+            } else {
+                console.log('No gallery images available');
             }
         } catch (error) {
             console.error('Error fetching gallery images:', error);
@@ -94,10 +92,6 @@ function AboutPage() {
         });
     };
 
-    const getImageUrl = (imagePath) => {
-        return getStorageUrl(imagePath);
-    };
-
     const stats = [
         {
             number: settings?.first_value || '100',
@@ -124,8 +118,8 @@ function AboutPage() {
                 className="about-hero"
                 style={{
                     backgroundImage: settings?.default_image 
-                        ? `url(${getImageUrl(settings.default_image)})` 
-                        : 'none'
+                        ? `url(${getStorageUrl(settings.default_image)})` 
+                        : 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))'
                 }}
             >
                 <div className="about-hero-overlay"></div>
@@ -175,13 +169,20 @@ function AboutPage() {
                         <div className="about-image-wrapper">
                             {aboutImage && aboutImage.image ? (
                                 <img
-                                    src={getImageUrl(aboutImage.image)}
+                                    src={getStorageUrl(aboutImage.image)}
                                     alt="Curry Leaf Restaurant"
                                     className="about-main-image"
+                                    onError={(e) => {
+                                        console.error('Failed to load image2');
+                                        e.target.style.display = 'none';
+                                    }}
                                 />
                             ) : (
                                 <div className="about-image-placeholder">
-                                    <p>Upload "image2" in gallery</p>
+                                    <p>📷</p>
+                                    <p style={{fontSize: '14px', marginTop: '10px'}}>
+                                        Upload <strong>"image2"</strong> in gallery
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -239,26 +240,26 @@ function AboutPage() {
                 </div>
             </section>
 
-            {/* Chef Section - Image Left, Text Right */}
-            <ChefSection getImageUrl={getImageUrl} />
+            {/* Chef Section */}
+            <ChefSection />
 
-            {/* Experience Section - Text Left, Image Right */}
-            <ExperienceSection getImageUrl={getImageUrl} />
+            {/* Experience Section */}
+            <ExperienceSection />
 
-            {/* Services Section - Image Center with 4 Corners */}
-            <ServicesSection getImageUrl={getImageUrl} />
+            {/* Services Section */}
+            <ServicesSection />
 
             {/* Gallery Slider Section */}
-            <GallerySlider getImageUrl={getImageUrl} />
+            <GallerySlider />
 
-            {/* Footer - Import existing Footer component */}
+            {/* Footer */}
             <Footer />
         </div>
     );
 }
 
 // Chef Section Component
-function ChefSection({ getImageUrl }) {
+function ChefSection() {
     const [chefImage, setChefImage] = useState(null);
    
     useEffect(() => {
@@ -267,18 +268,16 @@ function ChefSection({ getImageUrl }) {
 
     const fetchChefImage = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/gallery`);
-            let galleryData = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                galleryData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                galleryData = response.data;
-            }
+            const response = await axios.get(`${API_BASE_URL}/api/gallery`);
+            const galleryData = extractArray(response);
 
-            const image = galleryData.find(
-                img => img.title?.toLowerCase().trim() === 'image3' && (img.is_active === 1 || img.is_active === true)
-            );
-            setChefImage(image);
+            if (Array.isArray(galleryData)) {
+                const image = galleryData.find(
+                    img => img.title?.toLowerCase().trim() === 'image3' && 
+                    (img.is_active === 1 || img.is_active === true)
+                );
+                setChefImage(image);
+            }
         } catch (error) {
             console.error('Error fetching chef image:', error);
         }
@@ -290,9 +289,17 @@ function ChefSection({ getImageUrl }) {
                 <div className="chef-grid">
                     <div className="chef-image-wrapper">
                         {chefImage && chefImage.image ? (
-                            <img src={getImageUrl(chefImage.image)} alt="Master Chef" className="chef-image" />
+                            <img 
+                                src={getStorageUrl(chefImage.image)} 
+                                alt="Master Chef" 
+                                className="chef-image"
+                                onError={(e) => e.target.style.display = 'none'}
+                            />
                         ) : (
-                            <div className="chef-image-placeholder">Upload "image3" in gallery</div>
+                            <div className="chef-image-placeholder">
+                                <p>📷</p>
+                                <p>Upload <strong>"image3"</strong></p>
+                            </div>
                         )}
                     </div>
                     <div className="chef-content">
@@ -314,7 +321,7 @@ function ChefSection({ getImageUrl }) {
 }
 
 // Experience Section Component
-function ExperienceSection({ getImageUrl }) {
+function ExperienceSection() {
     const [experienceImage, setExperienceImage] = useState(null);
     
     useEffect(() => {
@@ -323,18 +330,16 @@ function ExperienceSection({ getImageUrl }) {
 
     const fetchExperienceImage = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/gallery`);
-            let galleryData = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                galleryData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                galleryData = response.data;
-            }
+            const response = await axios.get(`${API_BASE_URL}/api/gallery`);
+            const galleryData = extractArray(response);
 
-            const image = galleryData.find(
-                img => img.title?.toLowerCase().trim() === 'image4' && (img.is_active === 1 || img.is_active === true)
-            );
-            setExperienceImage(image);
+            if (Array.isArray(galleryData)) {
+                const image = galleryData.find(
+                    img => img.title?.toLowerCase().trim() === 'image4' && 
+                    (img.is_active === 1 || img.is_active === true)
+                );
+                setExperienceImage(image);
+            }
         } catch (error) {
             console.error('Error fetching experience image:', error);
         }
@@ -358,9 +363,17 @@ function ExperienceSection({ getImageUrl }) {
                     </div>
                     <div className="experience-image-wrapper">
                         {experienceImage && experienceImage.image ? (
-                            <img src={getImageUrl(experienceImage.image)} alt="Experience" className="experience-image" />
+                            <img 
+                                src={getStorageUrl(experienceImage.image)} 
+                                alt="Experience" 
+                                className="experience-image"
+                                onError={(e) => e.target.style.display = 'none'}
+                            />
                         ) : (
-                            <div className="experience-image-placeholder">Upload "image4" in gallery</div>
+                            <div className="experience-image-placeholder">
+                                <p>📷</p>
+                                <p>Upload <strong>"image4"</strong></p>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -370,26 +383,25 @@ function ExperienceSection({ getImageUrl }) {
 }
 
 // Services Section Component
-function ServicesSection({ getImageUrl }) {
+function ServicesSection() {
     const [serviceImage, setServiceImage] = useState(null);
+    
     useEffect(() => {
         fetchServiceImage();
     }, []);
 
     const fetchServiceImage = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/gallery`);
-            let galleryData = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                galleryData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                galleryData = response.data;
-            }
+            const response = await axios.get(`${API_BASE_URL}/api/gallery`);
+            const galleryData = extractArray(response);
 
-            const image = galleryData.find(
-                img => img.title?.toLowerCase().trim() === 'image5' && (img.is_active === 1 || img.is_active === true)
-            );
-            setServiceImage(image);
+            if (Array.isArray(galleryData)) {
+                const image = galleryData.find(
+                    img => img.title?.toLowerCase().trim() === 'image5' && 
+                    (img.is_active === 1 || img.is_active === true)
+                );
+                setServiceImage(image);
+            }
         } catch (error) {
             console.error('Error fetching service image:', error);
         }
@@ -430,9 +442,17 @@ function ServicesSection({ getImageUrl }) {
 
                     <div className="services-center-image">
                         {serviceImage && serviceImage.image ? (
-                            <img src={getImageUrl(serviceImage.image)} alt="Services" className="service-image" />
+                            <img 
+                                src={getStorageUrl(serviceImage.image)} 
+                                alt="Services" 
+                                className="service-image"
+                                onError={(e) => e.target.style.display = 'none'}
+                            />
                         ) : (
-                            <div className="service-image-placeholder">Upload "image5" in gallery</div>
+                            <div className="service-image-placeholder">
+                                <p>📷</p>
+                                <p>Upload <strong>"image5"</strong></p>
+                            </div>
                         )}
                     </div>
 
@@ -452,39 +472,37 @@ function ServicesSection({ getImageUrl }) {
 }
 
 // Gallery Slider Component
-function GallerySlider({ getImageUrl }) {
+function GallerySlider() {
     const [galleryImages, setGalleryImages] = useState([]);
     const sliderRef = useRef(null);
+    
     useEffect(() => {
         fetchGalleryImages();
     }, []);
 
     const fetchGalleryImages = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/gallery`);
-            let galleryData = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                galleryData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                galleryData = response.data;
-            }
+            const response = await axios.get(`${API_BASE_URL}/api/gallery`);
+            const galleryData = extractArray(response);
 
-            // Filter images with titles image6 to image10
-            const sliderImages = galleryData.filter(img => {
-                const title = img.title?.toLowerCase().trim();
-                return (title === 'image6' || title === 'image7' || title === 'image8' || 
-                        title === 'image9' || title === 'image10') && 
-                       (img.is_active === 1 || img.is_active === true);
-            });
-            
-            // Sort by title to ensure order (image6, image7, image8, image9, image10)
-            sliderImages.sort((a, b) => {
-                const numA = parseInt(a.title.replace(/\D/g, ''));
-                const numB = parseInt(b.title.replace(/\D/g, ''));
-                return numA - numB;
-            });
-            
-            setGalleryImages(sliderImages);
+            if (Array.isArray(galleryData)) {
+                // Filter images with titles image6 to image10
+                const sliderImages = galleryData.filter(img => {
+                    const title = img.title?.toLowerCase().trim();
+                    return (title === 'image6' || title === 'image7' || title === 'image8' || 
+                            title === 'image9' || title === 'image10') && 
+                           (img.is_active === 1 || img.is_active === true);
+                });
+                
+                // Sort by title number
+                sliderImages.sort((a, b) => {
+                    const numA = parseInt(a.title.replace(/\D/g, ''));
+                    const numB = parseInt(b.title.replace(/\D/g, ''));
+                    return numA - numB;
+                });
+                
+                setGalleryImages(sliderImages);
+            }
         } catch (error) {
             console.error('Error fetching gallery images:', error);
         }
@@ -500,6 +518,21 @@ function GallerySlider({ getImageUrl }) {
         }
     };
 
+    // Don't render if no images
+    if (galleryImages.length === 0) {
+        return (
+            <section className="gallery-slider-section">
+                <div className="about-container-full">
+                    <h2 className="gallery-slider-title">Our Gallery</h2>
+                    <div className="gallery-placeholder-message">
+                        <p>📷</p>
+                        <p>Upload images <strong>"image6"</strong> to <strong>"image10"</strong> in gallery</p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
     return (
         <section className="gallery-slider-section">
             <div className="about-container-full">
@@ -509,7 +542,14 @@ function GallerySlider({ getImageUrl }) {
                     <div className="gallery-slider" ref={sliderRef}>
                         {galleryImages.map((image, index) => (
                             <div key={index} className="gallery-slide">
-                                <img src={getImageUrl(image.image)} alt={image.title} />
+                                <img 
+                                    src={getStorageUrl(image.image)} 
+                                    alt={image.title}
+                                    onError={(e) => {
+                                        console.error('Failed to load:', image.title);
+                                        e.target.style.display = 'none';
+                                    }}
+                                />
                             </div>
                         ))}
                     </div>
