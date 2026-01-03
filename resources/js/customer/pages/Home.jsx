@@ -54,6 +54,7 @@ function Home() {
                 const activeBanner = banners.find(b => b.is_active) || banners[0];
                 setHeroBanner(activeBanner);
                 console.log('Hero Banner loaded:', activeBanner);
+                console.log('Video URL:', getVideoUrl(activeBanner));
             }
         } catch (error) {
             console.error('Error fetching hero banner:', error);
@@ -79,7 +80,6 @@ function Home() {
         }
     };
 
-    // Updated handler to navigate to OurMenus page for menu
     const handleNavigation = (sectionId) => {
         if (sectionId === 'menu') {
             navigate('/our-menus');
@@ -88,20 +88,37 @@ function Home() {
         }
     };
 
-    // Get video URL from hero banner
-    const getVideoUrl = () => {
-        if (!heroBanner) return null;
-        if (heroBanner.image_path) {
-            return getStorageUrl(heroBanner.image_path);  // ✅ USE HELPER
+    // ✅ FIXED: Updated to handle different URL formats
+    const getVideoUrl = (banner) => {
+        if (!banner || !banner.image_path) return null;
+        
+        // If full_url is provided by backend, use it
+        if (banner.full_url) {
+            console.log('Using full_url:', banner.full_url);
+            return banner.full_url;
         }
-        return null;
+        
+        // Otherwise construct the URL
+        const path = banner.image_path;
+        
+        // If path already starts with http, use as is
+        if (path.startsWith('http')) {
+            return path;
+        }
+        
+        // Remove any leading slashes or 'storage/' prefix
+        const cleanPath = path.replace(/^\/?(storage\/)?/, '');
+        
+        // Construct full URL
+        const videoUrl = `${API_BASE_URL}/storage/${cleanPath}`;
+        console.log('Constructed video URL:', videoUrl);
+        return videoUrl;
     };
 
-    // Get logo URL from settings
     const getLogoUrl = () => {
         const logoPath = settings?.website_logo || settings?.logo;
         if (!logoPath) return null;
-        return getStorageUrl(logoPath);  // ✅ USE HELPER
+        return getStorageUrl(logoPath);
     };
 
     return (
@@ -146,15 +163,21 @@ function Home() {
             </nav>
 
             <section id="home" className="hero-section">
-                {getVideoUrl() && (
+                {heroBanner && getVideoUrl(heroBanner) && (
                     <video 
                         className="hero-video" 
                         autoPlay 
                         loop 
                         muted 
                         playsInline
+                        onError={(e) => {
+                            console.error('Video failed to load:', e);
+                            console.error('Video src:', e.target.src);
+                        }}
+                        onLoadedData={() => console.log('Video loaded successfully')}
                     >
-                        <source src={getVideoUrl()} type="video/mp4" />
+                        <source src={getVideoUrl(heroBanner)} type="video/mp4" />
+                        Your browser does not support the video tag.
                     </video>
                 )}
                 
@@ -190,23 +213,11 @@ function Home() {
 
             <MenuSection id="menu" />
             <AboutUsSection id="about" />
-            
-            {/* Special Dishes Section - for is_special toggle */}
             <SpecialDishesSection id="special-dishes" />
-            
-            {/* Chef's Selection Section - for is_special_selection toggle */}
             <ChefsSelectionSection id="chefs-selection" />
-            
-            {/* Special Offers Section - for has_offer/is_offer toggle */}
             <SpecialOffersSection id="special-offers" />
-            
-            {/* Booking Form Section - embedded without hero/header/footer */}
             <BookingFormContent />
-            
-            {/* Video and Stats Section */}
             <VideoStatsSection />
-            
-            {/* Blogs Section - Latest blogs */}
             <BlogsSection />
             
             <Footer />
