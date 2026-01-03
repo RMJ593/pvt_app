@@ -50,27 +50,54 @@ function Home() {
         try {
             console.log('Fetching hero banners from:', `${API_BASE_URL}/hero-banners`);
             const response = await axios.get(`${API_BASE_URL}/hero-banners`);
-            console.log('Hero banners response:', response.data);
+            console.log('Full response:', response);
+            console.log('Response data:', response.data);
+            console.log('Response data type:', typeof response.data);
+            console.log('Is array?', Array.isArray(response.data));
             
-            const banners = extractArray(response);
+            // Try to extract banners from various formats
+            let banners = [];
+            
+            // Format 1: { success: true, data: [...] }
+            if (response.data?.success === true && Array.isArray(response.data?.data)) {
+                banners = response.data.data;
+                console.log('Format 1: success wrapper');
+            }
+            // Format 2: { data: [...] }
+            else if (response.data?.data && Array.isArray(response.data.data)) {
+                banners = response.data.data;
+                console.log('Format 2: data wrapper');
+            }
+            // Format 3: [...]
+            else if (Array.isArray(response.data)) {
+                banners = response.data;
+                console.log('Format 3: direct array');
+            }
+            // Format 4: Single object
+            else if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+                banners = [response.data];
+                console.log('Format 4: single object');
+            }
+            
             console.log('Extracted banners:', banners);
+            console.log('Banners count:', banners.length);
             
             if (banners.length > 0) {
                 const activeBanner = banners.find(b => b.is_active) || banners[0];
-                console.log('Active banner:', activeBanner);
-                console.log('Image path:', activeBanner.image_path);
-                console.log('Full URL:', activeBanner.full_url);
+                console.log('Selected banner:', activeBanner);
+                console.log('Banner keys:', Object.keys(activeBanner));
+                console.log('Banner image_path:', activeBanner.image_path);
+                console.log('Banner full_url:', activeBanner.full_url);
                 
                 setHeroBanner(activeBanner);
-                
-                // Test video URL construction
-                const testUrl = getVideoUrl(activeBanner);
-                console.log('Constructed video URL:', testUrl);
             } else {
-                console.warn('No hero banners found');
+                console.warn('No hero banners found in response');
+                console.warn('Raw response.data:', JSON.stringify(response.data, null, 2));
             }
         } catch (error) {
             console.error('Error fetching hero banner:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
         }
     };
 
