@@ -25,7 +25,6 @@ function HeroBannerForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Page types dropdown options
     const pageTypes = [
         'Home',
         'About',
@@ -67,7 +66,7 @@ function HeroBannerForm() {
                     button_text: banner.button_text || '',
                     page_type: banner.page_type || '',
                     page_id: banner.page_id || '',
-                    order: banner.order,
+                    order: banner.order || 0,
                     is_active: banner.is_active,
                 });
                 if (banner.image_path) {
@@ -94,7 +93,15 @@ function HeroBannerForm() {
             // Check file size (max 50MB for video)
             if (file.size > 50 * 1024 * 1024) {
                 setError('Video file size must be less than 50MB');
-                e.target.value = ''; // Clear the input
+                e.target.value = '';
+                return;
+            }
+            
+            // Check file type
+            const validTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+            if (!validTypes.includes(file.type)) {
+                setError('Please upload a valid video file (MP4, WebM, or OGG)');
+                e.target.value = '';
                 return;
             }
             
@@ -121,15 +128,15 @@ function HeroBannerForm() {
         try {
             const formDataToSend = new FormData();
             
-            // Map frontend fields to backend expected fields
+            // ✅ FIXED: Map all fields correctly
             formDataToSend.append('title', formData.heading);
             formDataToSend.append('subtitle', formData.small_heading);
+            formDataToSend.append('description', formData.description || ''); // ✅ ADDED
             formDataToSend.append('button_text', formData.button_text || '');
             formDataToSend.append('button_link', formData.page_id ? `/page/${formData.page_id}` : '');
             formDataToSend.append('order', formData.order);
             formDataToSend.append('is_active', formData.is_active ? '1' : '0');
 
-            // Backend expects 'image' field name
             if (videoFile) {
                 console.log('Appending video file to form data');
                 formDataToSend.append('image', videoFile);
@@ -166,6 +173,7 @@ function HeroBannerForm() {
 
             console.log('Success response:', response.data);
             if (response.data.success) {
+                alert('Hero banner saved successfully!');
                 navigate('/staff/hero-banners');
             }
         } catch (error) {
@@ -186,8 +194,8 @@ function HeroBannerForm() {
                 setError(error.response.data.message);
                 alert(`Error: ${error.response.data.message}`);
             } else {
-                setError('Failed to save banner');
-                alert('Failed to save banner');
+                setError('Failed to save banner. Please check console for details.');
+                alert('Failed to save banner. Please check your connection and try again.');
             }
         } finally {
             setLoading(false);
@@ -214,29 +222,35 @@ function HeroBannerForm() {
                     <h2>Banner Content</h2>
 
                     <div className="form-group">
-                        <label>Small Heading *</label>
+                        <label>Small Heading (Subtitle) *</label>
                         <input
                             type="text"
                             name="small_heading"
                             value={formData.small_heading}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="e.g., Welcome to"
+                            placeholder="e.g., DELIGHTFUL EXPERIENCE"
                             required
                         />
+                        <small className="form-text">
+                            This appears above the main heading
+                        </small>
                     </div>
 
                     <div className="form-group">
-                        <label>Heading *</label>
+                        <label>Main Heading (Title) *</label>
                         <input
                             type="text"
                             name="heading"
                             value={formData.heading}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="e.g., Our Restaurant"
+                            placeholder="e.g., Handcrafted Indian Flavours, Straight from the Heart"
                             required
                         />
+                        <small className="form-text">
+                            The main title displayed on the banner
+                        </small>
                     </div>
 
                     <div className="form-group">
@@ -247,8 +261,11 @@ function HeroBannerForm() {
                             onChange={handleChange}
                             className="form-control"
                             rows="4"
-                            placeholder="Brief description about this banner..."
+                            placeholder="Brief description about this banner... (e.g., At Curry Leaf, every dish is a celebration...)"
                         />
+                        <small className="form-text">
+                            Optional: Appears below the main heading
+                        </small>
                     </div>
                 </div>
 
@@ -256,7 +273,7 @@ function HeroBannerForm() {
                     <h2>Background Video *</h2>
 
                     <div className="form-group">
-                        <label>Upload Video (Required)</label>
+                        <label>Upload Video {!isEditMode && '(Required)'}</label>
                         <input
                             type="file"
                             accept="video/mp4,video/webm,video/ogg"
@@ -265,11 +282,11 @@ function HeroBannerForm() {
                             required={!isEditMode}
                         />
                         <small className="form-text">
-                            Accepted formats: MP4, WebM, OGG. Max size: 50MB. Recommended: 1920x1080px
+                            Accepted formats: MP4, WebM, OGG. Max size: 50MB. Recommended: 1920x1080px, landscape orientation
                         </small>
                         {!videoFile && !isEditMode && (
                             <small style={{ color: 'red', display: 'block', marginTop: '0.5rem' }}>
-                                 Please select a video file before submitting
+                                ⚠️ Please select a video file before submitting
                             </small>
                         )}
                     </div>
@@ -298,8 +315,11 @@ function HeroBannerForm() {
                             value={formData.button_text}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="e.g., Explore Menu"
+                            placeholder="e.g., VIEW OUR MENU"
                         />
+                        <small className="form-text">
+                            Leave empty to hide the button
+                        </small>
                     </div>
 
                     <div className="form-group">
@@ -355,7 +375,7 @@ function HeroBannerForm() {
                                 min="0"
                             />
                             <small className="form-text">
-                                Lower numbers display first
+                                Lower numbers display first (0 = highest priority)
                             </small>
                         </div>
 
@@ -391,4 +411,3 @@ function HeroBannerForm() {
 }
 
 export default HeroBannerForm;
-
