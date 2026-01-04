@@ -40,8 +40,15 @@ function AboutPage() {
     const fetchSettings = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/settings`);
+            console.log('Settings response:', response.data);
+            
             if (response.data.success) {
-                setSettings(response.data.data);
+                const settingsData = response.data.data;
+                console.log('Settings data:', settingsData);
+                console.log('Default image path:', settingsData.default_image);
+                console.log('Default image URL:', settingsData.default_image ? getStorageUrl(settingsData.default_image) : 'Not set');
+                
+                setSettings(settingsData);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
