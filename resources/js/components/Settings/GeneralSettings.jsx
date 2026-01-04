@@ -91,16 +91,30 @@ function GeneralSettings() {
                     second_time_message: data.second_time_message || '',
                     second_start_time: data.second_start_time || '17:00',
                     second_stop_time: data.second_stop_time || '22:00',
-                    booking_schedule: data.booking_schedule || {
-                        sunday: [],
-                        monday: [],
-                        tuesday: [],
-                        wednesday: [],
-                        thursday: [],
-                        friday: [],
-                        saturday: []
-                    },
-                    special_off_days: data.special_off_days || [],
+                    booking_schedule: (() => {
+                        try {
+                            if (typeof data.booking_schedule === 'string') {
+                                return JSON.parse(data.booking_schedule);
+                            }
+                            if (typeof data.booking_schedule === 'object' && data.booking_schedule !== null) {
+                                return data.booking_schedule;
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse booking_schedule:', e);
+                        }
+                        return {
+                            sunday: [],
+                            monday: [],
+                            tuesday: [],
+                            wednesday: [],
+                            thursday: [],
+                            friday: [],
+                            saturday: []
+                        };
+                    })(),
+                    special_off_days: Array.isArray(data.special_off_days) 
+                        ? data.special_off_days 
+                        : (data.special_off_days ? JSON.parse(data.special_off_days) : []),
                     first_name: data.first_name || '',
                     first_value: data.first_value || '',
                     second_name: data.second_name || '',
