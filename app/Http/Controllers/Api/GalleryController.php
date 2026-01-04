@@ -6,141 +6,191 @@ use App\Http\Controllers\Controller;
 use App\Models\GalleryImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class GalleryController extends Controller
 {
     public function index()
     {
-        try {
-            $images = GalleryImage::orderBy('created_at', 'desc')->get();
-            return response()->json([
-                'success' => true,
-                'data' => $images
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching gallery images: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch gallery images'
-            ], 500);
-        }
+        $images = GalleryImage::orderBy('created_at', 'desc')->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $images
+        ]);
     }
 
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
-            ]);
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:2048'
+        ]);
 
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('gallery', 'public');
-            }
-
-            $image = GalleryImage::create([
-                'title' => $validated['title'],
-                'image' => $imagePath,
-                'is_active' => true
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'data' => $image,
-                'message' => 'Gallery image created successfully'
-            ], 201);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $validator->errors()
             ], 422);
+        }
+
+        try {
+            $data = [
+                'title' => $request->title,
+                'is_active' => true
+            ];
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                
+                // Store directly in public disk root (not in 'gallery' subfolder)
+                // This creates: storage/app/public/filename.jpg
+                // Accessible via: /storage/filename.jpg
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('', $imageName, 'public');
+                
+                $data['image'] = $imagePath;
+                
+                \Log::info('Gallery image uploaded:', [
+                    'original_name' => $image->getClientOriginalName(),
+                    'saved_as' => $imageName,
+                    'path' => $imagePath,
+                    'url' => asset('storage/' . $imagePath)
+                ]);
+            }
+
+            $galleryImage = GalleryImage::create($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gallery image created successfully',
+                'data' => $galleryImage
+            ], 201);
+
         } catch (\Exception $e) {
-            Log::error('Error creating gallery image: ' . $e->getMessage());
+            \Log::error('Gallery image creation failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create gallery image: ' . $e->getMessage()
+                'message' => 'Failed to create gallery image',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     public function show($id)
     {
-        try {
-            $image = GalleryImage::findOrFail($id);
-            return response()->json([
-                'success' => true,
-                'data' => $image
-            ]);
-        } catch (\Exception $e) {
+        $image = GalleryImage::find($id);
+
+        if (!$image) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gallery image not found'
             ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $image
+        ]);
     }
 
     public function update(Request $request, $id)
     {
+        $image = GalleryImage::find($id);
+
+        if (!$image) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gallery image not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'sometimes|required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:2048',
+            'is_active' => 'nullable|boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
-            $image = GalleryImage::findOrFail($id);
-
-            $validated = $request->validate([
-                'title' => 'sometimes|required|string|max:255',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'is_active' => 'sometimes|boolean'
-            ]);
-
             $data = [];
             
             if ($request->has('title')) {
-                $data['title'] = $validated['title'];
+                $data['title'] = $request->title;
+            }
+            
+            if ($request->has('is_active')) {
+                $data['is_active'] = (bool)$request->is_active;
             }
 
             if ($request->hasFile('image')) {
-                if ($image->image) {
+                // Delete old image if exists
+                if ($image->image && Storage::disk('public')->exists($image->image)) {
                     Storage::disk('public')->delete($image->image);
+                    \Log::info('Old gallery image deleted:', ['path' => $image->image]);
                 }
-                $data['image'] = $request->file('image')->store('gallery', 'public');
-            }
 
-            if ($request->has('is_active')) {
-                $data['is_active'] = $validated['is_active'];
+                $newImage = $request->file('image');
+                $imageName = time() . '_' . uniqid() . '.' . $newImage->getClientOriginalExtension();
+                $imagePath = $newImage->storeAs('', $imageName, 'public');
+                $data['image'] = $imagePath;
+                
+                \Log::info('Gallery image updated:', [
+                    'path' => $imagePath,
+                    'url' => asset('storage/' . $imagePath)
+                ]);
             }
 
             $image->update($data);
 
             return response()->json([
                 'success' => true,
-                'data' => $image,
-                'message' => 'Gallery image updated successfully'
+                'message' => 'Gallery image updated successfully',
+                'data' => $image
             ]);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
         } catch (\Exception $e) {
-            Log::error('Error updating gallery image: ' . $e->getMessage());
+            \Log::error('Gallery image update failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update gallery image'
+                'message' => 'Failed to update gallery image',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     public function destroy($id)
     {
+        $image = GalleryImage::find($id);
+
+        if (!$image) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gallery image not found'
+            ], 404);
+        }
+
         try {
-            $image = GalleryImage::findOrFail($id);
-            
-            if ($image->image) {
+            // Delete image file if exists
+            if ($image->image && Storage::disk('public')->exists($image->image)) {
                 Storage::disk('public')->delete($image->image);
+                \Log::info('Gallery image file deleted:', ['path' => $image->image]);
             }
 
             $image->delete();
@@ -151,10 +201,15 @@ class GalleryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error deleting gallery image: ' . $e->getMessage());
+            \Log::error('Gallery image deletion failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete gallery image'
+                'message' => 'Failed to delete gallery image',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
