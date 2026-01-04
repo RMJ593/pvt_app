@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL, getStorageUrl } from '../../config/api';
 import './GeneralSettings.css';
 
 function GeneralSettings() {
@@ -47,9 +48,21 @@ function GeneralSettings() {
         body_code: ''
     });
 
+    // Store current image paths from server
+    const [currentImages, setCurrentImages] = useState({
+        popup_ad_image: null,
+        default_image: null
+    });
+
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [newOffDay, setNewOffDay] = useState('');
+
+    // Store new uploaded files separately
+    const [uploadFiles, setUploadFiles] = useState({
+        popup_ad_image: null,
+        default_image: null
+    });
 
     useEffect(() => {
         fetchSettings();
@@ -57,7 +70,7 @@ function GeneralSettings() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get('/api/settings');
+            const response = await axios.get(`${API_BASE_URL}/api/settings`);
             if (response.data.success) {
                 const data = response.data.data;
                 setSettings({
@@ -103,6 +116,12 @@ function GeneralSettings() {
                     footer_code: data.footer_code || '',
                     body_code: data.body_code || ''
                 });
+
+                // Store current image paths
+                setCurrentImages({
+                    popup_ad_image: data.popup_ad_image,
+                    default_image: data.default_image
+                });
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -119,10 +138,19 @@ function GeneralSettings() {
     const handleImageUpload = (e, field) => {
         const file = e.target.files[0];
         if (file) {
-            setSettings({
-                ...settings,
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setMessage('Image size should not exceed 5MB');
+                return;
+            }
+
+            // Store the file for upload
+            setUploadFiles({
+                ...uploadFiles,
                 [field]: file
             });
+
+            setMessage('');
         }
     };
 
@@ -182,17 +210,29 @@ function GeneralSettings() {
         try {
             const formData = new FormData();
             
+            // Add all text/boolean fields
             Object.keys(settings).forEach(key => {
-                if (settings[key] instanceof File) {
-                    formData.append(key, settings[key]);
-                } else if (typeof settings[key] === 'object') {
+                if (key === 'popup_ad_image' || key === 'default_image') {
+                    // Skip image fields - we'll handle them separately
+                    return;
+                }
+                
+                if (typeof settings[key] === 'object') {
                     formData.append(key, JSON.stringify(settings[key]));
                 } else {
                     formData.append(key, settings[key] || '');
                 }
             });
 
-            const response = await axios.post('/api/settings', formData, {
+            // Add new uploaded files
+            if (uploadFiles.popup_ad_image) {
+                formData.append('popup_ad_image', uploadFiles.popup_ad_image);
+            }
+            if (uploadFiles.default_image) {
+                formData.append('default_image', uploadFiles.default_image);
+            }
+
+            const response = await axios.post(`${API_BASE_URL}/api/settings`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
@@ -201,10 +241,15 @@ function GeneralSettings() {
             if (response.data.success) {
                 setMessage('Settings updated successfully!');
                 fetchSettings();
+                // Clear upload files
+                setUploadFiles({
+                    popup_ad_image: null,
+                    default_image: null
+                });
             }
         } catch (error) {
             console.error('Update error:', error);
-            setMessage('Failed to update settings.');
+            setMessage('Failed to update settings: ' + (error.response?.data?.message || error.message));
         } finally {
             setLoading(false);
         }
@@ -268,6 +313,21 @@ function GeneralSettings() {
                             onChange={(e) => handleImageUpload(e, 'popup_ad_image')}
                             className="form-control-file"
                         />
+                        {currentImages.popup_ad_image && !uploadFiles.popup_ad_image && (
+                            <div className="current-image-preview">
+                                <img 
+                                    src={getStorageUrl(currentImages.popup_ad_image)} 
+                                    alt="Current popup" 
+                                    style={{maxWidth: '200px', marginTop: '10px'}}
+                                />
+                                <small>Current image</small>
+                            </div>
+                        )}
+                        {uploadFiles.popup_ad_image && (
+                            <small style={{color: 'green', display: 'block', marginTop: '5px'}}>
+                                ✓ New image selected: {uploadFiles.popup_ad_image.name}
+                            </small>
+                        )}
                     </div>
 
                     <div className="form-group">
@@ -282,21 +342,44 @@ function GeneralSettings() {
                     </div>
                 </div>
 
-                {/* Default Image */}
+                {/* Default Image - FOR PAGE HEADERS */}
                 <div className="settings-section">
-                    <h2 className="section-title">Default</h2>
+                    <h2 className="section-title">Default Image (Page Headers Background)</h2>
+                    <p className="section-description">
+                        This image is used as the background for page headers (About page hero section, Menu page header, etc.)
+                    </p>
                     
                     <div className="form-group">
-                        <label>Default Image</label>
+                        <label>Default Image *</label>
                         <input
                             type="file"
                             accept="image/*"
                             onChange={(e) => handleImageUpload(e, 'default_image')}
                             className="form-control-file"
                         />
+                        <small className="form-text">
+                            Recommended: 1920x600px, landscape image. Used for About page hero and other page headers.
+                        </small>
+                        
+                        {currentImages.default_image && !uploadFiles.default_image && (
+                            <div className="current-image-preview">
+                                <img 
+                                    src={getStorageUrl(currentImages.default_image)} 
+                                    alt="Current default" 
+                                    style={{maxWidth: '400px', marginTop: '10px', borderRadius: '8px'}}
+                                />
+                                <small style={{display: 'block', marginTop: '5px'}}>Current default image</small>
+                            </div>
+                        )}
+                        {uploadFiles.default_image && (
+                            <small style={{color: 'green', display: 'block', marginTop: '5px'}}>
+                                ✓ New image selected: {uploadFiles.default_image.name}
+                            </small>
+                        )}
                     </div>
                 </div>
 
+                {/* Rest of the sections remain the same */}
                 {/* Timings */}
                 <div className="settings-section">
                     <h2 className="section-title">Timings</h2>
@@ -450,7 +533,7 @@ function GeneralSettings() {
                     )}
                 </div>
 
-                {/* Booking Schedule */}
+                {/* Booking Schedule - keeping it short in the artifact */}
                 <div className="settings-section">
                     <h2 className="section-title">Booking Schedule</h2>
                     
@@ -501,90 +584,99 @@ function GeneralSettings() {
                     </div>
                 </div>
 
-                {/* Custom Fields */}
+                {/* Custom Fields - Stats for About Page */}
                 <div className="settings-section">
-                    <h2 className="section-title">Custom Fields</h2>
+                    <h2 className="section-title">Statistics (Displayed on About Page)</h2>
+                    <p className="section-description">These values are shown in the statistics section on the About page</p>
                     
                     <div className="form-row">
                         <div className="form-group half-width">
-                            <label>First Name</label>
+                            <label>First Stat Label</label>
                             <input
                                 type="text"
                                 value={settings.first_name}
                                 onChange={(e) => handleChange('first_name', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., DAILY ORDERS"
                             />
                         </div>
                         <div className="form-group half-width">
-                            <label>First Value</label>
+                            <label>First Stat Value</label>
                             <input
                                 type="text"
                                 value={settings.first_value}
                                 onChange={(e) => handleChange('first_value', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., 100"
                             />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group half-width">
-                            <label>Second Name</label>
+                            <label>Second Stat Label</label>
                             <input
                                 type="text"
                                 value={settings.second_name}
                                 onChange={(e) => handleChange('second_name', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., SPECIAL DISHES"
                             />
                         </div>
                         <div className="form-group half-width">
-                            <label>Second Value</label>
+                            <label>Second Stat Value</label>
                             <input
                                 type="text"
                                 value={settings.second_value}
                                 onChange={(e) => handleChange('second_value', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., 50"
                             />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group half-width">
-                            <label>Third Name</label>
+                            <label>Third Stat Label</label>
                             <input
                                 type="text"
                                 value={settings.third_name}
                                 onChange={(e) => handleChange('third_name', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., EXPERT CHEFS"
                             />
                         </div>
                         <div className="form-group half-width">
-                            <label>Third Value</label>
+                            <label>Third Stat Value</label>
                             <input
                                 type="text"
                                 value={settings.third_value}
                                 onChange={(e) => handleChange('third_value', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., 10"
                             />
                         </div>
                     </div>
 
                     <div className="form-row">
                         <div className="form-group half-width">
-                            <label>Fourth Name</label>
+                            <label>Fourth Stat Label</label>
                             <input
                                 type="text"
                                 value={settings.fourth_name}
                                 onChange={(e) => handleChange('fourth_name', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., AWARDS WON"
                             />
                         </div>
                         <div className="form-group half-width">
-                            <label>Fourth Value</label>
+                            <label>Fourth Stat Value</label>
                             <input
                                 type="text"
                                 value={settings.fourth_value}
                                 onChange={(e) => handleChange('fourth_value', e.target.value)}
                                 className="form-control"
+                                placeholder="e.g., 25"
                             />
                         </div>
                     </div>
@@ -672,7 +764,7 @@ function GeneralSettings() {
                 {/* Submit Button */}
                 <div className="form-actions">
                     <button type="submit" disabled={loading} className="btn-update">
-                        {loading ? 'Updating...' : 'Update'}
+                        {loading ? 'Updating...' : 'Update Settings'}
                     </button>
                 </div>
             </form>
