@@ -191,6 +191,15 @@ Route::get('/test-cloudinary', function() {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
+Route::get('/debug-logs', function() {
+    $logFile = storage_path('logs/laravel.log');
+    if (file_exists($logFile)) {
+        $logs = file_get_contents($logFile);
+        $lastError = substr($logs, -5000); // Last 5000 chars
+        return response('<pre>' . htmlspecialchars($lastError) . '</pre>');
+    }
+    return 'No logs found';
+});
 Route::get('/test-video/{filename}', function ($filename) {
     $path = "hero-banners/{$filename}";
     
