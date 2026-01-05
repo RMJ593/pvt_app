@@ -5,23 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\HeroBanner;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class HeroBannerController extends Controller
 {
-    /**
-     * Display a listing of hero banners
-     */
     public function index()
     {
         $banners = HeroBanner::orderBy('order', 'asc')->get();
         
-        // Add full URL to image_path for easier frontend access
+        // Add full_url for backward compatibility
         $banners->transform(function ($banner) {
-            if ($banner->image_path) {
-                $banner->full_url = asset('storage/' . $banner->image_path);
-            }
+            $banner->full_url = $banner->image_path;
             return $banner;
         });
         
@@ -31,16 +26,13 @@ class HeroBannerController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created hero banner
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'required|file|mimes:mp4,webm,ogg,mov|max:102400', // 100MB in KB
+            'image' => 'required|file|mimes:mp4,webm,ogg,mov|max:102400', // 100MB
             'button_text' => 'nullable|string|max:255',
             'button_link' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
@@ -59,31 +51,24 @@ class HeroBannerController extends Controller
             $data = $request->only(['title', 'subtitle', 'description', 'button_text', 'button_link', 'order']);
             $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : true;
 
-            // Handle video upload
             if ($request->hasFile('image')) {
-                $video = $request->file('image');
+                // Upload video to Cloudinary
+                $uploadedFile = Cloudinary::uploadVideo($request->file('image')->getRealPath(), [
+                    'folder' => 'restaurant/hero-banners',
+                    'resource_type' => 'video'
+                ]);
                 
-                // Generate unique filename
-                $videoName = time() . '_' . uniqid() . '.' . $video->getClientOriginalExtension();
+                // Store Cloudinary URL
+                $data['image_path'] = $uploadedFile->getSecurePath();
                 
-                // Store in hero-banners folder
-                $videoPath = $video->storeAs('hero-banners', $videoName, 'public');
-                
-                // Save relative path (without /storage/)
-                $data['image_path'] = $videoPath;
-                
-                \Log::info('Video uploaded:', [
-                    'original_name' => $video->getClientOriginalName(),
-                    'saved_as' => $videoName,
-                    'path' => $videoPath,
-                    'full_url' => asset('storage/' . $videoPath)
+                \Log::info('Hero banner video uploaded to Cloudinary:', [
+                    'url' => $uploadedFile->getSecurePath(),
+                    'public_id' => $uploadedFile->getPublicId()
                 ]);
             }
 
             $banner = HeroBanner::create($data);
-            
-            // Add full URL for response
-            $banner->full_url = asset('storage/' . $banner->image_path);
+            $banner->full_url = $banner->image_path;
 
             return response()->json([
                 'success' => true,
@@ -105,9 +90,6 @@ class HeroBannerController extends Controller
         }
     }
 
-    /**
-     * Display the specified hero banner
-     */
     public function show($id)
     {
         $banner = HeroBanner::find($id);
@@ -119,10 +101,7 @@ class HeroBannerController extends Controller
             ], 404);
         }
 
-        // Add full URL
-        if ($banner->image_path) {
-            $banner->full_url = asset('storage/' . $banner->image_path);
-        }
+        $banner->full_url = $banner->image_path;
 
         return response()->json([
             'success' => true,
@@ -130,9 +109,6 @@ class HeroBannerController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified hero banner
-     */
     public function update(Request $request, $id)
     {
         $banner = HeroBanner::find($id);
@@ -148,7 +124,7 @@ class HeroBannerController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'subtitle' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'image' => 'nullable|file|mimes:mp4,webm,ogg,mov|max:102400', // 100MB
+            'image' => 'nullable|file|mimes:mp4,webm,ogg,mov|max:102400',
             'button_text' => 'nullable|string|max:255',
             'button_link' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
@@ -170,31 +146,27 @@ class HeroBannerController extends Controller
                 $data['is_active'] = (bool)$request->is_active;
             }
 
-            // Handle video upload
             if ($request->hasFile('image')) {
-                // Delete old video if exists
-                if ($banner->image_path && Storage::disk('public')->exists($banner->image_path)) {
-                    Storage::disk('public')->delete($banner->image_path);
-                    \Log::info('Old video deleted:', ['path' => $banner->image_path]);
+                // Delete old video from Cloudinary if exists
+                if ($banner->image_path) {
+                    $this->deleteFromCloudinary($banner->image_path);
                 }
 
-                $video = $request->file('image');
-                $videoName = time() . '_' . uniqid() . '.' . $video->getClientOriginalExtension();
-                $videoPath = $video->storeAs('hero-banners', $videoName, 'public');
-                $data['image_path'] = $videoPath;
+                // Upload new video to Cloudinary
+                $uploadedFile = Cloudinary::uploadVideo($request->file('image')->getRealPath(), [
+                    'folder' => 'restaurant/hero-banners',
+                    'resource_type' => 'video'
+                ]);
                 
-                \Log::info('New video uploaded:', [
-                    'path' => $videoPath,
-                    'full_url' => asset('storage/' . $videoPath)
+                $data['image_path'] = $uploadedFile->getSecurePath();
+                
+                \Log::info('Hero banner video updated on Cloudinary:', [
+                    'url' => $uploadedFile->getSecurePath()
                 ]);
             }
 
             $banner->update($data);
-            
-            // Add full URL
-            if ($banner->image_path) {
-                $banner->full_url = asset('storage/' . $banner->image_path);
-            }
+            $banner->full_url = $banner->image_path;
 
             return response()->json([
                 'success' => true,
@@ -204,8 +176,7 @@ class HeroBannerController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Hero banner update failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage()
             ]);
             
             return response()->json([
@@ -216,9 +187,6 @@ class HeroBannerController extends Controller
         }
     }
 
-    /**
-     * Remove the specified hero banner
-     */
     public function destroy($id)
     {
         $banner = HeroBanner::find($id);
@@ -231,10 +199,9 @@ class HeroBannerController extends Controller
         }
 
         try {
-            // Delete video if exists
-            if ($banner->image_path && Storage::disk('public')->exists($banner->image_path)) {
-                Storage::disk('public')->delete($banner->image_path);
-                \Log::info('Video deleted:', ['path' => $banner->image_path]);
+            // Delete from Cloudinary
+            if ($banner->image_path) {
+                $this->deleteFromCloudinary($banner->image_path);
             }
 
             $banner->delete();
@@ -246,8 +213,7 @@ class HeroBannerController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Hero banner deletion failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage()
             ]);
             
             return response()->json([
@@ -255,6 +221,23 @@ class HeroBannerController extends Controller
                 'message' => 'Failed to delete hero banner',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Delete video from Cloudinary
+     */
+    private function deleteFromCloudinary($videoUrl)
+    {
+        try {
+            // Extract public_id from Cloudinary URL
+            if (preg_match('/\/v\d+\/(.+)\.\w+$/', $videoUrl, $matches)) {
+                $publicId = $matches[1];
+                Cloudinary::destroy($publicId, ['resource_type' => 'video']);
+                \Log::info('Deleted video from Cloudinary:', ['public_id' => $publicId]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to delete from Cloudinary:', ['error' => $e->getMessage()]);
         }
     }
 }

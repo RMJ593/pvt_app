@@ -1,5 +1,5 @@
 // Get the API base URL from environment variable or use current origin
-export const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tphrc-int-project.onrender.com';
 
 // Helper function to get full API URL
 export const getApiUrl = (path) => {
@@ -9,16 +9,31 @@ export const getApiUrl = (path) => {
 
 // Helper function to get full storage URL
 export const getStorageUrl = (path) => {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    if (!path) return null;
+    
+    // If already a full URL (Cloudinary or external), return as is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+    
+    // Legacy: Local storage path
+    const cleanPath = path.replace(/^\/?(storage\/)?/, '');
     return `${API_BASE_URL}/storage/${cleanPath}`;
 };
 
 // ✅ NEW: Helper to safely extract array from API response
 export const extractArray = (response) => {
-    const data = response.data?.data || response.data;
-    return Array.isArray(data) ? data : [];
+    if (Array.isArray(response.data)) {
+        return response.data;
+    }
+    if (response.data?.data && Array.isArray(response.data.data)) {
+        return response.data.data;
+    }
+    if (response.data?.success && Array.isArray(response.data.data)) {
+        return response.data.data;
+    }
+    console.warn('Unexpected response format:', response.data);
+    return [];
 };
 
 export default API_BASE_URL;
