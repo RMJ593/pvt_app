@@ -178,7 +178,19 @@ Route::get('/test-storage', function () {
         'storage_url' => config('filesystems.disks.public.url'),
     ]);
 });
-
+Route::get('/test-cloudinary', function() {
+    try {
+        $configured = config('cloudinary.cloud_name') !== null;
+        return response()->json([
+            'cloudinary_configured' => $configured,
+            'cloud_name' => config('cloudinary.cloud_name'),
+            'has_api_key' => !empty(config('cloudinary.api_key')),
+            'package_installed' => class_exists('CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary')
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
 Route::get('/test-video/{filename}', function ($filename) {
     $path = "hero-banners/{$filename}";
     

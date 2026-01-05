@@ -42,11 +42,8 @@ class GalleryController extends Controller
             ];
 
             if ($request->hasFile('image')) {
-                // Upload to Cloudinary
-                $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath(), [
-                    'folder' => 'restaurant/gallery',
-                    'resource_type' => 'image'
-                ]);
+                // Upload to Cloudinary using uploadFile method
+                $uploadedFile = $request->file('image')->storeOnCloudinary('restaurant/gallery');
                 
                 // Store Cloudinary URL
                 $data['image'] = $uploadedFile->getSecurePath();
