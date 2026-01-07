@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('gallery_images', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('image'); // Cloudinary URL
+            $table->string('image');
             $table->string('cloudinary_public_id')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
