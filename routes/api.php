@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\MailTemplateController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Api\FooterLinkController;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -38,7 +39,8 @@ Route::get('/blogs/{blog}', [BlogController::class, 'show']);
 Route::get('/team-members', [TeamMemberController::class, 'index']);
 Route::get('/testimonials', [TestimonialController::class, 'index']);
 Route::get('/gallery', [GalleryController::class, 'index']);
-
+Route::post('/gallery', [GalleryController::class, 'store']); // ← ADD THIS (for creating new)
+Route::post('/gallery/{id}', [GalleryController::class, 'update']); // (for updating existing)
 // Hero Banners (Public - no auth required)
 Route::get('/hero-banners', [HeroBannerController::class, 'index']);
 Route::get('/hero-banners/{heroBanner}', [HeroBannerController::class, 'show']);
@@ -114,9 +116,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/testimonials/{id}', [TestimonialController::class, 'destroy']);
 
     // Gallery (Admin)
-    Route::post('/gallery', [GalleryController::class, 'store']);
+    // Route::post('/gallery', [GalleryController::class, 'store']);
     Route::get('/gallery/{id}', [GalleryController::class, 'show']);
-    Route::post('/gallery/{id}', [GalleryController::class, 'update']); // For FormData
+    // Route::post('/gallery/{id}', [GalleryController::class, 'update']); // For FormData
     Route::put('/gallery/{galleryImage}', [GalleryController::class, 'update']);
     Route::delete('/gallery/{galleryImage}', [GalleryController::class, 'destroy']);
 
@@ -219,5 +221,31 @@ Route::get('/test-video/{filename}', function ($filename) {
         'full_url' => config('app.url') . '/storage/' . $path,
         'size' => Storage::disk('public')->size($path),
         'mime_type' => Storage::disk('public')->mimeType($path),
+    ]);
+});
+Route::post('/test-upload', function (Request $request) {
+    try {
+        if ($request->hasFile('image')) {
+            $result = $request->file('image')->storeOnCloudinary('test_uploads');
+            return response()->json([
+                'success' => true,
+                'url' => $result->getSecurePath(),
+                'public_id' => $result->getPublicId()
+            ]);
+        }
+        return response()->json(['error' => 'No file uploaded'], 400);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+Route::get('/debug-env', function() {
+    return response()->json([
+        'env_cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+        'env_api_key' => env('CLOUDINARY_API_KEY'),
+        'env_has_secret' => !empty(env('CLOUDINARY_API_SECRET')),
+        'config_cloud_name' => config('cloudinary.cloud_name'),
+        'config_api_key' => config('cloudinary.api_key'),
+        'config_has_secret' => !empty(config('cloudinary.api_secret')),
+        'config_file_exists' => file_exists(config_path('cloudinary.php')),
     ]);
 });
