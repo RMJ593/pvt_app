@@ -69,8 +69,13 @@ function HeroBannerForm() {
                     order: banner.order || 0,
                     is_active: banner.is_active,
                 });
+                
                 if (banner.image_path) {
-                    setVideoPreview(`/storage/${banner.image_path}`);
+                    // Handle both Cloudinary URLs and local storage paths
+                    const videoUrl = (banner.image_path.startsWith('http://') || banner.image_path.startsWith('https://'))
+                        ? banner.image_path 
+                        : `/storage/${banner.image_path}`;
+                    setVideoPreview(videoUrl);
                 }
             }
         } catch (error) {

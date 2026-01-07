@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HeroBanner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Cloudinary;
 
 class HeroBannerController extends Controller
 {
@@ -52,18 +52,39 @@ class HeroBannerController extends Controller
             $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : true;
 
             if ($request->hasFile('image')) {
-                // Upload video to Cloudinary
-                $uploadedFile = Cloudinary::uploadVideo($request->file('image')->getRealPath(), [
-                    'folder' => 'restaurant/hero-banners',
-                    'resource_type' => 'video'
+                \Log::info('Uploading video to Cloudinary...', [
+                    'filename' => $request->file('image')->getClientOriginalName(),
+                    'size' => $request->file('image')->getSize(),
+                ]);
+
+                // Initialize Cloudinary with credentials
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => config('cloudinary.cloud_name'),
+                        'api_key' => config('cloudinary.api_key'),
+                        'api_secret' => config('cloudinary.api_secret'),
+                    ],
+                    'url' => [
+                        'secure' => true
+                    ]
                 ]);
                 
+                // Upload video to Cloudinary
+                $result = $cloudinary->uploadApi()->upload(
+                    $request->file('image')->getRealPath(),
+                    [
+                        'folder' => 'hero-banners',
+                        'resource_type' => 'video',
+                        'timestamp' => time()
+                    ]
+                );
+                
                 // Store Cloudinary URL
-                $data['image_path'] = $uploadedFile->getSecurePath();
+                $data['image_path'] = $result['secure_url'];
                 
                 \Log::info('Hero banner video uploaded to Cloudinary:', [
-                    'url' => $uploadedFile->getSecurePath(),
-                    'public_id' => $uploadedFile->getPublicId()
+                    'url' => $result['secure_url'],
+                    'public_id' => $result['public_id']
                 ]);
             }
 
@@ -147,21 +168,38 @@ class HeroBannerController extends Controller
             }
 
             if ($request->hasFile('image')) {
+                \Log::info('Updating video on Cloudinary...', [
+                    'filename' => $request->file('image')->getClientOriginalName(),
+                ]);
+
+                // Initialize Cloudinary
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => config('cloudinary.cloud_name'),
+                        'api_key' => config('cloudinary.api_key'),
+                        'api_secret' => config('cloudinary.api_secret'),
+                    ],
+                ]);
+                
                 // Delete old video from Cloudinary if exists
-                if ($banner->image_path) {
-                    $this->deleteFromCloudinary($banner->image_path);
+                if ($banner->image_path && strpos($banner->image_path, 'cloudinary.com') !== false) {
+                    $this->deleteFromCloudinary($banner->image_path, $cloudinary);
                 }
 
                 // Upload new video to Cloudinary
-                $uploadedFile = Cloudinary::uploadVideo($request->file('image')->getRealPath(), [
-                    'folder' => 'restaurant/hero-banners',
-                    'resource_type' => 'video'
-                ]);
+                $result = $cloudinary->uploadApi()->upload(
+                    $request->file('image')->getRealPath(),
+                    [
+                        'folder' => 'hero-banners',
+                        'resource_type' => 'video',
+                        'timestamp' => time()
+                    ]
+                );
                 
-                $data['image_path'] = $uploadedFile->getSecurePath();
+                $data['image_path'] = $result['secure_url'];
                 
                 \Log::info('Hero banner video updated on Cloudinary:', [
-                    'url' => $uploadedFile->getSecurePath()
+                    'url' => $result['secure_url']
                 ]);
             }
 
@@ -176,7 +214,8 @@ class HeroBannerController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Hero banner update failed:', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
@@ -199,9 +238,18 @@ class HeroBannerController extends Controller
         }
 
         try {
+            // Initialize Cloudinary
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => config('cloudinary.cloud_name'),
+                    'api_key' => config('cloudinary.api_key'),
+                    'api_secret' => config('cloudinary.api_secret'),
+                ],
+            ]);
+            
             // Delete from Cloudinary
-            if ($banner->image_path) {
-                $this->deleteFromCloudinary($banner->image_path);
+            if ($banner->image_path && strpos($banner->image_path, 'cloudinary.com') !== false) {
+                $this->deleteFromCloudinary($banner->image_path, $cloudinary);
             }
 
             $banner->delete();
@@ -227,13 +275,14 @@ class HeroBannerController extends Controller
     /**
      * Delete video from Cloudinary
      */
-    private function deleteFromCloudinary($videoUrl)
+    private function deleteFromCloudinary($videoUrl, $cloudinary)
     {
         try {
             // Extract public_id from Cloudinary URL
+            // URL format: https://res.cloudinary.com/{cloud_name}/video/upload/v{version}/{public_id}.mp4
             if (preg_match('/\/v\d+\/(.+)\.\w+$/', $videoUrl, $matches)) {
                 $publicId = $matches[1];
-                Cloudinary::destroy($publicId, ['resource_type' => 'video']);
+                $cloudinary->uploadApi()->destroy($publicId, ['resource_type' => 'video']);
                 \Log::info('Deleted video from Cloudinary:', ['public_id' => $publicId]);
             }
         } catch (\Exception $e) {
