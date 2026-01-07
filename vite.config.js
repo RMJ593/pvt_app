@@ -20,4 +20,13 @@ export default defineConfig({
             '@': '/resources/js',
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                entryFileNames: `assets/[name]-[hash]-v2.js`,  // Added -v2
+                chunkFileNames: `assets/[name]-[hash]-v2.js`,
+                assetFileNames: `assets/[name]-[hash]-v2.[ext]`
+            }
+        }
+    }
 });

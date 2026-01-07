@@ -56,6 +56,17 @@ function GalleryList() {
         }
     };
 
+    // Helper function to get correct image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        // If it's already a full URL (Cloudinary), use it as-is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        // Otherwise, it's a local storage path
+        return `/storage/${imagePath}`;
+    };
+
     if (loading) {
         return <div className="gallery-container"><div className="loading">Loading...</div></div>;
     }
@@ -103,9 +114,13 @@ function GalleryList() {
                                             <div className="name-with-image">
                                                 {image.image ? (
                                                     <img
-                                                        src={`/storage/${image.image}`}
+                                                        src={getImageUrl(image.image)}
                                                         alt={image.title}
                                                         className="table-image-small"
+                                                        onError={(e) => {
+                                                            console.error('Image failed to load:', image.image);
+                                                            e.target.src = '/placeholder.jpg';
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="no-image-placeholder">No Image</div>
@@ -120,14 +135,14 @@ function GalleryList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    hjhj
+                                                    Edit
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(image.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    ghhghg
+                                                    Delete
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input
@@ -151,4 +166,3 @@ function GalleryList() {
 }
 
 export default GalleryList;
-

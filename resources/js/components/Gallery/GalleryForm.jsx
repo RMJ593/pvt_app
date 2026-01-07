@@ -23,6 +23,17 @@ function GalleryForm() {
         }
     }, [id]);
 
+    // Helper function to get correct image URL
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        // If it's already a full URL (Cloudinary), use it as-is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        // Otherwise, it's a local storage path
+        return `/storage/${imagePath}`;
+    };
+
     const fetchImage = async () => {
         try {
             const response = await axios.get(`/api/gallery/${id}`);
@@ -32,7 +43,7 @@ function GalleryForm() {
                     title: image.title
                 });
                 if (image.image) {
-                    setImagePreview(`/storage/${image.image}`);
+                    setImagePreview(getImageUrl(image.image));
                 }
             }
         } catch (error) {
@@ -174,4 +185,3 @@ function GalleryForm() {
 }
 
 export default GalleryForm;
-
