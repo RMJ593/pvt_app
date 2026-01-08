@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './BlogCategories.css';
@@ -26,7 +26,7 @@ function BlogCategoryForm() {
     const fetchBlogCategory = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/api/blog-categories/${id}`, {
+            const response = await axios.get(`/blog-categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -64,7 +64,7 @@ function BlogCategoryForm() {
 
             if (isEditMode) {
                 response = await axios.put(
-                    `/api/blog-categories/${id}`,
+                    `/blog-categories/${id}`,
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -72,7 +72,7 @@ function BlogCategoryForm() {
                 );
             } else {
                 response = await axios.post(
-                    '/api/blog-categories',
+                    '/blog-categories',
                     formData,
                     {
                         headers: { Authorization: `Bearer ${token}` }
@@ -102,7 +102,7 @@ function BlogCategoryForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Blog Category' : 'Add Blog Category'}</h1>
                 <Link to="/staff/blog-categories" className="btn-back">
-                    † Back to List
+                    ← Back to List
                 </Link>
             </div>
 
@@ -171,4 +171,3 @@ function BlogCategoryForm() {
 }
 
 export default BlogCategoryForm;
-

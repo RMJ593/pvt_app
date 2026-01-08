@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Pages.css';
@@ -18,7 +18,7 @@ function PageList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/pages`, {
+            const response = await axios.get(`/pages`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -45,7 +45,7 @@ function PageList() {
             let response;
             try {
                 response = await axios.patch(
-                    `${API_BASE_URL}/pages/${id}/status`,
+                    `/api/pages/${id}/status`,
                     { status: newStatus },
                     {
                         headers: { 
@@ -57,7 +57,7 @@ function PageList() {
             } catch (err1) {
                 console.log('Method 1 failed, trying PUT method...');
                 response = await axios.put(
-                    `${API_BASE_URL}/pages/${id}`,
+                    `/api/pages/${id}`,
                     { is_active: newStatus },
                     {
                         headers: { 
@@ -89,7 +89,7 @@ function PageList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`${API_BASE_URL}/pages/${id}`, {
+            await axios.delete(`/pages/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -182,4 +182,5 @@ function PageList() {
 }
 
 export default PageList;
+
 

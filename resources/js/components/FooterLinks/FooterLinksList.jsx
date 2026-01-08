@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
@@ -17,7 +17,7 @@ function FooterLinksList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/footer-links`, {
+            const response = await axios.get(`/footer-links`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -40,7 +40,7 @@ function FooterLinksList() {
             const newStatus = !currentStatus;
 
             await axios.patch(
-                `${API_BASE_URL}/footer-links/${id}/toggle`,
+                `/api/footer-links/${id}/toggle`,
                 { is_active: newStatus },
                 {
                     headers: { 
@@ -66,7 +66,7 @@ function FooterLinksList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`${API_BASE_URL}/footer-links/${id}`, {
+            await axios.delete(`/footer-links/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -168,4 +168,5 @@ function FooterLinksList() {
 }
 
 export default FooterLinksList;
+
 

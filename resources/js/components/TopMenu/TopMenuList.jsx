@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './TopMenu.css';
@@ -24,7 +24,7 @@ function TopMenuList() {
 
     const fetchLinks = async () => {
         try {
-            const response = await axios.get('/api/menu-links');
+            const response = await axios.get('/menu-links');
             if (response.data.success) {
                 setLinks(response.data.data);
             }
@@ -38,7 +38,7 @@ function TopMenuList() {
 
     const toggleActive = async (id, currentStatus) => {
         try {
-            const response = await axios.patch(`/api/menu-links/${id}/toggle`, {
+            const response = await axios.patch(`/menu-links/${id}/toggle`, {
                 is_active: !currentStatus
             });
 
@@ -57,7 +57,7 @@ function TopMenuList() {
         if (!window.confirm('Are you sure you want to delete this menu link?')) return;
 
         try {
-            const response = await axios.delete(`/api/menu-links/${id}`);
+            const response = await axios.delete(`/menu-links/${id}`);
             if (response.data.success) {
                 setMessage('Menu link deleted successfully');
                 fetchLinks();
@@ -72,7 +72,7 @@ function TopMenuList() {
     const handleGroupSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/menu-links', {
+            const response = await axios.post('/menu-links', {
                 title: groupForm.name,
                 link_text: groupForm.link_text,
                 page_type: groupForm.page_type,
@@ -294,4 +294,5 @@ function TopMenuList() {
 }
 
 export default TopMenuList;
+
 

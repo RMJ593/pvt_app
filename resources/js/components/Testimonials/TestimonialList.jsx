@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Testimonials.css';
@@ -14,7 +14,7 @@ function TestimonialList() {
 
     const fetchTestimonials = async () => {
         try {
-            const response = await axios.get('/api/testimonials');
+            const response = await axios.get('/testimonials');
             if (response.data.success) {
                 setTestimonials(response.data.data);
             }
@@ -30,7 +30,7 @@ function TestimonialList() {
         if (!window.confirm('Are you sure you want to delete this testimonial?')) return;
 
         try {
-            const response = await axios.delete(`/api/testimonials/${id}`);
+            const response = await axios.delete(`/testimonials/${id}`);
             if (response.data.success) {
                 setMessage('Testimonial deleted successfully');
                 fetchTestimonials();
@@ -44,7 +44,7 @@ function TestimonialList() {
 
     const toggleActive = async (id, currentStatus) => {
         try {
-            const response = await axios.put(`/api/testimonials/${id}`, {
+            const response = await axios.put(`/testimonials/${id}`, {
                 is_active: !currentStatus
             });
 
@@ -151,4 +151,5 @@ function TestimonialList() {
 }
 
 export default TestimonialList;
+
 

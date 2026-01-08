@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Gallery.css';
@@ -36,7 +36,7 @@ function GalleryForm() {
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(`/api/gallery/${id}`);
+            const response = await axios.get(`/gallery/${id}`);
             if (response.data.success) {
                 const image = response.data.data;
                 setFormData({
@@ -185,3 +185,4 @@ function GalleryForm() {
 }
 
 export default GalleryForm;
+

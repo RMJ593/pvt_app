@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Products.css';
@@ -15,7 +15,7 @@ function ProductList() {
     const fetchProducts = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/menu-items', {
+            const response = await axios.get('/menu-items', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -34,7 +34,7 @@ function ProductList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.delete(`/api/menu-items/${id}`, {
+            const response = await axios.delete(`/menu-items/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -57,7 +57,7 @@ function ProductList() {
             formData.append('is_active', !currentStatus ? '1' : '0');
             formData.append('_method', 'PUT');
             
-            const response = await axios.post(`/api/menu-items/${id}`, formData, {
+            const response = await axios.post(`/menu-items/${id}`, formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -179,4 +179,5 @@ function ProductList() {
 }
 
 export default ProductList;
+
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './HeroBanner.css';
@@ -45,7 +45,7 @@ function HeroBannerForm() {
 
     const fetchPages = async () => {
         try {
-            const response = await axios.get('/api/pages');
+            const response = await axios.get('/pages');
             if (response.data.success) {
                 setPages(response.data.data);
             }
@@ -56,7 +56,7 @@ function HeroBannerForm() {
 
     const fetchBanner = async () => {
         try {
-            const response = await axios.get(`/api/hero-banners/${id}`);
+            const response = await axios.get(`/hero-banners/${id}`);
             if (response.data.success) {
                 const banner = response.data.data;
                 setFormData({
@@ -133,10 +133,10 @@ function HeroBannerForm() {
         try {
             const formDataToSend = new FormData();
             
-            // ✅ FIXED: Map all fields correctly
+            // ? FIXED: Map all fields correctly
             formDataToSend.append('title', formData.heading);
             formDataToSend.append('subtitle', formData.small_heading);
-            formDataToSend.append('description', formData.description || ''); // ✅ ADDED
+            formDataToSend.append('description', formData.description || ''); // ? ADDED
             formDataToSend.append('button_text', formData.button_text || '');
             formDataToSend.append('button_link', formData.page_id ? `/page/${formData.page_id}` : '');
             formDataToSend.append('order', formData.order);
@@ -291,7 +291,7 @@ function HeroBannerForm() {
                         </small>
                         {!videoFile && !isEditMode && (
                             <small style={{ color: 'red', display: 'block', marginTop: '0.5rem' }}>
-                                ⚠️ Please select a video file before submitting
+                                ?? Please select a video file before submitting
                             </small>
                         )}
                     </div>
@@ -416,3 +416,4 @@ function HeroBannerForm() {
 }
 
 export default HeroBannerForm;
+

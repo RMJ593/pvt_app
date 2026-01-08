@@ -1,4 +1,4 @@
-ï»¿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './MailTemplates.css';
@@ -29,7 +29,7 @@ function MailTemplateForm() {
     const fetchTemplate = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/mail-templates/${id}`, {
+            const response = await axios.get(`/mail-templates/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success || response.data) {
@@ -65,7 +65,7 @@ function MailTemplateForm() {
             if (isEditMode) {
                 console.log('Updating template:', id);
                 response = await axios.put(
-                    `${API_BASE_URL}/mail-templates/${id}`,
+                    `/api/mail-templates/${id}`,
                     formData,
                     {
                         headers: { 
@@ -77,7 +77,7 @@ function MailTemplateForm() {
             } else {
                 console.log('Creating new template');
                 response = await axios.post(
-                    `${API_BASE_URL}/mail-templates`,
+                    `/api/mail-templates`,
                     formData,
                     {
                         headers: { 
@@ -134,7 +134,7 @@ function MailTemplateForm() {
                     onClick={handleBackClick} 
                     className="btn-back"
                 >
-                    â€ Â Back to List
+                    † Back to List
                 </button>
             </div>
 
@@ -208,4 +208,5 @@ function MailTemplateForm() {
 }
 
 export default MailTemplateForm;
+
 

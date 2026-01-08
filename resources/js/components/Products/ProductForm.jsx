@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Products.css';
@@ -38,7 +38,7 @@ function ProductForm() {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/categories', {
+            const response = await axios.get('/categories', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -52,7 +52,7 @@ function ProductForm() {
     const fetchProduct = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/api/menu-items/${id}`, {
+            const response = await axios.get(`/menu-items/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -208,7 +208,7 @@ function ProductForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Product' : 'Add Product'}</h1>
                 <Link to="/staff/products" className="btn-back">
-                    † Back to List
+                    � Back to List
                 </Link>
             </div>
 
@@ -388,3 +388,4 @@ function ProductForm() {
 }
 
 export default ProductForm;
+

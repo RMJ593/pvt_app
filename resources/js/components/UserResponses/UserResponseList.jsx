@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './UserResponses.css';
 
@@ -16,7 +16,7 @@ function UserResponseList() {
 
     const fetchResponses = async () => {
         try {
-            const response = await axios.get('/api/user-responses');
+            const response = await axios.get('/user-responses');
             if (response.data.success) {
                 setResponses(response.data.data);
             }
@@ -32,7 +32,7 @@ function UserResponseList() {
         if (!window.confirm('Are you sure you want to delete this response?')) return;
 
         try {
-            const response = await axios.delete(`/api/user-responses/${id}`);
+            const response = await axios.delete(`/user-responses/${id}`);
             if (response.data.success) {
                 setMessage('Response deleted successfully');
                 fetchResponses();
@@ -50,7 +50,7 @@ function UserResponseList() {
         // Mark as read if status is 'new'
         if (response.status === 'new') {
             try {
-                await axios.put(`/api/user-responses/${response.id}`, { status: 'read' });
+                await axios.put(`/user-responses/${response.id}`, { status: 'read' });
                 fetchResponses();
             } catch (error) {
                 console.error('Error updating status:', error);
@@ -238,4 +238,5 @@ function UserResponseList() {
 }
 
 export default UserResponseList;
+
 

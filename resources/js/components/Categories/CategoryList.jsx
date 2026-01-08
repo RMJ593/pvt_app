@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Categories.css';
@@ -15,7 +15,7 @@ function CategoryList() {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/categories', {
+            const response = await axios.get('/categories', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -34,7 +34,7 @@ function CategoryList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.delete(`/api/categories/${id}`, {
+            const response = await axios.delete(`/categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -51,7 +51,7 @@ function CategoryList() {
     const toggleActive = async (id, currentStatus) => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.put(`/api/categories/${id}`, {
+            const response = await axios.put(`/categories/${id}`, {
                 is_active: !currentStatus
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -160,4 +160,5 @@ function CategoryList() {
 }
 
 export default CategoryList;
+
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './TeamMembers.css';
@@ -16,7 +16,7 @@ function TeamMemberList() {
 
     const fetchMembers = async () => {
         try {
-            const response = await axios.get('/api/team-members');
+            const response = await axios.get('/team-members');
             if (response.data.success) {
                 setMembers(response.data.data);
             }
@@ -30,7 +30,7 @@ function TeamMemberList() {
 
     const handleToggle = async (id, currentStatus) => {
         try {
-            const response = await axios.patch(`/api/team-members/${id}/toggle`, {
+            const response = await axios.patch(`/team-members/${id}/toggle`, {
                 is_active: !currentStatus
             });
             if (response.data.success) {
@@ -48,7 +48,7 @@ function TeamMemberList() {
         if (!window.confirm('Are you sure you want to delete this team member?')) return;
 
         try {
-            const response = await axios.delete(`/api/team-members/${id}`);
+            const response = await axios.delete(`/team-members/${id}`);
             if (response.data.success) {
                 setMessage('Team member deleted successfully');
                 fetchMembers();
@@ -185,4 +185,5 @@ function TeamMemberList() {
 }
 
 export default TeamMemberList;
+
 

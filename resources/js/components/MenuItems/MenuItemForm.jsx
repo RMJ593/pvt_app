@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft } from 'lucide-react';
@@ -36,7 +36,7 @@ function MenuItemForm() {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/categories', {
+            const response = await axios.get('/categories', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCategories(response.data.data);
@@ -48,7 +48,7 @@ function MenuItemForm() {
     const fetchMenuItem = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/api/menu-items/${id}`, {
+            const response = await axios.get(`/menu-items/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const item = response.data.data;
@@ -104,14 +104,14 @@ function MenuItemForm() {
             }
 
             if (isEdit) {
-                await axios.post(`/api/menu-items/${id}?_method=PUT`, data, {
+                await axios.post(`/menu-items/${id}?_method=PUT`, data, {
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data'
                     }
                 });
             } else {
-                await axios.post('/api/menu-items', data, {
+                await axios.post('/menu-items', data, {
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data'
@@ -325,4 +325,5 @@ function MenuItemForm() {
 }
 
 export default MenuItemForm;
+
 

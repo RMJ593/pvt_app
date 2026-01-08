@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Blogs.css';
@@ -15,7 +15,7 @@ function BlogList() {
     const fetchBlogs = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/blogs', {
+            const response = await axios.get('/blogs', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -37,7 +37,7 @@ function BlogList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`/api/blogs/${id}`, {
+            await axios.delete(`/blogs/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMessage('Blog deleted successfully');
@@ -52,7 +52,7 @@ function BlogList() {
     const toggleActive = async (id, currentStatus) => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.put(`/api/blogs/${id}`, {
+            const response = await axios.put(`/blogs/${id}`, {
                 is_active: !currentStatus
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -171,4 +171,5 @@ function BlogList() {
 }
 
 export default BlogList;
+
 

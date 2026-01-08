@@ -5,28 +5,24 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Cloudinary\Cloudinary;
 
 class SettingsController extends Controller
 {
     public function index()
     {
         try {
-            // Get the first (and should be only) settings record
+            // Get the first settings record
             $settings = Setting::first();
 
             if (!$settings) {
                 // If no settings exist, create default
-                $settings = Setting::create([
-                    'site_name' => 'Curry Leaf',
-                    'email' => 'info@curryleaf.uk',
-                    'phone' => '+447878277198',
-                ]);
+                $settings = Setting::create([]);
             }
 
             // Parse JSON fields safely
             $settingsArray = $settings->toArray();
-            
+
             // Handle booking_schedule
             if (isset($settingsArray['booking_schedule']) && is_string($settingsArray['booking_schedule'])) {
                 try {
@@ -83,8 +79,6 @@ class SettingsController extends Controller
 
             // Update simple fields
             $simpleFields = [
-                'site_name', 'email', 'phone', 'address', 'whatsapp_number',
-                'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url',
                 'website_logo', 'footer_logo', 'favicon',
                 'main_color', 'color_2',
                 'sunday_timing', 'weekday_timing',
@@ -106,7 +100,7 @@ class SettingsController extends Controller
 
             // Boolean fields
             $booleanFields = [
-                'enable_popup_ad', 'show_open_times', 'show_first_time', 
+                'enable_popup_ad', 'show_open_times', 'show_first_time',
                 'show_second_time', 'recaptcha_enable'
             ];
 
@@ -119,45 +113,95 @@ class SettingsController extends Controller
             // JSON fields
             if ($request->has('booking_schedule')) {
                 $bookingSchedule = $request->input('booking_schedule');
-                $settings->booking_schedule = is_string($bookingSchedule) 
-                    ? $bookingSchedule 
+                $settings->booking_schedule = is_string($bookingSchedule)
+                    ? $bookingSchedule
                     : json_encode($bookingSchedule);
             }
 
             if ($request->has('special_off_days')) {
                 $specialOffDays = $request->input('special_off_days');
-                $settings->special_off_days = is_string($specialOffDays) 
-                    ? $specialOffDays 
+                $settings->special_off_days = is_string($specialOffDays)
+                    ? $specialOffDays
                     : json_encode($specialOffDays);
             }
 
-            // Handle file uploads
+            // Handle file uploads with Cloudinary
             if ($request->hasFile('popup_ad_image')) {
-                // Delete old image
-                if ($settings->popup_ad_image && Storage::disk('public')->exists($settings->popup_ad_image)) {
-                    Storage::disk('public')->delete($settings->popup_ad_image);
+                \Log::info('Uploading popup ad image to Cloudinary...');
+                
+                // Initialize Cloudinary
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => config('cloudinary.cloud_name'),
+                        'api_key' => config('cloudinary.api_key'),
+                        'api_secret' => config('cloudinary.api_secret'),
+                    ],
+                    'url' => ['secure' => true]
+                ]);
+                
+                // Delete old image from Cloudinary if exists
+                if ($settings->popup_ad_image && strpos($settings->popup_ad_image, 'cloudinary.com') !== false) {
+                    if (preg_match('/\/v\d+\/(.+)\.\w+$/', $settings->popup_ad_image, $matches)) {
+                        try {
+                            $cloudinary->uploadApi()->destroy($matches[1]);
+                            \Log::info('Deleted old popup image from Cloudinary');
+                        } catch (\Exception $e) {
+                            \Log::warning('Failed to delete old popup image: ' . $e->getMessage());
+                        }
+                    }
                 }
 
-                $file = $request->file('popup_ad_image');
-                $filename = time() . '_popup_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('', $filename, 'public');
-                $settings->popup_ad_image = $path;
+                // Upload to Cloudinary
+                $result = $cloudinary->uploadApi()->upload(
+                    $request->file('popup_ad_image')->getRealPath(),
+                    [
+                        'folder' => 'settings',
+                        'resource_type' => 'image',
+                        'timestamp' => time()
+                    ]
+                );
                 
-                \Log::info('Popup image uploaded:', ['path' => $path]);
+                $settings->popup_ad_image = $result['secure_url'];
+                \Log::info('Popup image uploaded to Cloudinary:', ['url' => $result['secure_url']]);
             }
 
             if ($request->hasFile('default_image')) {
-                // Delete old image
-                if ($settings->default_image && Storage::disk('public')->exists($settings->default_image)) {
-                    Storage::disk('public')->delete($settings->default_image);
+                \Log::info('Uploading default background image to Cloudinary...');
+                
+                // Initialize Cloudinary
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => config('cloudinary.cloud_name'),
+                        'api_key' => config('cloudinary.api_key'),
+                        'api_secret' => config('cloudinary.api_secret'),
+                    ],
+                    'url' => ['secure' => true]
+                ]);
+                
+                // Delete old image from Cloudinary if exists
+                if ($settings->default_image && strpos($settings->default_image, 'cloudinary.com') !== false) {
+                    if (preg_match('/\/v\d+\/(.+)\.\w+$/', $settings->default_image, $matches)) {
+                        try {
+                            $cloudinary->uploadApi()->destroy($matches[1]);
+                            \Log::info('Deleted old default image from Cloudinary');
+                        } catch (\Exception $e) {
+                            \Log::warning('Failed to delete old default image: ' . $e->getMessage());
+                        }
+                    }
                 }
 
-                $file = $request->file('default_image');
-                $filename = time() . '_default_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('', $filename, 'public');
-                $settings->default_image = $path;
+                // Upload to Cloudinary
+                $result = $cloudinary->uploadApi()->upload(
+                    $request->file('default_image')->getRealPath(),
+                    [
+                        'folder' => 'settings',
+                        'resource_type' => 'image',
+                        'timestamp' => time()
+                    ]
+                );
                 
-                \Log::info('Default image uploaded:', ['path' => $path, 'url' => asset('storage/' . $path)]);
+                $settings->default_image = $result['secure_url'];
+                \Log::info('Default background image uploaded to Cloudinary:', ['url' => $result['secure_url']]);
             }
 
             $settings->save();

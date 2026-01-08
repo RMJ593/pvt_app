@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './DomainSettings.css';
 
@@ -53,7 +53,7 @@ function DomainSettings() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/settings');
+            const response = await axios.get('/settings');
             if (response.data.success) {
                 setSettings(response.data.data);
             }
@@ -97,7 +97,7 @@ function DomainSettings() {
                 }
             });
 
-            const response = await axios.post('http://127.0.0.1:8000/api/settings', formData, {
+            const response = await axios.post('/settings', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 }
@@ -506,4 +506,5 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};"
 }
 
 export default DomainSettings;
+
 

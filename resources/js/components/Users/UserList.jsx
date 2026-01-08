@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Users.css';
@@ -18,7 +18,7 @@ function UserList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/users`, {
+            const response = await axios.get(`/users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -45,7 +45,7 @@ function UserList() {
             let response;
             try {
                 response = await axios.patch(
-                    `${API_BASE_URL}/users/${id}/status`,
+                    `/api/users/${id}/status`,
                     { status: newStatus },
                     {
                         headers: { 
@@ -57,7 +57,7 @@ function UserList() {
             } catch (err1) {
                 console.log('Method 1 failed, trying PUT method...');
                 response = await axios.put(
-                    `${API_BASE_URL}/users/${id}`,
+                    `/api/users/${id}`,
                     { status: newStatus },
                     {
                         headers: { 
@@ -89,7 +89,7 @@ function UserList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`${API_BASE_URL}/users/${id}`, {
+            await axios.delete(`/users/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -187,4 +187,5 @@ function UserList() {
 }
 
 export default UserList;
+
 

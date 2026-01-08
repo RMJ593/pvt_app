@@ -1,4 +1,4 @@
-ï»¿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './HeroBanner.css';
@@ -17,7 +17,7 @@ function HeroBannerList() {
     const fetchBanners = async () => {
         try {
             console.log('Fetching banners...');
-            const response = await axios.get('/api/hero-banners');
+            const response = await axios.get('/hero-banners');
             console.log('API Response:', response.data);
         
             if (response.data.success) {
@@ -39,7 +39,7 @@ function HeroBannerList() {
         }
 
         try {
-            const response = await axios.delete(`/api/hero-banners/${id}`);
+            const response = await axios.delete(`/hero-banners/${id}`);
             if (response.data.success) {
                 setMessage('Banner deleted successfully');
                 fetchBanners();
@@ -131,7 +131,7 @@ function HeroBannerList() {
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Heading â€ â€˜</th>
+                                <th>Heading †‘</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -205,4 +205,5 @@ function HeroBannerList() {
 }
 
 export default HeroBannerList;
+
 

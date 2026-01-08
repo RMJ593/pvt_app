@@ -1,4 +1,4 @@
-Ôªøimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { EditorState, ContentState, convertToRaw, convertFromHTML } from 'draft-js';
@@ -49,7 +49,7 @@ function BlogForm() {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/blog-categories', {
+            const response = await axios.get('/blog-categories', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -78,7 +78,7 @@ function BlogForm() {
     const fetchBlog = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/api/blogs/${id}`, {
+            const response = await axios.get(`/blogs/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const blog = response.data;
@@ -202,14 +202,14 @@ function BlogForm() {
             let response;
             if (isEditMode) {
                 formDataToSend.append('_method', 'PUT');
-                response = await axios.post(`/api/blogs/${id}`, formDataToSend, {
+                response = await axios.post(`/blogs/${id}`, formDataToSend, {
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data'
                     }
                 });
             } else {
-                response = await axios.post('/api/blogs', formDataToSend, {
+                response = await axios.post('/blogs', formDataToSend, {
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data'
@@ -233,7 +233,7 @@ function BlogForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Blog' : 'Add Blog'}</h1>
                 <Link to="/staff/blogs" className="btn-back">
-                    ‚Ä†¬ê Back to List
+                    Üê Back to List
                 </Link>
             </div>
 
@@ -343,7 +343,7 @@ function BlogForm() {
                             onClick={toggleFullscreen}
                             className="btn-fullscreen"
                         >
-                            {isFullscreen ? '≈ì‚Ä¢ Exit Fullscreen' : '‚Ä∫¬∂ Fullscreen'}
+                            {isFullscreen ? 'úï Exit Fullscreen' : 'õ∂ Fullscreen'}
                         </button>
                     </div>
 
@@ -486,4 +486,5 @@ function BlogForm() {
 }
 
 export default BlogForm;
+
 

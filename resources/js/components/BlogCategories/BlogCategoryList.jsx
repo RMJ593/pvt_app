@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './BlogCategories.css';
@@ -15,7 +15,7 @@ function BlogCategoryList() {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/blog-categories', {
+            const response = await axios.get('/blog-categories', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             console.log('Blog Categories Response:', response.data);
@@ -42,7 +42,7 @@ function BlogCategoryList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.delete(`/api/blog-categories/${id}`, {
+            const response = await axios.delete(`/blog-categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -59,7 +59,7 @@ function BlogCategoryList() {
     const toggleActive = async (id, currentStatus) => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.put(`/api/blog-categories/${id}`, {
+            const response = await axios.put(`/blog-categories/${id}`, {
                 is_active: !currentStatus
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -168,4 +168,5 @@ function BlogCategoryList() {
 }
 
 export default BlogCategoryList;
+
 

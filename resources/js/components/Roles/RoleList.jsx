@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Roles.css';
@@ -17,7 +17,7 @@ function RoleList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/roles`, {
+            const response = await axios.get(`/roles`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -41,7 +41,7 @@ function RoleList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`${API_BASE_URL}/roles/${id}`, {
+            await axios.delete(`/roles/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -127,4 +127,5 @@ function RoleList() {
 }
 
 export default RoleList;
+
 

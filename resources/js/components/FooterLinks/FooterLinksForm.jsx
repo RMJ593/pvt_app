@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
@@ -34,7 +34,7 @@ function FooterLinksForm() {
     const fetchPages = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/pages`, {
+            const response = await axios.get(`/pages`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -49,7 +49,7 @@ function FooterLinksForm() {
     const fetchLink = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/footer-links/${id}`, {
+            const response = await axios.get(`/footer-links/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -99,7 +99,7 @@ function FooterLinksForm() {
 
             if (isEditMode) {
                 response = await axios.put(
-                    `${API_BASE_URL}/footer-links/${id}`,
+                    `/api/footer-links/${id}`,
                     dataToSend,
                     {
                         headers: {
@@ -110,7 +110,7 @@ function FooterLinksForm() {
                 );
             } else {
                 response = await axios.post(
-                    `${API_BASE_URL}/footer-links`,
+                    `/api/footer-links`,
                     dataToSend,
                     {
                         headers: {
@@ -257,4 +257,5 @@ function FooterLinksForm() {
 }
 
 export default FooterLinksForm;
+
 

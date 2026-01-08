@@ -1,4 +1,4 @@
-Ôªøimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './TopMenu.css';
@@ -31,7 +31,7 @@ function TopMenuForm() {
 
     const fetchPages = async () => {
         try {
-            const response = await axios.get('/api/pages');
+            const response = await axios.get('/pages');
             if (response.data.success) {
                 setPages(response.data.data);
             }
@@ -42,7 +42,7 @@ function TopMenuForm() {
 
     const fetchLink = async () => {
         try {
-            const response = await axios.get(`/api/menu-links/${id}`);
+            const response = await axios.get(`/menu-links/${id}`);
             if (response.data.success) {
                 const link = response.data.data;
                 setFormData({
@@ -88,9 +88,9 @@ function TopMenuForm() {
 
             let response;
             if (isEditMode) {
-                response = await axios.put(`/api/menu-links/${id}`, dataToSend);
+                response = await axios.put(`/menu-links/${id}`, dataToSend);
             } else {
-                response = await axios.post('/api/menu-links', dataToSend);
+                response = await axios.post('/menu-links', dataToSend);
             }
 
             if (response.data.success) {
@@ -114,7 +114,7 @@ function TopMenuForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Menu Link' : 'Create Menu Link'}</h1>
                 <Link to="/staff/top-menu" className="btn-back">
-                    ‚Ä†¬ê Back to List
+                    Üê Back to List
                 </Link>
             </div>
 
@@ -223,4 +223,5 @@ function TopMenuForm() {
 }
 
 export default TopMenuForm;
+
 

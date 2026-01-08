@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './TeamMembers.css';
@@ -31,7 +31,7 @@ function TeamMemberForm() {
 
     const fetchMember = async () => {
         try {
-            const response = await axios.get(`/api/team-members/${id}`);
+            const response = await axios.get(`/team-members/${id}`);
             if (response.data.success) {
                 const member = response.data.data;
                 setFormData({
@@ -272,4 +272,5 @@ function TeamMemberForm() {
 }
 
 export default TeamMemberForm;
+
 

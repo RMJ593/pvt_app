@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Testimonials.css';
@@ -26,7 +26,7 @@ function TestimonialForm() {
 
     const fetchTestimonial = async () => {
         try {
-            const response = await axios.get(`/api/testimonials/${id}`);
+            const response = await axios.get(`/testimonials/${id}`);
             if (response.data.success) {
                 const testimonial = response.data.data;
                 setFormData({
@@ -190,4 +190,5 @@ function TestimonialForm() {
 }
 
 export default TestimonialForm;
+
 

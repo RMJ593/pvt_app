@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -14,7 +14,7 @@ function MenuItemList() {
     const fetchMenuItems = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/api/menu-items', {
+            const response = await axios.get('/menu-items', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMenuItems(response.data.data);
@@ -30,7 +30,7 @@ function MenuItemList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`/api/menu-items/${id}`, {
+            await axios.delete(`/menu-items/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchMenuItems();
@@ -160,4 +160,5 @@ function MenuItemList() {
 }
 
 export default MenuItemList;
+
 

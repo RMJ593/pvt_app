@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './TableBookings.css';
 
@@ -16,7 +16,7 @@ function TableBookingList() {
 
     const fetchBookings = async () => {
         try {
-            const response = await axios.get('/api/table-bookings');
+            const response = await axios.get('/table-bookings');
             if (response.data.success) {
                 setBookings(response.data.data);
             }
@@ -32,7 +32,7 @@ function TableBookingList() {
         if (!window.confirm('Are you sure you want to delete this booking?')) return;
 
         try {
-            const response = await axios.delete(`/api/table-bookings/${id}`);
+            const response = await axios.delete(`/table-bookings/${id}`);
             if (response.data.success) {
                 setMessage('Booking deleted successfully');
                 fetchBookings();
@@ -46,7 +46,7 @@ function TableBookingList() {
 
     const updateStatus = async (id, newStatus) => {
         try {
-            const response = await axios.put(`/api/table-bookings/${id}`, { status: newStatus });
+            const response = await axios.put(`/table-bookings/${id}`, { status: newStatus });
             if (response.data.success) {
                 setMessage(`Booking ${newStatus} successfully`);
                 fetchBookings();
@@ -309,4 +309,5 @@ function TableBookingList() {
 }
 
 export default TableBookingList;
+
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
@@ -18,7 +18,7 @@ function MailTemplateList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/mail-templates`, {
+            const response = await axios.get(`/mail-templates`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -47,7 +47,7 @@ function MailTemplateList() {
             try {
                 // Method 1: PATCH with /status endpoint
                 response = await axios.patch(
-                    `${API_BASE_URL}/mail-templates/${id}/status`,
+                    `/api/mail-templates/${id}/status`,
                     { status: newStatus },
                     {
                         headers: { 
@@ -61,7 +61,7 @@ function MailTemplateList() {
                 try {
                     // Method 2: PUT to update the entire template
                     response = await axios.put(
-                        `${API_BASE_URL}/mail-templates/${id}`,
+                        `/api/mail-templates/${id}`,
                         { status: newStatus },
                         {
                             headers: { 
@@ -74,7 +74,7 @@ function MailTemplateList() {
                     console.log('Method 2 failed, trying POST method...');
                     // Method 3: POST with status update
                     response = await axios.post(
-                        `${API_BASE_URL}/mail-templates/${id}/toggle-status`,
+                        `/api/mail-templates/${id}/toggle-status`,
                         { status: newStatus },
                         {
                             headers: { 
@@ -108,7 +108,7 @@ function MailTemplateList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`${API_BASE_URL}/mail-templates/${id}`, {
+            await axios.delete(`/mail-templates/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -207,4 +207,5 @@ function MailTemplateList() {
 }
 
 export default MailTemplateList;
+
 

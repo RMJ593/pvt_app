@@ -1,4 +1,4 @@
-Ôªøimport React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Users.css';
@@ -30,7 +30,7 @@ function UserForm() {
     const fetchRoles = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/roles`, {
+            const response = await axios.get(`/roles`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -45,7 +45,7 @@ function UserForm() {
     const fetchUser = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/users/${id}`, {
+            const response = await axios.get(`/users/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -80,7 +80,7 @@ function UserForm() {
             if (isEditMode) {
                 console.log('Updating user:', id);
                 response = await axios.put(
-                    `${API_BASE_URL}/users/${id}`,
+                    `/api/users/${id}`,
                     formData,
                     {
                         headers: {
@@ -92,7 +92,7 @@ function UserForm() {
             } else {
                 console.log('Creating new user');
                 response = await axios.post(
-                    `${API_BASE_URL}/users`,
+                    `/api/users`,
                     formData,
                     {
                         headers: {
@@ -148,7 +148,7 @@ function UserForm() {
                     onClick={handleBackClick}
                     className="btn-back"
                 >
-                    ‚Ä†¬ê Back to List
+                    Üê Back to List
                 </button>
             </div>
 
@@ -213,4 +213,5 @@ function UserForm() {
 }
 
 export default UserForm;
+
 

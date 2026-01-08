@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Roles.css';
@@ -58,7 +58,7 @@ function RoleForm() {
     const fetchRole = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/roles/${id}`, {
+            const response = await axios.get(`/roles/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -104,7 +104,7 @@ function RoleForm() {
             if (isEditMode) {
                 console.log('Updating role:', id);
                 response = await axios.put(
-                    `${API_BASE_URL}/roles/${id}`,
+                    `/api/roles/${id}`,
                     formData,
                     {
                         headers: {
@@ -116,7 +116,7 @@ function RoleForm() {
             } else {
                 console.log('Creating new role');
                 response = await axios.post(
-                    `${API_BASE_URL}/roles`,
+                    `/api/roles`,
                     formData,
                     {
                         headers: {
@@ -232,4 +232,5 @@ function RoleForm() {
 }
 
 export default RoleForm;
+
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Gallery.css';
@@ -14,7 +14,7 @@ function GalleryList() {
 
     const fetchImages = async () => {
         try {
-            const response = await axios.get('/api/gallery');
+            const response = await axios.get('/gallery');
             if (response.data.success) {
                 setImages(response.data.data);
             }
@@ -30,7 +30,7 @@ function GalleryList() {
         if (!window.confirm('Are you sure you want to delete this image?')) return;
 
         try {
-            const response = await axios.delete(`/api/gallery/${id}`);
+            const response = await axios.delete(`/gallery/${id}`);
             if (response.data.success) {
                 setMessage('Image deleted successfully');
                 fetchImages();
@@ -44,7 +44,7 @@ function GalleryList() {
 
     const toggleActive = async (id, currentStatus) => {
         try {
-            const response = await axios.put(`/api/gallery/${id}`, {
+            const response = await axios.put(`/gallery/${id}`, {
                 is_active: !currentStatus
             });
 
@@ -166,3 +166,4 @@ function GalleryList() {
 }
 
 export default GalleryList;
+

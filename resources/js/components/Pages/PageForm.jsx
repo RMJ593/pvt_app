@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Pages.css';
@@ -44,7 +44,7 @@ function PageForm() {
     const fetchHeroBanners = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/hero-banners`, {
+            const response = await axios.get(`/hero-banners`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const bannersData = extractArray(response);
@@ -58,7 +58,7 @@ function PageForm() {
     const fetchPage = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`${API_BASE_URL}/pages/${id}`, {
+            const response = await axios.get(`/pages/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -168,9 +168,9 @@ function PageForm() {
             };
 
             if (isEditMode) {
-                response = await axios.post(`${API_BASE_URL}/pages/${id}`, submitData, config);
+                response = await axios.post(`/pages/${id}`, submitData, config);
             } else {
-                response = await axios.post(`${API_BASE_URL}/pages`, submitData, config);
+                response = await axios.post(`/pages`, submitData, config);
             }
 
             if (response.status === 200 || response.status === 201) {
@@ -331,16 +331,16 @@ function PageForm() {
                             <u>U</u>
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('justifyLeft')} title="Align Left">
-                            ◄
+                            ?
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('justifyCenter')} title="Align Center">
-                            ═
+                            -
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('justifyRight')} title="Align Right">
-                            ►
+                            ?
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('insertUnorderedList')} title="Bullet List">
-                            •
+                            �
                         </button>
                         <button type="button" onClick={() => handleEditorCommand('insertOrderedList')} title="Numbered List">
                             #
@@ -451,3 +451,4 @@ function PageForm() {
 }
 
 export default PageForm;
+

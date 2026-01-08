@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Categories.css';
@@ -32,7 +32,7 @@ function CategoryForm() {
     const fetchCategory = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/api/categories/${id}`, {
+            const response = await axios.get(`/categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -100,15 +100,27 @@ function CategoryForm() {
         try {
             const token = localStorage.getItem('auth_token');
             const formDataToSend = new FormData();
+            
+            // Append all fields
             formDataToSend.append('name', formData.name);
-            formDataToSend.append('small_heading', formData.small_heading);
+            formDataToSend.append('small_heading', formData.small_heading || '');
             formDataToSend.append('location', formData.location);
-            formDataToSend.append('is_royalty', featured.is_royalty ? '1' : '0');
-            formDataToSend.append('is_special_selection', featured.is_special_selection ? '1' : '0');
+            formDataToSend.append('is_royalty', featured.is_royalty ? 1 : 0);
+            formDataToSend.append('is_special_selection', featured.is_special_selection ? 1 : 0);
+            formDataToSend.append('is_active', 1); // Add default active status
 
             if (imageFile) {
                 formDataToSend.append('image', imageFile);
             }
+
+            // Debug: Log what we're sending
+            console.log('Sending data:');
+            console.log('Name:', formData.name);
+            console.log('Small Heading:', formData.small_heading);
+            console.log('Location:', formData.location);
+            console.log('Is Royalty:', featured.is_royalty);
+            console.log('Is Special Selection:', featured.is_special_selection);
+            console.log('Image File:', imageFile);
 
             let response;
             if (isEditMode) {
@@ -140,8 +152,25 @@ function CategoryForm() {
                 navigate('/staff/categories');
             }
         } catch (error) {
-            console.error('Error saving category:', error);
-            setError(error.response?.data?.message || 'Failed to save category');
+            console.error('=== FULL ERROR DETAILS ===');
+            console.error('Error:', error);
+            console.error('Response Data:', error.response?.data);
+            console.error('Response Status:', error.response?.status);
+            console.error('Response Headers:', error.response?.headers);
+            
+            // Display detailed validation errors
+            if (error.response?.data?.errors) {
+                const errors = error.response.data.errors;
+                console.error('Validation Errors:', errors);
+                const errorMessages = Object.entries(errors)
+                    .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                    .join('\n');
+                setError(`Validation failed:\n${errorMessages}`);
+            } else if (error.response?.data?.message) {
+                setError(error.response.data.message);
+            } else {
+                setError('Failed to save category. Check console for details.');
+            }
         } finally {
             setLoading(false);
         }
@@ -152,7 +181,7 @@ function CategoryForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Product Category' : 'Add Product Category'}</h1>
                 <Link to="/staff/categories" className="btn-back">
-                    † Back to List
+                    ? Back to List
                 </Link>
             </div>
 
