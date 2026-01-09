@@ -148,7 +148,8 @@ function MenuSection() {
                                     <p className="category-subheading">{category.small_heading}</p>
                                 )}
 
-                                <h3 className="category-name">{category.name}</h3>
+                                
+                                
 
                                 <button 
                                     className="view-menu-btn"
