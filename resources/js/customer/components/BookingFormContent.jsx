@@ -43,7 +43,7 @@ function BookingFormContent() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get('/api/settings');
+            const response = await axios.get('/settings');
             if (response.data.success) {
                 setSettings(response.data.data);
             }
@@ -117,7 +117,7 @@ function BookingFormContent() {
         setMessage('');
 
         try {
-            const response = await axios.post('/api/table-bookings', formData);
+            const response = await axios.post('/table-bookings', formData);
             
             if (response.data.success) {
                 setMessage('Booking request submitted successfully! We will contact you shortly.');

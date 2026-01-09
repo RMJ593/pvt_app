@@ -14,7 +14,7 @@ function SpecialDishesSection({ id }) {
 
     const fetchSpecialDishes = async () => {
         try {
-            const response = await axios.get('/api/menu-items');
+            const response = await axios.get('/menu-items');
             const items = extractArray(response);
             
             // Filter for special dishes (is_special toggle)

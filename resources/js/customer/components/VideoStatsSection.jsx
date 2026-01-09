@@ -38,7 +38,7 @@ function VideoStatsSection() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get('/api/settings');
+            const response = await axios.get('/settings');
             if (response.data.success) {
                 setSettings(response.data.data);
             }
@@ -49,7 +49,7 @@ function VideoStatsSection() {
 
     const fetchGalleryImage = async () => {
         try {
-            const response = await axios.get('/api/gallery');
+            const response = await axios.get('/gallery');
             console.log('Gallery API response:', response.data);
             
             const images = extractArray(response);

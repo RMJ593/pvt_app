@@ -19,7 +19,7 @@ function Footer() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get('/api/settings');
+            const response = await axios.get('/settings');
             const settingsData = response.data.data || response.data;
             setSettings(settingsData);
         } catch (error) {
@@ -29,7 +29,7 @@ function Footer() {
 
     const fetchMenuLinks = async () => {
         try {
-            const response = await axios.get('/api/menu-links');
+            const response = await axios.get('/menu-links');
             const allLinks = extractArray(response);
             setMenuLinks(allLinks);
         } catch (error) {
@@ -40,7 +40,7 @@ function Footer() {
 
     const fetchPages = async () => {
         try {
-            const response = await axios.get('/api/pages');
+            const response = await axios.get('/pages');
             const allPages = extractArray(response);
             const pagesMap = {};
             allPages.forEach(page => {

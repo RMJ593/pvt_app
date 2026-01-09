@@ -37,7 +37,7 @@ function OurMenus() {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get(`/api/menu-items`);
+            const response = await axios.get(`/menu-items`);
             const allProducts = extractArray(response);
             
             // Filter special offers
@@ -72,7 +72,7 @@ function OurMenus() {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get(`/api/categories`);
+            const response = await axios.get(`/categories`);
             const allCategories = extractArray(response);
             setCategories(allCategories);
         } catch (error) {
@@ -83,7 +83,7 @@ function OurMenus() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             const settings = response.data.data || response.data;
             if (settings.default_image) {
                 setDefaultImage(settings.default_image);
@@ -97,10 +97,10 @@ function OurMenus() {
         try {
             let response;
             try {
-                response = await axios.get(`/api/domain-settings`);
+                response = await axios.get(`/domain-settings`);
             } catch (err) {
                 const token = localStorage.getItem('auth_token');
-                response = await axios.get(`/api/domain-settings`, {
+                response = await axios.get(`/domain-settings`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }

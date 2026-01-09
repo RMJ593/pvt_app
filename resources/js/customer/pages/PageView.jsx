@@ -20,7 +20,7 @@ function PageView() {
 
     const fetchPageBySlug = async () => {
         try {
-            const response = await axios.get(`/api/pages`);
+            const response = await axios.get(`/pages`);
             const allPages = extractArray(response);
             const foundPage = allPages.find(p => p.slug === slug);
             

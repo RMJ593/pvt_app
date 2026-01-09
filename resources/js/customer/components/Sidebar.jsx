@@ -18,7 +18,7 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
 
     const fetchTopMenuLinks = async () => {
         try {
-            const response = await axios.get('/api/menu-links');
+            const response = await axios.get('/menu-links');
             const allLinks = extractArray(response);
             // Filter only active top menu links
             const activeTopLinks = allLinks.filter(
@@ -33,7 +33,7 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
 
     const fetchPages = async () => {
         try {
-            const response = await axios.get('/api/pages');
+            const response = await axios.get('/pages');
             const allPages = extractArray(response);
             const activePages = allPages.filter(page => page.is_active);
             

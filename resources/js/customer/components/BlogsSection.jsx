@@ -16,7 +16,7 @@ function BlogsSection() {
 
     const fetchBlogs = async () => {
         try {
-            const response = await axios.get('/api/blogs');
+            const response = await axios.get('/blogs');
             const allBlogs = extractArray(response);
             
             // Filter active blogs and get latest 6

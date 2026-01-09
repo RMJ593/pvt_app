@@ -31,7 +31,7 @@ function Home() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             const settingsData = response.data.data || response.data;
             setSettings(settingsData);
             
@@ -48,7 +48,7 @@ function Home() {
 
     const fetchHeroBanner = async () => {
         try {
-            const response = await axios.get(`/api/hero-banners`);
+            const response = await axios.get(`/hero-banners`);
             
             // Simple extraction - we know the format now
             const banners = response.data?.data || [];
@@ -69,7 +69,7 @@ function Home() {
 
     const fetchMenuItems = async () => {
         try {
-            const response = await axios.get(`/api/menu-links`);
+            const response = await axios.get(`/menu-links`);
             const items = extractArray(response);
             setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
         } catch (error) {

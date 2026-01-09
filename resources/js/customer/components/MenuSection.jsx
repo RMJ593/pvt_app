@@ -16,7 +16,7 @@ function MenuSection() {
     const fetchCategories = async () => {
         try {
             // Try fetching from /api/categories
-            const response = await axios.get('/api/categories');
+            const response = await axios.get('/categories');
             
             console.log('=== MENU SECTION DEBUG ===');
             console.log('Full Response:', response);

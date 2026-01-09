@@ -18,7 +18,7 @@ function SpecialOffersSection({ id }) {
 
     const fetchOfferDishes = async () => {
         try {
-            const response = await axios.get(`/api/menu-items`);
+            const response = await axios.get(`/menu-items`);
             const items = extractArray(response);
             
             // Filter for items with special offers

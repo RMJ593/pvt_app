@@ -16,7 +16,7 @@ function ChefsSelectionSection({ id }) {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('/api/categories');
+            const response = await axios.get('/categories');
             const cats = extractArray(response);
             const activeCats = cats.filter(cat => cat.is_active);
             setCategories(activeCats);
@@ -31,7 +31,7 @@ function ChefsSelectionSection({ id }) {
 
     const fetchChefSelectionDishes = async () => {
         try {
-            const response = await axios.get('/api/menu-items');
+            const response = await axios.get('/menu-items');
             const items = extractArray(response);
             
             const chefDishes = items.filter(item => 

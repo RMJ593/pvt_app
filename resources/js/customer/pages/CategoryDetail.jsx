@@ -37,7 +37,7 @@ function CategoryDetail() {
 
     const fetchCategoryData = async () => {
         try {
-            const response = await axios.get(`/api/categories/${categoryId}`);
+            const response = await axios.get(`/categories/${categoryId}`);
             setCategory(response.data.data || response.data);
         } catch (error) {
             console.error('Error fetching category:', error);
@@ -47,7 +47,7 @@ function CategoryDetail() {
     
     const fetchProducts = async () => {
         try {
-            const response = await axios.get(`/api/menu-items`);
+            const response = await axios.get(`/menu-items`);
             const allProducts = extractArray(response);
             
             const categoryProducts = allProducts.filter(
@@ -67,7 +67,7 @@ function CategoryDetail() {
     };
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             const settings = response.data.data || response.data;
             console.log('Settings response:', settings);
             console.log('Default image:', settings.default_image);
@@ -82,7 +82,7 @@ function CategoryDetail() {
     const fetchDomainSettings = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/api/domain-settings`, {
+            const response = await axios.get(`/domain-settings`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const domainSettings = response.data.data || response.data;

@@ -30,7 +30,7 @@ function ContactUsPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             if (response.data.success) {
                 const settingsData = response.data.data;
                 setSettings(settingsData);
@@ -46,7 +46,7 @@ function ContactUsPage() {
 
     const fetchMenuItems = async () => {
         try {
-            const response = await axios.get(`/api/menu-links`);
+            const response = await axios.get(`/menu-links`);
             const items = extractArray(response);
             setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
         } catch (error) {
@@ -129,7 +129,7 @@ function ContactUsPage() {
         setMessage('');
 
         try {
-            const response = await axios.post(`/api/contact`, formData);
+            const response = await axios.post(`/contact`, formData);
             
             if (response.data.success) {
                 setMessage('Message sent successfully! We will get back to you soon.');

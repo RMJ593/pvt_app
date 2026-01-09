@@ -42,7 +42,7 @@ function CategoryMenu() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             const settingsData = response.data.data || response.data;
             setSettings(settingsData);
             
@@ -56,7 +56,7 @@ function CategoryMenu() {
 
     const fetchMenuBackground = async () => {
         try {
-            const response = await axios.get(`/api/gallery-images`);
+            const response = await axios.get(`/gallery-images`);
             const imagesArray = extractArray(response);
             
             const bgImage = imagesArray.find(img => 
@@ -72,7 +72,7 @@ function CategoryMenu() {
 
     const fetchCategory = async () => {
         try {
-            const categoryResponse = await axios.get(`/api/categories/${categoryId}`);
+            const categoryResponse = await axios.get(`/categories/${categoryId}`);
             setCategory(categoryResponse.data.data);
         } catch (error) {
             console.error('Error fetching category:', error);
@@ -81,7 +81,7 @@ function CategoryMenu() {
 
     const fetchProducts = async () => {
         try {
-            const productsResponse = await axios.get(`/api/menu-items`);
+            const productsResponse = await axios.get(`/menu-items`);
             const allProducts = extractArray(productsResponse);
             
             // Filter products by category

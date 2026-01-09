@@ -37,7 +37,7 @@ function MainMenu() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             const settingsData = response.data.data || response.data;
             setSettings(settingsData);
             
@@ -51,7 +51,7 @@ function MainMenu() {
 
     const fetchMenuBackground = async () => {
         try {
-            const response = await axios.get(`/api/gallery-images`);
+            const response = await axios.get(`/gallery-images`);
             const imagesArray = extractArray(response);
             
             const bgImage = imagesArray.find(img => 
@@ -67,7 +67,7 @@ function MainMenu() {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get(`/api/categories`);
+            const response = await axios.get(`/categories`);
             const allCategories = extractArray(response);
             const royaltyCategories = allCategories.filter(cat => cat.is_royalty);
             setCategories(royaltyCategories);
@@ -79,7 +79,7 @@ function MainMenu() {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get(`/api/menu-items`);
+            const response = await axios.get(`/menu-items`);
             const allProducts = extractArray(response);
             
             setProducts(allProducts);

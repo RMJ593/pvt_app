@@ -50,7 +50,7 @@ function BookingPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             if (response.data.success) {
                 const settingsData = response.data.data;
                 setSettings(settingsData);
@@ -66,7 +66,7 @@ function BookingPage() {
 
     const fetchMenuItems = async () => {
         try {
-            const response = await axios.get(`/api/menu-links`);
+            const response = await axios.get(`/menu-links`);
             const items = extractArray(response);
             setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
         } catch (error) {
@@ -164,7 +164,7 @@ function BookingPage() {
         setMessage('');
 
         try {
-            const response = await axios.post(`/api/bookings`, formData);
+            const response = await axios.post(`/bookings`, formData);
             
             if (response.data.success) {
                 setMessage('Booking request submitted successfully! We will contact you shortly.');

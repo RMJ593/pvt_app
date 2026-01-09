@@ -27,7 +27,7 @@ function BlogDetailPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`/api/settings`);
+            const response = await axios.get(`/settings`);
             if (response.data.success) {
                 const settingsData = response.data.data;
                 setSettings(settingsData);
@@ -43,7 +43,7 @@ function BlogDetailPage() {
 
     const fetchMenuItems = async () => {
         try {
-            const response = await axios.get(`/api/menu-links`);
+            const response = await axios.get(`/menu-links`);
             const items = extractArray(response);
             setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
         } catch (error) {
