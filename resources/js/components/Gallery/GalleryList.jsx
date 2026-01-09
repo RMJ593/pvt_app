@@ -8,13 +8,21 @@ function GalleryList() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
 
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
+
     useEffect(() => {
         fetchImages();
     }, []);
 
     const fetchImages = async () => {
         try {
-            const response = await axios.get('/gallery');
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/gallery`);
             if (response.data.success) {
                 setImages(response.data.data);
             }
@@ -30,7 +38,8 @@ function GalleryList() {
         if (!window.confirm('Are you sure you want to delete this image?')) return;
 
         try {
-            const response = await axios.delete(`/gallery/${id}`);
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.delete(`${apiBaseUrl}/gallery/${id}`);
             if (response.data.success) {
                 setMessage('Image deleted successfully');
                 fetchImages();
@@ -44,8 +53,13 @@ function GalleryList() {
 
     const toggleActive = async (id, currentStatus) => {
         try {
-            const response = await axios.put(`/gallery/${id}`, {
-                is_active: !currentStatus
+            const apiBaseUrl = getApiBaseUrl();
+            const formData = new FormData();
+            formData.append('is_active', !currentStatus ? '1' : '0');
+            formData.append('_method', 'PUT');
+            
+            const response = await axios.post(`${apiBaseUrl}/gallery/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
             if (response.data.success) {
@@ -56,14 +70,11 @@ function GalleryList() {
         }
     };
 
-    // Helper function to get correct image URL
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
-        // If it's already a full URL (Cloudinary), use it as-is
         if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
             return imagePath;
         }
-        // Otherwise, it's a local storage path
         return `/storage/${imagePath}`;
     };
 
@@ -117,10 +128,6 @@ function GalleryList() {
                                                         src={getImageUrl(image.image)}
                                                         alt={image.title}
                                                         className="table-image-small"
-                                                        onError={(e) => {
-                                                            console.error('Image failed to load:', image.image);
-                                                            e.target.src = '/placeholder.jpg';
-                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="no-image-placeholder">No Image</div>
@@ -135,14 +142,14 @@ function GalleryList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    Edit
+                                                    ✏️
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(image.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    Delete
+                                                    🗑️
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input
@@ -166,4 +173,3 @@ function GalleryList() {
 }
 
 export default GalleryList;
-

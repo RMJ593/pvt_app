@@ -17,26 +17,31 @@ function GalleryForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
+
     useEffect(() => {
         if (isEditMode) {
             fetchImage();
         }
     }, [id]);
 
-    // Helper function to get correct image URL
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
-        // If it's already a full URL (Cloudinary), use it as-is
         if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
             return imagePath;
         }
-        // Otherwise, it's a local storage path
         return `/storage/${imagePath}`;
     };
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(`/gallery/${id}`);
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/gallery/${id}`);
             if (response.data.success) {
                 const image = response.data.data;
                 setFormData({
@@ -63,7 +68,6 @@ function GalleryForm() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Validate file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
                 setError('Image size should not exceed 2MB');
                 return;
@@ -79,7 +83,6 @@ function GalleryForm() {
         setLoading(true);
         setError('');
 
-        // Validation
         if (!isEditMode && !imageFile) {
             setError('Image is required');
             setLoading(false);
@@ -87,8 +90,10 @@ function GalleryForm() {
         }
 
         try {
+            const apiBaseUrl = getApiBaseUrl();
             const formDataToSend = new FormData();
             formDataToSend.append('title', formData.title);
+            formDataToSend.append('is_active', 1);
 
             if (imageFile) {
                 formDataToSend.append('image', imageFile);
@@ -98,7 +103,7 @@ function GalleryForm() {
             if (isEditMode) {
                 formDataToSend.append('_method', 'PUT');
                 response = await axios.post(
-                    `/api/gallery/${id}`,
+                    `${apiBaseUrl}/gallery/${id}`,
                     formDataToSend,
                     {
                         headers: { 'Content-Type': 'multipart/form-data' }
@@ -106,7 +111,7 @@ function GalleryForm() {
                 );
             } else {
                 response = await axios.post(
-                    '/api/gallery',
+                    `${apiBaseUrl}/gallery`,
                     formDataToSend,
                     {
                         headers: { 'Content-Type': 'multipart/form-data' }
@@ -130,7 +135,7 @@ function GalleryForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Gallery Image' : 'Add Gallery Image'}</h1>
                 <Link to="/staff/gallery" className="btn-back">
-                     Back to List
+                    ← Back to List
                 </Link>
             </div>
 
@@ -185,4 +190,3 @@ function GalleryForm() {
 }
 
 export default GalleryForm;
-
