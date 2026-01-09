@@ -32,7 +32,11 @@ function CategoryForm() {
     const fetchCategory = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/categories/${id}`, {
+            const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8000/api'
+                : 'https://tphrc-int-project.onrender.com/api';
+                
+            const response = await axios.get(`${apiBaseUrl}/categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -47,7 +51,12 @@ function CategoryForm() {
                     is_special_selection: category.is_special_selection || false
                 });
                 if (category.image) {
-                    setImagePreview(`/storage/${category.image}`);
+                    // Check if it's a Cloudinary URL or local path
+                    if (category.image.startsWith('http')) {
+                        setImagePreview(category.image);
+                    } else {
+                        setImagePreview(`/storage/${category.image}`);
+                    }
                 }
             }
         } catch (error) {
@@ -123,10 +132,14 @@ function CategoryForm() {
             console.log('Image File:', imageFile);
 
             let response;
+            const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8000/api'
+                : 'https://tphrc-int-project.onrender.com/api';
+
             if (isEditMode) {
                 formDataToSend.append('_method', 'PUT');
                 response = await axios.post(
-                    `/api/categories/${id}`,
+                    `${apiBaseUrl}/categories/${id}`,
                     formDataToSend,
                     {
                         headers: { 
@@ -137,7 +150,7 @@ function CategoryForm() {
                 );
             } else {
                 response = await axios.post(
-                    '/api/categories',
+                    `${apiBaseUrl}/categories`,
                     formDataToSend,
                     {
                         headers: { 
@@ -181,7 +194,7 @@ function CategoryForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Product Category' : 'Add Product Category'}</h1>
                 <Link to="/staff/categories" className="btn-back">
-                    ? Back to List
+                    ← Back to List
                 </Link>
             </div>
 
@@ -298,4 +311,3 @@ function CategoryForm() {
 }
 
 export default CategoryForm;
-

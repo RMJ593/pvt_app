@@ -15,8 +15,11 @@ function MenuSection() {
 
     const fetchCategories = async () => {
         try {
-            // Try fetching from /api/categories
-            const response = await axios.get('/categories');
+            const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8000/api'
+                : 'https://tphrc-int-project.onrender.com/api';
+            
+            const response = await axios.get(`${apiBaseUrl}/categories`);
             
             console.log('=== MENU SECTION DEBUG ===');
             console.log('Full Response:', response);
@@ -101,9 +104,9 @@ function MenuSection() {
                 <p className="menu-subtitle">FLAVORS FOR ROYALTY</p>
                 
                 <div className="menu-divider">
-                    <span>?</span>
-                    <span>?</span>
-                    <span>?</span>
+                    <span>◆</span>
+                    <span>◆</span>
+                    <span>◆</span>
                 </div>
 
                 <h2 className="menu-title">We Offer Top Notch</h2>
@@ -131,7 +134,10 @@ function MenuSection() {
                                         className="category-image"
                                         onError={(e) => {
                                             console.error('Image failed to load:', category.image);
-                                            e.target.src = '/placeholder-image.jpg';
+                                            // Only update src once to prevent infinite loop
+                                            if (e.target.src !== '/placeholder-image.jpg') {
+                                                e.target.src = '/placeholder-image.jpg';
+                                            }
                                         }}
                                     />
                                 </div>
