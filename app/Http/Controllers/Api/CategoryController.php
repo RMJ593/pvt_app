@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class CategoryController extends Controller
 {
@@ -40,13 +40,25 @@ class CategoryController extends Controller
                 'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'description' => 'nullable|string',
                 'order' => 'nullable|integer',
-                'is_royalty' => 'nullable|boolean',
-                'is_special_selection' => 'nullable|boolean'
+                'is_royalty' => 'nullable',
+                'is_special_selection' => 'nullable',
+                'is_active' => 'nullable'
             ]);
 
-            $imagePath = null;
+            // Upload to Cloudinary
+            $imageUrl = null;
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('categories', 'public');
+                $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
+                    'folder' => 'resto_int/categories',
+                    'transformation' => [
+                        'width' => 285,
+                        'height' => 336,
+                        'crop' => 'fill',
+                        'quality' => 'auto'
+                    ]
+                ])->getSecurePath();
+                
+                $imageUrl = $uploadedFileUrl;
             }
 
             // Generate unique slug
@@ -58,17 +70,22 @@ class CategoryController extends Controller
                 $count++;
             }
 
+            // Convert string "1"/"0" to boolean
+            $isRoyalty = $request->is_royalty === '1' || $request->is_royalty === 1 || $request->is_royalty === true;
+            $isSpecialSelection = $request->is_special_selection === '1' || $request->is_special_selection === 1 || $request->is_special_selection === true;
+            $isActive = $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true || !$request->has('is_active');
+
             $category = Category::create([
                 'name' => $validated['name'],
                 'slug' => $slug,
                 'small_heading' => $validated['small_heading'],
                 'location' => $validated['location'],
                 'description' => $validated['description'] ?? null,
-                'image' => $imagePath,
+                'image' => $imageUrl, // Cloudinary URL
                 'order' => $validated['order'] ?? 0,
-                'is_active' => true,
-                'is_royalty' => $request->is_royalty ?? false,
-                'is_special_selection' => $request->is_special_selection ?? false
+                'is_active' => $isActive,
+                'is_royalty' => $isRoyalty,
+                'is_special_selection' => $isSpecialSelection
             ]);
 
             return response()->json([
@@ -85,6 +102,7 @@ class CategoryController extends Controller
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error creating category: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create category: ' . $e->getMessage()
@@ -120,9 +138,9 @@ class CategoryController extends Controller
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'description' => 'nullable|string',
                 'order' => 'nullable|integer',
-                'is_active' => 'sometimes|boolean',
-                'is_royalty' => 'sometimes|boolean',
-                'is_special_selection' => 'sometimes|boolean'
+                'is_active' => 'sometimes',
+                'is_royalty' => 'sometimes',
+                'is_special_selection' => 'sometimes'
             ]);
 
             $data = [];
@@ -157,23 +175,34 @@ class CategoryController extends Controller
                 $data['order'] = $validated['order'];
             }
 
+            // Upload new image to Cloudinary if provided
             if ($request->hasFile('image')) {
-                if ($category->image) {
-                    Storage::disk('public')->delete($category->image);
-                }
-                $data['image'] = $request->file('image')->store('categories', 'public');
+                // Optional: Delete old image from Cloudinary
+                // You'd need to extract the public_id from the old URL and delete it
+                
+                $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
+                    'folder' => 'resto_int/categories',
+                    'transformation' => [
+                        'width' => 285,
+                        'height' => 336,
+                        'crop' => 'fill',
+                        'quality' => 'auto'
+                    ]
+                ])->getSecurePath();
+                
+                $data['image'] = $uploadedFileUrl;
             }
 
             if ($request->has('is_active')) {
-                $data['is_active'] = $validated['is_active'];
+                $data['is_active'] = $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true;
             }
             
             if ($request->has('is_royalty')) {
-                $data['is_royalty'] = $validated['is_royalty'];
+                $data['is_royalty'] = $request->is_royalty === '1' || $request->is_royalty === 1 || $request->is_royalty === true;
             }
             
             if ($request->has('is_special_selection')) {
-                $data['is_special_selection'] = $validated['is_special_selection'];
+                $data['is_special_selection'] = $request->is_special_selection === '1' || $request->is_special_selection === 1 || $request->is_special_selection === true;
             }
 
             $category->update($data);
@@ -204,9 +233,8 @@ class CategoryController extends Controller
         try {
             $category = Category::findOrFail($id);
             
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
-            }
+            // Optional: Delete image from Cloudinary
+            // Extract public_id from URL and use Cloudinary::destroy($publicId)
 
             $category->delete();
 
