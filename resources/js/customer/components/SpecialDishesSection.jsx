@@ -99,11 +99,6 @@ function SpecialDishesSection({ id }) {
                                         src={getImageUrl(dish.image)} 
                                         alt={dish.name}
                                         className="dish-image"
-                                        onError={(e) => {
-                                            if (e.target.src !== '/placeholder-image.jpg') {
-                                                e.target.src = '/placeholder-image.jpg';
-                                            }
-                                        }}
                                     />
                                 ) : (
                                     <div className="dish-image-placeholder">

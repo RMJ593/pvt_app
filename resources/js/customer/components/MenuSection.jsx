@@ -132,13 +132,6 @@ function MenuSection() {
                                         src={getImageUrl(category.image)} 
                                         alt={category.name}
                                         className="category-image"
-                                        onError={(e) => {
-                                            console.error('Image failed to load:', category.image);
-                                            // Only update src once to prevent infinite loop
-                                            if (e.target.src !== '/placeholder-image.jpg') {
-                                                e.target.src = '/placeholder-image.jpg';
-                                            }
-                                        }}
                                     />
                                 </div>
 

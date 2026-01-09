@@ -161,11 +161,6 @@ function SpecialOffersSection({ id }) {
                                             alt={dish.name}
                                             className="offer-image"
                                             draggable="false"
-                                            onError={(e) => {
-                                                if (e.target.src !== '/placeholder-image.jpg') {
-                                                    e.target.src = '/placeholder-image.jpg';
-                                                }
-                                            }}
                                         />
                                     ) : (
                                         <div className="offer-image-placeholder">
