@@ -3,238 +3,162 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\GalleryImage;
+use App\Models\Gallery;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Cloudinary\Cloudinary;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class GalleryController extends Controller
 {
     public function index()
     {
-        $images = GalleryImage::orderBy('created_at', 'desc')->get();
-        
-        return response()->json([
-            'success' => true,
-            'data' => $images
-        ]);
+        try {
+            $images = Gallery::orderBy('created_at', 'desc')->get();
+            return response()->json([
+                'success' => true,
+                'data' => $images
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching gallery images: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch gallery images'
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
         try {
-            \Log::info('Gallery upload attempt', [
-                'has_file' => $request->hasFile('image'),
-            ]);
-
             $validated = $request->validate([
-                'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
                 'title' => 'required|string|max:255',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'is_active' => 'nullable'
             ]);
 
-            if (!$request->hasFile('image')) {
-                return response()->json(['error' => 'No file uploaded'], 400);
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                try {
+                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
+                        config('cloudinary.cloud_name')) {
+                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
+                            $request->file('image')->getRealPath(),
+                            ['folder' => 'resto_int/gallery', 'resource_type' => 'image']
+                        )->getSecurePath();
+                        $imageUrl = $uploadedFileUrl;
+                        Log::info('Gallery image uploaded to Cloudinary: ' . $imageUrl);
+                    } else {
+                        throw new \Exception('Cloudinary not configured');
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Cloudinary upload failed: ' . $e->getMessage());
+                    $imageUrl = $request->file('image')->store('gallery', 'public');
+                }
             }
 
-            $uploadedFile = $request->file('image');
-            
-            \Log::info('Uploading to Cloudinary...', [
-                'filename' => $uploadedFile->getClientOriginalName(),
-            ]);
-            
-            // Initialize Cloudinary with credentials
-            $cloudinary = new Cloudinary([
-                'cloud' => [
-                    'cloud_name' => config('cloudinary.cloud_name'),
-                    'api_key' => config('cloudinary.api_key'),
-                    'api_secret' => config('cloudinary.api_secret'),
-                ],
-                'url' => [
-                    'secure' => true
-                ]
-            ]);
-            
-            // Upload the file with explicit timestamp
-            $result = $cloudinary->uploadApi()->upload($uploadedFile->getRealPath(), [
-                'folder' => 'gallery',
-                'resource_type' => 'image',
-                'timestamp' => time()
-            ]);
-            
-            $imageUrl = $result['secure_url'];
-            $publicId = $result['public_id'];
-            
-            \Log::info('Cloudinary upload successful', [
-                'url' => $imageUrl,
-                'public_id' => $publicId,
-            ]);
-            
-            // Save to database (without description)
-            $gallery = GalleryImage::create([
+            $gallery = Gallery::create([
                 'title' => $validated['title'],
                 'image' => $imageUrl,
-                'cloudinary_public_id' => $publicId,
-                'is_active' => true,
+                'is_active' => $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true || !$request->has('is_active')
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Image uploaded successfully',
-                'data' => $gallery
+                'data' => $gallery,
+                'message' => 'Gallery image created successfully'
             ], 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'error' => 'Validation failed',
-                'messages' => $e->errors()
-            ], 422);
-            
         } catch (\Exception $e) {
-            \Log::error('Gallery upload error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
+            Log::error('Error creating gallery image: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Upload failed',
-                'message' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => basename($e->getFile()),
+                'success' => false,
+                'message' => 'Failed to create gallery image: ' . $e->getMessage()
             ], 500);
         }
     }
 
     public function show($id)
     {
-        $image = GalleryImage::find($id);
-
-        if (!$image) {
+        try {
+            $gallery = Gallery::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'data' => $gallery
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gallery image not found'
             ], 404);
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => $image
-        ]);
     }
 
     public function update(Request $request, $id)
     {
-        $image = GalleryImage::find($id);
-
-        if (!$image) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gallery image not found'
-            ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'title' => 'sometimes|required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
-            'is_active' => 'nullable|boolean'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
+            $gallery = Gallery::findOrFail($id);
+
+            $validated = $request->validate([
+                'title' => 'sometimes|required|string|max:255',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'is_active' => 'sometimes'
+            ]);
+
             $data = [];
             
-            if ($request->has('title')) {
-                $data['title'] = $request->title;
-            }
-            
-            if ($request->has('is_active')) {
-                $data['is_active'] = (bool)$request->is_active;
-            }
+            if ($request->has('title')) $data['title'] = $validated['title'];
 
             if ($request->hasFile('image')) {
-                // Initialize Cloudinary
-                $cloudinary = new Cloudinary([
-                    'cloud' => [
-                        'cloud_name' => config('cloudinary.cloud_name'),
-                        'api_key' => config('cloudinary.api_key'),
-                        'api_secret' => config('cloudinary.api_secret'),
-                    ],
-                ]);
-                
-                // Delete old image from Cloudinary if exists
-                if ($image->cloudinary_public_id) {
-                    try {
-                        $cloudinary->uploadApi()->destroy($image->cloudinary_public_id);
-                    } catch (\Exception $e) {
-                        \Log::warning('Failed to delete old image from Cloudinary: ' . $e->getMessage());
+                try {
+                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
+                        config('cloudinary.cloud_name')) {
+                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
+                            $request->file('image')->getRealPath(),
+                            ['folder' => 'resto_int/gallery', 'resource_type' => 'image']
+                        )->getSecurePath();
+                        $data['image'] = $uploadedFileUrl;
+                    } else {
+                        throw new \Exception('Cloudinary not configured');
                     }
+                } catch (\Exception $e) {
+                    if ($gallery->image && !filter_var($gallery->image, FILTER_VALIDATE_URL)) {
+                        Storage::disk('public')->delete($gallery->image);
+                    }
+                    $data['image'] = $request->file('image')->store('gallery', 'public');
                 }
-
-                // Upload new image
-                $result = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath(), [
-                    'folder' => 'gallery',
-                    'resource_type' => 'image',
-                    'timestamp' => time()
-                ]);
-                
-                $data['image'] = $result['secure_url'];
-                $data['cloudinary_public_id'] = $result['public_id'];
             }
 
-            $image->update($data);
+            if ($request->has('is_active')) {
+                $data['is_active'] = $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true;
+            }
+
+            $gallery->update($data);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Gallery image updated successfully',
-                'data' => $image
+                'data' => $gallery,
+                'message' => 'Gallery image updated successfully'
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Gallery image update failed: ' . $e->getMessage());
-            
+            Log::error('Error updating gallery image: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update gallery image',
-                'error' => $e->getMessage()
+                'message' => 'Failed to update gallery image'
             ], 500);
         }
     }
 
     public function destroy($id)
     {
-        $image = GalleryImage::find($id);
-
-        if (!$image) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gallery image not found'
-            ], 404);
-        }
-
         try {
-            // Delete from Cloudinary
-            if ($image->cloudinary_public_id) {
-                try {
-                    $cloudinary = new Cloudinary([
-                        'cloud' => [
-                            'cloud_name' => config('cloudinary.cloud_name'),
-                            'api_key' => config('cloudinary.api_key'),
-                            'api_secret' => config('cloudinary.api_secret'),
-                        ],
-                    ]);
-                    
-                    $cloudinary->uploadApi()->destroy($image->cloudinary_public_id);
-                    \Log::info('Deleted from Cloudinary: ' . $image->cloudinary_public_id);
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to delete from Cloudinary: ' . $e->getMessage());
-                }
+            $gallery = Gallery::findOrFail($id);
+            
+            if ($gallery->image && !filter_var($gallery->image, FILTER_VALIDATE_URL)) {
+                Storage::disk('public')->delete($gallery->image);
             }
 
-            $image->delete();
+            $gallery->delete();
 
             return response()->json([
                 'success' => true,
@@ -242,12 +166,10 @@ class GalleryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Gallery image deletion failed: ' . $e->getMessage());
-            
+            Log::error('Error deleting gallery image: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete gallery image',
-                'error' => $e->getMessage()
+                'message' => 'Failed to delete gallery image'
             ], 500);
         }
     }

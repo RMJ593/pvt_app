@@ -58,12 +58,7 @@ class CategoryController extends Controller
                             $request->file('image')->getRealPath(), 
                             [
                                 'folder' => 'resto_int/categories',
-                                'transformation' => [
-                                    'width' => 285,
-                                    'height' => 336,
-                                    'crop' => 'fill',
-                                    'quality' => 'auto'
-                                ]
+                                'resource_type' => 'image'
                             ]
                         )->getSecurePath();
                         

@@ -33,15 +33,19 @@ class BlogCategoryController extends Controller
                 'name' => 'required|string|max:255',
                 'slug' => 'required|string|max:255|unique:blog_categories,slug',
                 'location' => 'required|string|max:255',
-                'description' => 'nullable|string'
+                'description' => 'nullable|string',
+                'is_active' => 'nullable'
             ]);
+
+            // Convert is_active to boolean properly
+            $isActive = $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true || !$request->has('is_active');
 
             $category = BlogCategory::create([
                 'name' => $validated['name'],
                 'slug' => $validated['slug'],
                 'location' => $validated['location'],
                 'description' => $validated['description'] ?? null,
-                'is_active' => true
+                'is_active' => $isActive
             ]);
 
             return response()->json([
@@ -91,7 +95,7 @@ class BlogCategoryController extends Controller
                 'slug' => 'sometimes|required|string|max:255|unique:blog_categories,slug,' . $id,
                 'location' => 'sometimes|required|string|max:255',
                 'description' => 'nullable|string',
-                'is_active' => 'sometimes|boolean'
+                'is_active' => 'sometimes'
             ]);
 
             $data = [];
@@ -113,7 +117,8 @@ class BlogCategoryController extends Controller
             }
             
             if ($request->has('is_active')) {
-                $data['is_active'] = $validated['is_active'];
+                // Convert string "1"/"0" to boolean properly
+                $data['is_active'] = $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true;
             }
 
             $category->update($data);
