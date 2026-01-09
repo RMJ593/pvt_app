@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ChefsSelectionSection.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api'; // ✅ Add getStorageUrl
 
 function ChefsSelectionSection({ id }) {
     const [categories, setCategories] = useState([]);
     const [activeCategory, setActiveCategory] = useState(null);
     const [chefSelectionDishes, setChefSelectionDishes] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
 
     useEffect(() => {
         fetchCategories();
@@ -16,8 +22,16 @@ function ChefsSelectionSection({ id }) {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('/categories');
-            const cats = extractArray(response);
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/categories`);
+            
+            let cats = [];
+            if (response.data.success && response.data.data) {
+                cats = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                cats = response.data;
+            }
+            
             const activeCats = cats.filter(cat => cat.is_active);
             setCategories(activeCats);
             if (activeCats.length > 0) {
@@ -31,12 +45,20 @@ function ChefsSelectionSection({ id }) {
 
     const fetchChefSelectionDishes = async () => {
         try {
-            const response = await axios.get('/menu-items');
-            const items = extractArray(response);
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/menu-items`);
             
+            let items = [];
+            if (response.data.success && response.data.data) {
+                items = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                items = response.data;
+            }
+            
+            // Filter for chef selection dishes (is_chef_selection toggle)
             const chefDishes = items.filter(item => 
-                item.is_special_selection === true || 
-                item.is_special_selection === 1
+                item.is_chef_selection === true || 
+                item.is_chef_selection === 1
             );
             
             setChefSelectionDishes(chefDishes);
@@ -48,9 +70,16 @@ function ChefsSelectionSection({ id }) {
         }
     };
 
-    // ✅ FIXED: Use getStorageUrl helper
     const getImageUrl = (imagePath) => {
-        return getStorageUrl(imagePath);
+        if (!imagePath) return null;
+        
+        // If it's already a full URL (Cloudinary), return as is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        
+        // Otherwise, it's a local storage path
+        return `/storage/${imagePath}`;
     };
 
     const filteredDishes = activeCategory 
@@ -112,6 +141,11 @@ function ChefsSelectionSection({ id }) {
                                         src={getImageUrl(dish.image)} 
                                         alt={dish.name}
                                         className="dish-image"
+                                        onError={(e) => {
+                                            if (e.target.src !== '/placeholder-image.jpg') {
+                                                e.target.src = '/placeholder-image.jpg';
+                                            }
+                                        }}
                                     />
                                 ) : (
                                     <div className="dish-image-placeholder">
@@ -126,7 +160,7 @@ function ChefsSelectionSection({ id }) {
                             <div className="dish-content">
                                 <div className="dish-header">
                                     <h3 className="dish-name">{dish.name}</h3>
-                                    <span className="dish-price">£{parseFloat(dish.price).toFixed(2)}</span>
+                                    <span className="dish-price">₹{parseFloat(dish.price).toFixed(2)}</span>
                                 </div>
                                 
                                 {dish.description && (

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './SpecialOffersSection.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function SpecialOffersSection({ id }) {
     const [offerDishes, setOfferDishes] = useState([]);
@@ -11,22 +10,33 @@ function SpecialOffersSection({ id }) {
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
 
-    
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
+
     useEffect(() => {
         fetchOfferDishes();
     }, []);
 
     const fetchOfferDishes = async () => {
         try {
-            const response = await axios.get(`/menu-items`);
-            const items = extractArray(response);
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/menu-items`);
             
-            // Filter for items with special offers
+            let items = [];
+            if (response.data.success && response.data.data) {
+                items = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                items = response.data;
+            }
+            
+            // Filter for items with special offers (is_special_offer toggle)
             const offers = items.filter(item => 
-                item.has_offer === true || 
-                item.has_offer === 1 ||
-                item.is_offer === true ||
-                item.is_offer === 1
+                item.is_special_offer === true || 
+                item.is_special_offer === 1
             );
             
             setOfferDishes(offers);
@@ -39,7 +49,15 @@ function SpecialOffersSection({ id }) {
     };
 
     const getImageUrl = (imagePath) => {
-        return getStorageUrl(imagePath);
+        if (!imagePath) return null;
+        
+        // If it's already a full URL (Cloudinary), return as is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        
+        // Otherwise, it's a local storage path
+        return `/storage/${imagePath}`;
     };
 
     // Mouse drag handlers
@@ -143,6 +161,11 @@ function SpecialOffersSection({ id }) {
                                             alt={dish.name}
                                             className="offer-image"
                                             draggable="false"
+                                            onError={(e) => {
+                                                if (e.target.src !== '/placeholder-image.jpg') {
+                                                    e.target.src = '/placeholder-image.jpg';
+                                                }
+                                            }}
                                         />
                                     ) : (
                                         <div className="offer-image-placeholder">
@@ -153,9 +176,9 @@ function SpecialOffersSection({ id }) {
                                         </div>
                                     )}
                                     
-                                    {(dish.offer_percentage || dish.discount_percentage) && (
+                                    {dish.discount_percentage && (
                                         <div className="offer-badge">
-                                            {dish.offer_percentage || dish.discount_percentage}% OFF
+                                            {dish.discount_percentage}% OFF
                                         </div>
                                     )}
                                 </div>
@@ -168,10 +191,12 @@ function SpecialOffersSection({ id }) {
                                     )}
 
                                     <div className="offer-pricing">
-                                        {dish.original_price && (
-                                            <span className="original-price">£{parseFloat(dish.original_price).toFixed(2)}</span>
+                                        {dish.offer_price && dish.price !== dish.offer_price && (
+                                            <span className="original-price">₹{parseFloat(dish.price).toFixed(2)}</span>
                                         )}
-                                        <span className="offer-price">£{parseFloat(dish.price).toFixed(2)}</span>
+                                        <span className="offer-price">
+                                            ₹{parseFloat(dish.offer_price || dish.price).toFixed(2)}
+                                        </span>
                                     </div>
 
                                     {dish.category && (

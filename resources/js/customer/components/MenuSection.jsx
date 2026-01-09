@@ -149,10 +149,6 @@ function MenuSection() {
                                 )}
 
                                 <h3 className="category-name">{category.name}</h3>
-                                
-                                {category.location && (
-                                    <span className="category-location">{category.location}</span>
-                                )}
 
                                 <button 
                                     className="view-menu-btn"

@@ -1,25 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SpecialDishesSection.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
 function SpecialDishesSection({ id }) {
     const [specialDishes, setSpecialDishes] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
+
     useEffect(() => {
         fetchSpecialDishes();
     }, []);
 
     const fetchSpecialDishes = async () => {
         try {
-            const response = await axios.get('/menu-items');
-            const items = extractArray(response);
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/menu-items`);
             
-            // Filter for special dishes (is_special toggle)
+            let items = [];
+            if (response.data.success && response.data.data) {
+                items = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                items = response.data;
+            }
+            
+            // Filter for special dishes (is_special_dish toggle)
             const specials = items.filter(item => 
-                item.is_special === true || item.is_special === 1
+                item.is_special_dish === true || item.is_special_dish === 1
             );
             
             setSpecialDishes(specials);
@@ -32,7 +44,15 @@ function SpecialDishesSection({ id }) {
     };
 
     const getImageUrl = (imagePath) => {
-        return getStorageUrl(imagePath);
+        if (!imagePath) return null;
+        
+        // If it's already a full URL (Cloudinary), return as is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        
+        // Otherwise, it's a local storage path
+        return `/storage/${imagePath}`;
     };
 
     if (loading) {
@@ -79,6 +99,11 @@ function SpecialDishesSection({ id }) {
                                         src={getImageUrl(dish.image)} 
                                         alt={dish.name}
                                         className="dish-image"
+                                        onError={(e) => {
+                                            if (e.target.src !== '/placeholder-image.jpg') {
+                                                e.target.src = '/placeholder-image.jpg';
+                                            }
+                                        }}
                                     />
                                 ) : (
                                     <div className="dish-image-placeholder">
