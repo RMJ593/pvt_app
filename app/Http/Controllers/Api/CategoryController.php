@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class CategoryController extends Controller
 {
@@ -45,20 +45,39 @@ class CategoryController extends Controller
                 'is_active' => 'nullable'
             ]);
 
-            // Upload to Cloudinary
             $imageUrl = null;
+            
+            // Try Cloudinary first, fallback to local storage
             if ($request->hasFile('image')) {
-                $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
-                    'folder' => 'resto_int/categories',
-                    'transformation' => [
-                        'width' => 285,
-                        'height' => 336,
-                        'crop' => 'fill',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                
-                $imageUrl = $uploadedFileUrl;
+                try {
+                    // Check if Cloudinary is configured
+                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
+                        config('cloudinary.cloud_name')) {
+                        
+                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
+                            $request->file('image')->getRealPath(), 
+                            [
+                                'folder' => 'resto_int/categories',
+                                'transformation' => [
+                                    'width' => 285,
+                                    'height' => 336,
+                                    'crop' => 'fill',
+                                    'quality' => 'auto'
+                                ]
+                            ]
+                        )->getSecurePath();
+                        
+                        $imageUrl = $uploadedFileUrl;
+                        Log::info('Image uploaded to Cloudinary: ' . $imageUrl);
+                    } else {
+                        throw new \Exception('Cloudinary not configured');
+                    }
+                } catch (\Exception $e) {
+                    // Fallback to local storage
+                    Log::warning('Cloudinary upload failed, using local storage: ' . $e->getMessage());
+                    $imageUrl = $request->file('image')->store('categories', 'public');
+                    Log::info('Image uploaded to local storage: ' . $imageUrl);
+                }
             }
 
             // Generate unique slug
@@ -81,7 +100,7 @@ class CategoryController extends Controller
                 'small_heading' => $validated['small_heading'],
                 'location' => $validated['location'],
                 'description' => $validated['description'] ?? null,
-                'image' => $imageUrl, // Cloudinary URL
+                'image' => $imageUrl,
                 'order' => $validated['order'] ?? 0,
                 'is_active' => $isActive,
                 'is_royalty' => $isRoyalty,
@@ -175,22 +194,38 @@ class CategoryController extends Controller
                 $data['order'] = $validated['order'];
             }
 
-            // Upload new image to Cloudinary if provided
+            // Handle image upload
             if ($request->hasFile('image')) {
-                // Optional: Delete old image from Cloudinary
-                // You'd need to extract the public_id from the old URL and delete it
-                
-                $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
-                    'folder' => 'resto_int/categories',
-                    'transformation' => [
-                        'width' => 285,
-                        'height' => 336,
-                        'crop' => 'fill',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                
-                $data['image'] = $uploadedFileUrl;
+                try {
+                    // Try Cloudinary first
+                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
+                        config('cloudinary.cloud_name')) {
+                        
+                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
+                            $request->file('image')->getRealPath(),
+                            [
+                                'folder' => 'resto_int/categories',
+                                'transformation' => [
+                                    'width' => 285,
+                                    'height' => 336,
+                                    'crop' => 'fill',
+                                    'quality' => 'auto'
+                                ]
+                            ]
+                        )->getSecurePath();
+                        
+                        $data['image'] = $uploadedFileUrl;
+                    } else {
+                        throw new \Exception('Cloudinary not configured');
+                    }
+                } catch (\Exception $e) {
+                    // Fallback to local storage
+                    Log::warning('Cloudinary upload failed, using local storage: ' . $e->getMessage());
+                    if ($category->image && !filter_var($category->image, FILTER_VALIDATE_URL)) {
+                        Storage::disk('public')->delete($category->image);
+                    }
+                    $data['image'] = $request->file('image')->store('categories', 'public');
+                }
             }
 
             if ($request->has('is_active')) {
@@ -233,8 +268,10 @@ class CategoryController extends Controller
         try {
             $category = Category::findOrFail($id);
             
-            // Optional: Delete image from Cloudinary
-            // Extract public_id from URL and use Cloudinary::destroy($publicId)
+            // Delete local storage image if exists
+            if ($category->image && !filter_var($category->image, FILTER_VALIDATE_URL)) {
+                Storage::disk('public')->delete($category->image);
+            }
 
             $category->delete();
 
