@@ -8,6 +8,13 @@ function ProductList() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
 
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
+
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -15,7 +22,8 @@ function ProductList() {
     const fetchProducts = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/menu-items', {
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/menu-items`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -34,7 +42,8 @@ function ProductList() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.delete(`/menu-items/${id}`, {
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.delete(`${apiBaseUrl}/menu-items/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -51,13 +60,14 @@ function ProductList() {
     const toggleActive = async (id, currentStatus) => {
         try {
             const token = localStorage.getItem('auth_token');
+            const apiBaseUrl = getApiBaseUrl();
             
             // Use FormData for consistency with the controller
             const formData = new FormData();
             formData.append('is_active', !currentStatus ? '1' : '0');
             formData.append('_method', 'PUT');
             
-            const response = await axios.post(`/menu-items/${id}`, formData, {
+            const response = await axios.post(`${apiBaseUrl}/menu-items/${id}`, formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -82,6 +92,18 @@ function ProductList() {
             setMessage('Failed to update product status');
             setTimeout(() => setMessage(''), 3000);
         }
+    };
+
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        
+        // If it's already a full URL (Cloudinary), return as is
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            return imagePath;
+        }
+        
+        // Otherwise, it's a local storage path
+        return `/storage/${imagePath}`;
     };
 
     if (loading) {
@@ -131,9 +153,14 @@ function ProductList() {
                                             <div className="name-with-image">
                                                 {product.image ? (
                                                     <img
-                                                        src={`/storage/${product.image}`}
+                                                        src={getImageUrl(product.image)}
                                                         alt={product.name}
                                                         className="table-image-square"
+                                                        onError={(e) => {
+                                                            if (e.target.src !== '/placeholder-image.jpg') {
+                                                                e.target.src = '/placeholder-image.jpg';
+                                                            }
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div className="no-image-placeholder-square">No Image</div>
@@ -148,14 +175,14 @@ function ProductList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                     hjhjh
+                                                    ✏️
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(product.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    hjhj
+                                                    🗑️
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input
@@ -179,5 +206,3 @@ function ProductList() {
 }
 
 export default ProductList;
-
-

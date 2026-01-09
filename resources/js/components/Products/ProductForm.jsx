@@ -28,6 +28,13 @@ function ProductForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // API Base URL helper
+    const getApiBaseUrl = () => {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://127.0.0.1:8000/api'
+            : 'https://tphrc-int-project.onrender.com/api';
+    };
+
     useEffect(() => {
         fetchCategories();
         if (isEditMode) {
@@ -38,7 +45,8 @@ function ProductForm() {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get('/categories', {
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/categories`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -52,7 +60,8 @@ function ProductForm() {
     const fetchProduct = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/menu-items/${id}`, {
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await axios.get(`${apiBaseUrl}/menu-items/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
@@ -71,7 +80,12 @@ function ProductForm() {
                     is_chef_selection: product.is_chef_selection || false
                 });
                 if (product.image) {
-                    setImagePreview(`/storage/${product.image}`);
+                    // Check if it's a Cloudinary URL or local path
+                    if (product.image.startsWith('http')) {
+                        setImagePreview(product.image);
+                    } else {
+                        setImagePreview(`/storage/${product.image}`);
+                    }
                 }
             }
         } catch (error) {
@@ -151,16 +165,19 @@ function ProductForm() {
 
         try {
             const token = localStorage.getItem('auth_token');
+            const apiBaseUrl = getApiBaseUrl();
             const formDataToSend = new FormData();
+            
             formDataToSend.append('name', formData.title);
             formDataToSend.append('price', formData.price);
             formDataToSend.append('offer_price', formData.offer_price || '');
             formDataToSend.append('discount_percentage', formData.discount_percentage || '');
             formDataToSend.append('description', formData.description);
             formDataToSend.append('category_id', formData.category_id);
-            formDataToSend.append('is_special_dish', features.is_special_dish ? '1' : '0');
-            formDataToSend.append('is_special_offer', features.is_special_offer ? '1' : '0');
-            formDataToSend.append('is_chef_selection', features.is_chef_selection ? '1' : '0');
+            formDataToSend.append('is_special_dish', features.is_special_dish ? 1 : 0);
+            formDataToSend.append('is_special_offer', features.is_special_offer ? 1 : 0);
+            formDataToSend.append('is_chef_selection', features.is_chef_selection ? 1 : 0);
+            formDataToSend.append('is_active', 1);
 
             if (imageFile) {
                 formDataToSend.append('image', imageFile);
@@ -170,7 +187,7 @@ function ProductForm() {
             if (isEditMode) {
                 formDataToSend.append('_method', 'PUT');
                 response = await axios.post(
-                    `/api/menu-items/${id}`,
+                    `${apiBaseUrl}/menu-items/${id}`,
                     formDataToSend,
                     {
                         headers: { 
@@ -181,7 +198,7 @@ function ProductForm() {
                 );
             } else {
                 response = await axios.post(
-                    '/api/menu-items',
+                    `${apiBaseUrl}/menu-items`,
                     formDataToSend,
                     {
                         headers: { 
@@ -197,7 +214,14 @@ function ProductForm() {
             }
         } catch (error) {
             console.error('Error saving product:', error);
-            setError(error.response?.data?.message || 'Failed to save product');
+            console.error('Error details:', error.response?.data);
+            
+            if (error.response?.data?.errors) {
+                const errorMessages = Object.values(error.response.data.errors).flat().join(', ');
+                setError(`Validation failed: ${errorMessages}`);
+            } else {
+                setError(error.response?.data?.message || 'Failed to save product');
+            }
         } finally {
             setLoading(false);
         }
@@ -208,7 +232,7 @@ function ProductForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Product' : 'Add Product'}</h1>
                 <Link to="/staff/products" className="btn-back">
-                    Ü Back to List
+                    ‚Üê Back to List
                 </Link>
             </div>
 
@@ -388,4 +412,3 @@ function ProductForm() {
 }
 
 export default ProductForm;
-
