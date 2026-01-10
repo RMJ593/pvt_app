@@ -7,7 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Cloudinary\Cloudinary;
 
 class CategoryController extends Controller
 {
@@ -47,31 +47,40 @@ class CategoryController extends Controller
 
             $imageUrl = null;
             
-            // Try Cloudinary first, fallback to local storage
             if ($request->hasFile('image')) {
                 try {
-                    // Check if Cloudinary is configured
-                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
-                        config('cloudinary.cloud_name')) {
-                        
-                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                            $request->file('image')->getRealPath(), 
-                            [
-                                'folder' => 'resto_int/categories',
-                                'resource_type' => 'image'
-                            ]
-                        )->getSecurePath();
-                        
-                        $imageUrl = $uploadedFileUrl;
-                        Log::info('Image uploaded to Cloudinary: ' . $imageUrl);
-                    } else {
-                        throw new \Exception('Cloudinary not configured');
-                    }
+                    Log::info('🔄 Attempting Cloudinary upload for category...');
+                    
+                    // Initialize Cloudinary (same way as HeroBanner)
+                    $cloudinary = new Cloudinary([
+                        'cloud' => [
+                            'cloud_name' => config('cloudinary.cloud_name'),
+                            'api_key' => config('cloudinary.api_key'),
+                            'api_secret' => config('cloudinary.api_secret'),
+                        ],
+                        'url' => [
+                            'secure' => true
+                        ]
+                    ]);
+                    
+                    // Upload image to Cloudinary
+                    $result = $cloudinary->uploadApi()->upload(
+                        $request->file('image')->getRealPath(),
+                        [
+                            'folder' => 'resto_int/categories',
+                            'resource_type' => 'image',
+                            'timestamp' => time()
+                        ]
+                    );
+                    
+                    $imageUrl = $result['secure_url'];
+                    Log::info('✅ SUCCESS! Cloudinary URL: ' . $imageUrl);
+                    
                 } catch (\Exception $e) {
-                    // Fallback to local storage
-                    Log::warning('Cloudinary upload failed, using local storage: ' . $e->getMessage());
+                    Log::error('❌ Cloudinary failed: ' . $e->getMessage());
+                    Log::error('Stack trace: ' . $e->getTraceAsString());
                     $imageUrl = $request->file('image')->store('categories', 'public');
-                    Log::info('Image uploaded to local storage: ' . $imageUrl);
+                    Log::warning('📁 Fallback to local storage: ' . $imageUrl);
                 }
             }
 

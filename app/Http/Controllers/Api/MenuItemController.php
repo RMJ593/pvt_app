@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Cloudinary\Cloudinary;
 
 class MenuItemController extends Controller
 {
@@ -49,20 +50,34 @@ class MenuItemController extends Controller
             $imageUrl = null;
             if ($request->hasFile('image')) {
                 try {
-                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
-                        config('cloudinary.cloud_name')) {
-                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                            $request->file('image')->getRealPath(),
-                            ['folder' => 'resto_int/menu-items', 'resource_type' => 'image']
-                        )->getSecurePath();
-                        $imageUrl = $uploadedFileUrl;
-                        Log::info('Menu item image uploaded to Cloudinary: ' . $imageUrl);
-                    } else {
-                        throw new \Exception('Cloudinary not configured');
-                    }
+                    Log::info('🔄 Attempting Cloudinary upload for menu item...');
+                    
+                    // Initialize Cloudinary
+                    $cloudinary = new Cloudinary([
+                        'cloud' => [
+                            'cloud_name' => config('cloudinary.cloud_name'),
+                            'api_key' => config('cloudinary.api_key'),
+                            'api_secret' => config('cloudinary.api_secret'),
+                        ],
+                        'url' => ['secure' => true]
+                    ]);
+                    
+                    $result = $cloudinary->uploadApi()->upload(
+                        $request->file('image')->getRealPath(),
+                        [
+                            'folder' => 'resto_int/menu-items',
+                            'resource_type' => 'image',
+                            'timestamp' => time()
+                        ]
+                    );
+                    
+                    $imageUrl = $result['secure_url'];
+                    Log::info('✅ SUCCESS! Cloudinary URL: ' . $imageUrl);
+                    
                 } catch (\Exception $e) {
-                    Log::warning('Cloudinary upload failed: ' . $e->getMessage());
+                    Log::error('❌ Cloudinary failed: ' . $e->getMessage());
                     $imageUrl = $request->file('image')->store('menu-items', 'public');
+                    Log::warning('📁 Fallback to local storage: ' . $imageUrl);
                 }
             }
 
@@ -141,16 +156,24 @@ class MenuItemController extends Controller
 
             if ($request->hasFile('image')) {
                 try {
-                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
-                        config('cloudinary.cloud_name')) {
-                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                            $request->file('image')->getRealPath(),
-                            ['folder' => 'resto_int/menu-items', 'resource_type' => 'image']
-                        )->getSecurePath();
-                        $data['image'] = $uploadedFileUrl;
-                    } else {
-                        throw new \Exception('Cloudinary not configured');
-                    }
+                    $cloudinary = new Cloudinary([
+                        'cloud' => [
+                            'cloud_name' => config('cloudinary.cloud_name'),
+                            'api_key' => config('cloudinary.api_key'),
+                            'api_secret' => config('cloudinary.api_secret'),
+                        ],
+                    ]);
+                    
+                    $result = $cloudinary->uploadApi()->upload(
+                        $request->file('image')->getRealPath(),
+                        [
+                            'folder' => 'resto_int/menu-items',
+                            'resource_type' => 'image',
+                            'timestamp' => time()
+                        ]
+                    );
+                    
+                    $data['image'] = $result['secure_url'];
                 } catch (\Exception $e) {
                     if ($menuItem->image && !filter_var($menuItem->image, FILTER_VALIDATE_URL)) {
                         Storage::disk('public')->delete($menuItem->image);
