@@ -7,7 +7,6 @@ import { getStorageUrl, extractArray } from '../../config/api';
 function Footer() {
     const navigate = useNavigate();
     const [settings, setSettings] = useState(null);
-    const [generalSettings, setGeneralSettings] = useState(null);
     const [menuLinks, setMenuLinks] = useState([]);
     const [pages, setPages] = useState({});
     
@@ -21,8 +20,8 @@ function Footer() {
         try {
             const response = await axios.get('/settings');
             const settingsData = response.data.data || response.data;
+            console.log('Footer Settings:', settingsData); // Debug log
             setSettings(settingsData);
-            setGeneralSettings(settingsData);
         } catch (error) {
             console.error('Error fetching settings:', error);
         }
@@ -55,7 +54,8 @@ function Footer() {
     };
 
     const getLogoUrl = () => {
-        const logoPath = generalSettings?.default_image || settings?.website_logo || settings?.logo;
+        // Fetch from website_logo in Domain Settings
+        const logoPath = settings?.website_logo || settings?.logo;
         if (!logoPath) return null;
         if (logoPath.startsWith('http')) return logoPath;
         return getStorageUrl(logoPath);
@@ -227,15 +227,17 @@ function Footer() {
                             </div>
                         )}
 
-                        <div className="footer-contact-item">
-                            <svg className="footer-contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                            <span>
-                                Daily: {formatTime(generalSettings?.shop_start_time)} to {formatTime(generalSettings?.shop_close_time)}
-                            </span>
-                        </div>
+                        {settings?.shop_start_time && settings?.shop_close_time && (
+                            <div className="footer-contact-item">
+                                <svg className="footer-contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span>
+                                    Daily: {formatTime(settings.shop_start_time)} to {formatTime(settings.shop_close_time)}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -256,7 +258,7 @@ function Footer() {
                 <div className="footer-elegant-section footer-social-section">
                     <h3 className="footer-social-heading">Follow Us</h3>
                     <div className="footer-social-elegant">
-                        {settings?.facebook_url && (
+                        {settings?.facebook_url && settings.facebook_url.trim() !== '' && (
                             <a 
                                 href={settings.facebook_url} 
                                 target="_blank" 
@@ -271,7 +273,7 @@ function Footer() {
                             </a>
                         )}
 
-                        {settings?.instagram_url && (
+                        {settings?.instagram_url && settings.instagram_url.trim() !== '' && (
                             <a 
                                 href={settings.instagram_url} 
                                 target="_blank" 
@@ -286,7 +288,7 @@ function Footer() {
                             </a>
                         )}
 
-                        {settings?.twitter_url && (
+                        {settings?.twitter_url && settings.twitter_url.trim() !== '' && (
                             <a 
                                 href={settings.twitter_url} 
                                 target="_blank" 
@@ -301,7 +303,7 @@ function Footer() {
                             </a>
                         )}
 
-                        {settings?.youtube_url && (
+                        {settings?.youtube_url && settings.youtube_url.trim() !== '' && (
                             <a 
                                 href={settings.youtube_url} 
                                 target="_blank" 
@@ -316,7 +318,7 @@ function Footer() {
                             </a>
                         )}
 
-                        {settings?.linkedin_url && (
+                        {settings?.linkedin_url && settings.linkedin_url.trim() !== '' && (
                             <a 
                                 href={settings.linkedin_url} 
                                 target="_blank" 
