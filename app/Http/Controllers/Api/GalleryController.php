@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Gallery;
+use App\Models\GalleryImage; // Changed from Gallery to GalleryImage
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Cloudinary\Cloudinary;
@@ -16,7 +16,7 @@ class GalleryController extends Controller
     public function index()
     {
         try {
-            $images = Gallery::orderBy('created_at', 'desc')->get();
+            $images = GalleryImage::orderBy('created_at', 'desc')->get();
             
             return response()->json([
                 'success' => true,
@@ -117,7 +117,7 @@ class GalleryController extends Controller
                 ], 422);
             }
 
-            $gallery = Gallery::create($data);
+            $gallery = GalleryImage::create($data);
             
             \Log::info('Gallery image created successfully', ['id' => $gallery->id]);
 
@@ -147,7 +147,7 @@ class GalleryController extends Controller
     public function show($id)
     {
         try {
-            $image = Gallery::find($id);
+            $image = GalleryImage::find($id);
 
             if (!$image) {
                 return response()->json([
@@ -178,7 +178,7 @@ class GalleryController extends Controller
         \Log::info('ID', ['id' => $id]);
         \Log::info('Request Data', $request->all());
         
-        $gallery = Gallery::find($id);
+        $gallery = GalleryImage::find($id);
 
         if (!$gallery) {
             return response()->json([
@@ -288,7 +288,7 @@ class GalleryController extends Controller
      */
     public function destroy($id)
     {
-        $gallery = Gallery::find($id);
+        $gallery = GalleryImage::find($id);
 
         if (!$gallery) {
             return response()->json([
