@@ -82,7 +82,7 @@ class SettingsController extends Controller
                 'website_logo', 'footer_logo', 'favicon',
                 'main_color', 'color_2',
                 'sunday_timing', 'weekday_timing',
-                'robots_txt', 'popup_ad_url',
+                'robots_txt', 'popup_ad_url','map_embed_url',
                 'open_time_message', 'shop_start_time', 'shop_close_time',
                 'first_time_message', 'first_start_time', 'first_stop_time',
                 'second_time_message', 'second_start_time', 'second_stop_time',

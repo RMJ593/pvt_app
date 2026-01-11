@@ -43,7 +43,8 @@ class Setting extends Model
         
         // Default Image
         'default_image',
-        
+        // Google Maps 
+        'map_embed_url',
         // Timings
         'show_open_times',
         'open_time_message',
