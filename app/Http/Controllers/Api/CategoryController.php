@@ -24,7 +24,7 @@ class CategoryController extends Controller
                 'data' => $categories
             ]);
         } catch (\Exception $e) {
-            \Log::error('Failed to fetch categories:', ['error' => $e->getMessage()]);
+            \Log::error('Failed to fetch categories', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch categories',
@@ -39,8 +39,8 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         \Log::info('=== CATEGORY STORE REQUEST ===');
-        \Log::info('Request Data:', $request->all());
-        \Log::info('Has File:', $request->hasFile('image'));
+        \Log::info('Request Data', $request->all());
+        \Log::info('Has File', ['has_image' => $request->hasFile('image')]); // FIXED: Pass array
         
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -53,7 +53,7 @@ class CategoryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Log::error('Validation failed:', $validator->errors()->toArray());
+            \Log::error('Validation failed', $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -71,13 +71,13 @@ class CategoryController extends Controller
                 'is_active' => $request->is_active == '1' || $request->is_active === true || !$request->has('is_active')
             ];
 
-            \Log::info('Parsed data:', $data);
+            \Log::info('Parsed data', $data);
 
             // Handle image upload to Cloudinary
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
                 
-                \Log::info('Uploading category image to Cloudinary...', [
+                \Log::info('Uploading category image to Cloudinary', [
                     'filename' => $file->getClientOriginalName(),
                     'size' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
@@ -117,7 +117,7 @@ class CategoryController extends Controller
                 
                 $data['image'] = $result['secure_url'];
                 
-                \Log::info('Category image uploaded to Cloudinary successfully:', [
+                \Log::info('Category image uploaded to Cloudinary successfully', [
                     'url' => $result['secure_url'],
                     'public_id' => $result['public_id']
                 ]);
@@ -130,7 +130,7 @@ class CategoryController extends Controller
 
             $category = Category::create($data);
             
-            \Log::info('Category created successfully:', ['id' => $category->id]);
+            \Log::info('Category created successfully', ['id' => $category->id]);
 
             return response()->json([
                 'success' => true,
@@ -139,7 +139,7 @@ class CategoryController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            \Log::error('Category creation failed:', [
+            \Log::error('Category creation failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -172,7 +172,7 @@ class CategoryController extends Controller
                 'data' => $category
             ]);
         } catch (\Exception $e) {
-            \Log::error('Failed to fetch category:', ['error' => $e->getMessage()]);
+            \Log::error('Failed to fetch category', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch category'
@@ -186,8 +186,8 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         \Log::info('=== CATEGORY UPDATE REQUEST ===');
-        \Log::info('ID:', [$id]);
-        \Log::info('Request Data:', $request->all());
+        \Log::info('ID', ['id' => $id]);
+        \Log::info('Request Data', $request->all());
         
         $category = Category::find($id);
 
@@ -237,7 +237,7 @@ class CategoryController extends Controller
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
                 
-                \Log::info('Updating category image on Cloudinary...');
+                \Log::info('Updating category image on Cloudinary');
 
                 $cloudinary = new Cloudinary([
                     'cloud' => [
@@ -266,7 +266,7 @@ class CategoryController extends Controller
                 
                 $data['image'] = $result['secure_url'];
                 
-                \Log::info('Category image updated on Cloudinary:', [
+                \Log::info('Category image updated on Cloudinary', [
                     'url' => $result['secure_url']
                 ]);
             }
@@ -280,7 +280,7 @@ class CategoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Category update failed:', [
+            \Log::error('Category update failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -328,7 +328,7 @@ class CategoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Category deletion failed:', [
+            \Log::error('Category deletion failed', [
                 'error' => $e->getMessage()
             ]);
             
@@ -349,10 +349,10 @@ class CategoryController extends Controller
             if (preg_match('/\/v\d+\/(.+)\.\w+$/', $imageUrl, $matches)) {
                 $publicId = $matches[1];
                 $cloudinary->uploadApi()->destroy($publicId, ['resource_type' => 'image']);
-                \Log::info('Deleted image from Cloudinary:', ['public_id' => $publicId]);
+                \Log::info('Deleted image from Cloudinary', ['public_id' => $publicId]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Failed to delete from Cloudinary:', ['error' => $e->getMessage()]);
+            \Log::warning('Failed to delete from Cloudinary', ['error' => $e->getMessage()]);
         }
     }
 }
