@@ -47,8 +47,10 @@ function CategoryForm() {
                 setError('Authentication required');
                 return;
             }
+            
+            console.log('Fetching category from:', `/categories/${id}`);
                 
-            const response = await axios.get(`/api/categories/${id}`, {
+            const response = await axios.get(`/categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -176,7 +178,7 @@ function CategoryForm() {
                 // For updates, use POST with _method=PUT for FormData
                 formDataToSend.append('_method', 'PUT');
                 response = await axios.post(
-                    `/api/categories/${id}`,
+                    `/categories/${id}`,
                     formDataToSend,
                     {
                         headers: { 
@@ -188,7 +190,7 @@ function CategoryForm() {
             } else {
                 // For create, use POST
                 response = await axios.post(
-                    `/api/categories`,
+                    `/categories`,
                     formDataToSend,
                     {
                         headers: { 
