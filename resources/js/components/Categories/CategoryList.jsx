@@ -65,6 +65,19 @@ function CategoryList() {
         }
     };
 
+    // Helper function to get the correct image URL
+    const getImageUrl = (imageUrl) => {
+        if (!imageUrl) return null;
+        
+        // If it's already a full URL (Cloudinary), use it directly
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+            return imageUrl;
+        }
+        
+        // Otherwise, it's a local storage path
+        return `/storage/${imageUrl}`;
+    };
+
     if (loading) {
         return <div className="category-container"><div className="loading">Loading...</div></div>;
     }
@@ -112,7 +125,7 @@ function CategoryList() {
                                             <div className="name-with-image">
                                                 {category.image ? (
                                                     <img
-                                                        src={`/storage/${category.image}`}
+                                                        src={getImageUrl(category.image)}
                                                         alt={category.name}
                                                         className="table-image-rectangle"
                                                     />
@@ -129,14 +142,14 @@ function CategoryList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    hghgh
+                                                    ✏️
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(category.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    hjhj
+                                                    🗑️
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input
@@ -160,5 +173,3 @@ function CategoryList() {
 }
 
 export default CategoryList;
-
-
