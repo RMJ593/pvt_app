@@ -6,8 +6,34 @@ import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import WhatsAppButton from '../components/WhatsAppButton';
 import './BlogDetailPage.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 
+// Helper function for image URLs
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // If it's already a full URL (Cloudinary), return as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+    
+    // Local storage path
+    const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://127.0.0.1:8000'
+        : 'https://tphrc-int-project.onrender.com';
+    
+    return `${baseUrl}/storage/${imagePath}`;
+};
+
+// Helper to extract array from API response
+const extractArray = (response) => {
+    if (!response || !response.data) return [];
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data.success && Array.isArray(data.data)) return data.data;
+    if (data.data && typeof data.data === 'object') return Object.values(data.data);
+    if (typeof data === 'object') return Object.values(data);
+    return [];
+};
 
 function BlogDetailPage() {
     const { id, slug } = useParams();
@@ -18,7 +44,6 @@ function BlogDetailPage() {
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
-   
     useEffect(() => {
         fetchSettings();
         fetchMenuItems();
@@ -51,27 +76,23 @@ function BlogDetailPage() {
             setMenuItems([]);
         }
     };
+
     const fetchBlog = async () => {
         try {
             let endpoint;
             if (slug) {
-                // Try slug-based endpoint first
                 endpoint = `/api/blogs?slug=${slug}`;
             } else {
                 endpoint = `/api/blogs/${id}`;
             }
             
             const response = await axios.get(endpoint);
-            console.log('Raw API response:', response.data);
-            
             let blogData = response.data.data || response.data;
             
-            // If data is an array, get the first item
             if (Array.isArray(blogData)) {
                 blogData = blogData[0];
             }
             
-            console.log('Processed blog data:', blogData);
             setBlog(blogData);
         } catch (error) {
             console.error('Error fetching blog:', error);
@@ -89,23 +110,6 @@ function BlogDetailPage() {
             }
         }, 100);
         setSidebarOpen(false);
-    };
-
-    const getLogoUrl = () => {
-        const logoPath = settings?.website_logo || settings?.logo;
-        if (!logoPath) return null;
-        if (logoPath.startsWith('http')) return logoPath;
-        return `http://127.0.0.1:8000/storage/${logoPath}`;
-    };
-
-    const getBannerImageUrl = () => {
-        console.log('Blog banner_image:', blog?.banner_image); // Debug
-        console.log('Blog image:', blog?.image); // Debug
-        
-        const bannerPath = blog?.banner_image || blog?.image;
-        if (!bannerPath) return null;
-        if (bannerPath.startsWith('http')) return bannerPath;
-        return `http://127.0.0.1:8000/storage/${bannerPath}`;
     };
 
     const getCategoryName = (category) => {
@@ -170,8 +174,11 @@ function BlogDetailPage() {
                     </button>
 
                     <div className="logo">
-                        {getLogoUrl() ? (
-                            <img src={getLogoUrl()} alt={settings?.site_name || 'Restaurant'} />
+                        {settings?.website_logo ? (
+                            <img 
+                                src={getImageUrl(settings.website_logo)} 
+                                alt={settings?.site_name || 'Restaurant'} 
+                            />
                         ) : (
                             <h1>{settings?.site_name || 'Curry Leaf'}</h1>
                         )}
@@ -188,10 +195,12 @@ function BlogDetailPage() {
 
             {/* Hero Section with Banner Image */}
             <section className="blog-hero-section">
-                {getBannerImageUrl() && (
+                {(blog.banner_image || blog.image) && (
                     <div 
                         className="blog-hero-image"
-                        style={{ backgroundImage: `url(${getBannerImageUrl()})` }}
+                        style={{ 
+                            backgroundImage: `url(${getImageUrl(blog.banner_image || blog.image)})` 
+                        }}
                     />
                 )}
                 

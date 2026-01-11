@@ -95,25 +95,37 @@ function ContactUsPage() {
     };
 
     const getGoogleMapsEmbedUrl = () => {
-        if (!settings?.contact_address) return '';
-        const address = encodeURIComponent(settings.contact_address);
-        return `https://www.google.com/maps?q=${address}&output=embed`;
+        // If map URL is set in settings, use that
+        if (settings?.map_embed_url) {
+            return settings.map_embed_url;
+        }
+        
+        // Otherwise use the hardcoded Curry Leaf location
+        return 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2289.817743842076!2d-1.6603576232981123!3d54.976295272806695!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487e7713c90ad8c7%3A0x1da9e24158e1505c!2s69%20West%20Rd%2C%20Newcastle%20upon%20Tyne%20NE4%209PX%2C%20UK!5e0!3m2!1sen!2sin!4v1768118681006!5m2!1sen!2sin';
     };
 
     const getSundayTiming = () => {
-        const sundaySlots = settings?.booking_schedule?.sunday || [];
-        if (sundaySlots.length === 0) return 'Closed';
-        const firstSlot = sundaySlots[0];
-        const lastSlot = sundaySlots[sundaySlots.length - 1];
-        return `${formatTime(firstSlot)} - ${formatTime(lastSlot)}`;
+        try {
+            const sundaySlots = settings?.booking_schedule?.sunday || [];
+            if (sundaySlots.length === 0) return 'Closed';
+            const firstSlot = sundaySlots[0];
+            const lastSlot = sundaySlots[sundaySlots.length - 1];
+            return `${formatTime(firstSlot)} - ${formatTime(lastSlot)}`;
+        } catch (error) {
+            return 'Closed';
+        }
     };
 
     const getWeekdayTiming = () => {
-        const mondaySlots = settings?.booking_schedule?.monday || [];
-        if (mondaySlots.length === 0) return 'Closed';
-        const firstSlot = mondaySlots[0];
-        const lastSlot = mondaySlots[mondaySlots.length - 1];
-        return `${formatTime(firstSlot)} - ${formatTime(lastSlot)}`;
+        try {
+            const mondaySlots = settings?.booking_schedule?.monday || [];
+            if (mondaySlots.length === 0) return 'Closed';
+            const firstSlot = mondaySlots[0];
+            const lastSlot = mondaySlots[mondaySlots.length - 1];
+            return `${formatTime(firstSlot)} - ${formatTime(lastSlot)}`;
+        } catch (error) {
+            return 'Closed';
+        }
     };
 
     const handleChange = (field, value) => {
@@ -226,7 +238,7 @@ function ContactUsPage() {
                             allowFullScreen=""
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
-                            title="Restaurant Location"
+                            title="Curry Leaf Restaurant Location"
                         ></iframe>
                     </div>
 
@@ -239,7 +251,7 @@ function ContactUsPage() {
 
                         <div className="info-card center-card">
                             <h3>Address</h3>
-                            <p>{settings?.contact_address || '169 West Rd, Newcastle upon Tyne NE15 6PQ'}</p>
+                            <p>{settings?.contact_address || '69 West Rd, Newcastle upon Tyne NE4 9PX, UK'}</p>
                         </div>
 
                         <div className="info-card">
@@ -328,7 +340,7 @@ function ContactUsPage() {
             </section>
 
             <Footer />
-            <WhatsAppButton phone={settings?.contact_phone || '876543219'} />
+            <WhatsAppButton phone={settings?.contact_phone || '7878277198'} />
         </div>
     );
 }

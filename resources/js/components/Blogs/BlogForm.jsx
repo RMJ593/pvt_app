@@ -7,6 +7,19 @@ import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import './Blogs.css';
 
+// Helper function for image URLs
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // If it's already a full URL (Cloudinary), return as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+    
+    // Local storage path
+    return `/storage/${imagePath}`;
+};
+
 function BlogForm() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -53,20 +66,13 @@ function BlogForm() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            console.log('Blog Categories Response:', response.data);
-            
-            // Handle different response formats
             if (Array.isArray(response.data)) {
-                console.log('Categories are array:', response.data);
                 setCategories(response.data);
             } else if (response.data.success && response.data.data) {
-                console.log('Categories in data.data:', response.data.data);
                 setCategories(response.data.data);
             } else if (response.data.data) {
-                console.log('Categories in data:', response.data.data);
                 setCategories(response.data.data);
             } else {
-                console.log('No categories found, setting empty array');
                 setCategories([]);
             }
         } catch (error) {
@@ -106,9 +112,10 @@ function BlogForm() {
                 }
             }
 
-            if (blog.image) setImagePreview(`/storage/${blog.image}`);
-            if (blog.banner_image) setBannerImagePreview(`/storage/${blog.banner_image}`);
-            if (blog.meta_image) setMetaImagePreview(`/storage/${blog.meta_image}`);
+            // Use getImageUrl helper for all images
+            if (blog.image) setImagePreview(getImageUrl(blog.image));
+            if (blog.banner_image) setBannerImagePreview(getImageUrl(blog.banner_image));
+            if (blog.meta_image) setMetaImagePreview(getImageUrl(blog.meta_image));
         } catch (error) {
             console.error('Error fetching blog:', error);
             setError('Failed to load blog');
@@ -233,7 +240,7 @@ function BlogForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Blog' : 'Add Blog'}</h1>
                 <Link to="/staff/blogs" className="btn-back">
-                    Üê Back to List
+                    ‚Üê Back to List
                 </Link>
             </div>
 
@@ -343,7 +350,7 @@ function BlogForm() {
                             onClick={toggleFullscreen}
                             className="btn-fullscreen"
                         >
-                            {isFullscreen ? 'úï Exit Fullscreen' : 'õ∂ Fullscreen'}
+                            {isFullscreen ? '‚õ∂ Exit Fullscreen' : '‚õ∂ Fullscreen'}
                         </button>
                     </div>
 
@@ -486,5 +493,3 @@ function BlogForm() {
 }
 
 export default BlogForm;
-
-
