@@ -23,6 +23,17 @@ function CategoryForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Check authentication on mount
+    useEffect(() => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            setError('You must be logged in to access this page.');
+            setTimeout(() => {
+                navigate('/staff/login');
+            }, 2000);
+        }
+    }, [navigate]);
+
     useEffect(() => {
         if (isEditMode) {
             fetchCategory();
@@ -32,13 +43,15 @@ function CategoryForm() {
     const fetchCategory = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://127.0.0.1:8000/api'
-                : 'https://tphrc-int-project.onrender.com/api';
+            if (!token) {
+                setError('Authentication required');
+                return;
+            }
                 
-            const response = await axios.get(`${apiBaseUrl}/categories/${id}`, {
+            const response = await axios.get(`/api/categories/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            
             if (response.data.success) {
                 const category = response.data.data;
                 setFormData({
@@ -50,6 +63,7 @@ function CategoryForm() {
                     is_royalty: category.is_royalty || false,
                     is_special_selection: category.is_special_selection || false
                 });
+                
                 if (category.image) {
                     // Check if it's a Cloudinary URL or local path
                     if (category.image.startsWith('http')) {
@@ -61,7 +75,12 @@ function CategoryForm() {
             }
         } catch (error) {
             console.error('Error fetching category:', error);
-            setError('Failed to load category');
+            if (error.response?.status === 401) {
+                setError('Session expired. Please log in again.');
+                setTimeout(() => navigate('/staff/login'), 2000);
+            } else {
+                setError('Failed to load category');
+            }
         }
     };
 
@@ -83,11 +102,21 @@ function CategoryForm() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                setError('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+                e.target.value = '';
+                return;
+            }
+            
             // Validate file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
                 setError('Image size should not exceed 2MB');
+                e.target.value = '';
                 return;
             }
+            
             setImageFile(file);
             setImagePreview(URL.createObjectURL(file));
             setError('');
@@ -99,6 +128,15 @@ function CategoryForm() {
         setLoading(true);
         setError('');
 
+        // Get auth token
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            setError('Authentication required. Please log in.');
+            setLoading(false);
+            setTimeout(() => navigate('/staff/login'), 2000);
+            return;
+        }
+
         // Validation
         if (!isEditMode && !imageFile) {
             setError('Image is required');
@@ -107,82 +145,94 @@ function CategoryForm() {
         }
 
         try {
-            const token = localStorage.getItem('auth_token');
             const formDataToSend = new FormData();
             
             // Append all fields
             formDataToSend.append('name', formData.name);
             formDataToSend.append('small_heading', formData.small_heading || '');
             formDataToSend.append('location', formData.location);
-            formDataToSend.append('is_royalty', featured.is_royalty ? 1 : 0);
-            formDataToSend.append('is_special_selection', featured.is_special_selection ? 1 : 0);
-            formDataToSend.append('is_active', 1); // Add default active status
+            formDataToSend.append('is_royalty', featured.is_royalty ? '1' : '0');
+            formDataToSend.append('is_special_selection', featured.is_special_selection ? '1' : '0');
+            formDataToSend.append('is_active', '1');
 
             if (imageFile) {
                 formDataToSend.append('image', imageFile);
             }
 
-            // Debug: Log what we're sending
-            console.log('Sending data:');
+            // Debug logging
+            console.log('=== SUBMITTING CATEGORY ===');
+            console.log('Edit Mode:', isEditMode);
             console.log('Name:', formData.name);
             console.log('Small Heading:', formData.small_heading);
             console.log('Location:', formData.location);
             console.log('Is Royalty:', featured.is_royalty);
             console.log('Is Special Selection:', featured.is_special_selection);
-            console.log('Image File:', imageFile);
+            console.log('Has Image:', !!imageFile);
+            console.log('Has Token:', !!token);
 
             let response;
-            const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://127.0.0.1:8000/api'
-                : 'https://tphrc-int-project.onrender.com/api';
 
             if (isEditMode) {
+                // For updates, use POST with _method=PUT for FormData
                 formDataToSend.append('_method', 'PUT');
                 response = await axios.post(
-                    `${apiBaseUrl}/categories/${id}`,
+                    `/api/categories/${id}`,
                     formDataToSend,
                     {
                         headers: { 
-                            Authorization: `Bearer ${token}`,
+                            'Authorization': `Bearer ${token}`,
                             'Content-Type': 'multipart/form-data'
                         }
                     }
                 );
             } else {
+                // For create, use POST
                 response = await axios.post(
-                    `${apiBaseUrl}/categories`,
+                    `/api/categories`,
                     formDataToSend,
                     {
                         headers: { 
-                            Authorization: `Bearer ${token}`,
+                            'Authorization': `Bearer ${token}`,
                             'Content-Type': 'multipart/form-data'
                         }
                     }
                 );
             }
 
+            console.log('=== SUCCESS ===');
+            console.log('Response:', response.data);
+
             if (response.data.success) {
+                alert(isEditMode ? 'Category updated successfully!' : 'Category created successfully!');
                 navigate('/staff/categories');
             }
         } catch (error) {
-            console.error('=== FULL ERROR DETAILS ===');
+            console.error('=== ERROR DETAILS ===');
             console.error('Error:', error);
-            console.error('Response Data:', error.response?.data);
-            console.error('Response Status:', error.response?.status);
-            console.error('Response Headers:', error.response?.headers);
+            console.error('Response:', error.response?.data);
+            console.error('Status:', error.response?.status);
             
-            // Display detailed validation errors
-            if (error.response?.data?.errors) {
+            // Handle different error types
+            if (error.response?.status === 401) {
+                setError('Authentication failed. Please log in again.');
+                setTimeout(() => navigate('/staff/login'), 2000);
+            } else if (error.response?.status === 422) {
+                // Validation errors
                 const errors = error.response.data.errors;
-                console.error('Validation Errors:', errors);
-                const errorMessages = Object.entries(errors)
-                    .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-                    .join('\n');
-                setError(`Validation failed:\n${errorMessages}`);
+                if (errors) {
+                    const errorMessages = Object.entries(errors)
+                        .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                        .join('\n');
+                    setError(`Validation failed:\n${errorMessages}`);
+                } else {
+                    setError(error.response.data.message || 'Validation failed');
+                }
             } else if (error.response?.data?.message) {
                 setError(error.response.data.message);
+            } else if (error.message) {
+                setError(`Error: ${error.message}`);
             } else {
-                setError('Failed to save category. Check console for details.');
+                setError('Failed to save category. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -199,7 +249,7 @@ function CategoryForm() {
             </div>
 
             {error && (
-                <div className="alert alert-error">
+                <div className="alert alert-error" style={{ whiteSpace: 'pre-line' }}>
                     {error}
                 </div>
             )}
@@ -249,16 +299,19 @@ function CategoryForm() {
                 </div>
 
                 <div className="form-group">
-                    <label>Image * {isEditMode && '(Leave empty to keep current image)'}</label>
+                    <label>
+                        Image * 
+                        {isEditMode && ' (Leave empty to keep current image)'}
+                    </label>
                     <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                         onChange={handleImageChange}
                         className="form-control-file"
                         required={!isEditMode}
                     />
                     <small className="form-text">
-                        Preferred dimension: 285px x 336px. Max 2MB.
+                        Accepted: JPEG, PNG, GIF, WebP. Recommended: 285px × 336px. Max: 2MB
                     </small>
                 </div>
 
@@ -273,7 +326,7 @@ function CategoryForm() {
                     
                     <div className="toggle-group">
                         <label className="toggle-label">
-                            <span>Royalty</span>
+                            <span>Royalty (Show in "Flavors for Royalty" section)</span>
                             <label className="toggle-switch">
                                 <input
                                     type="checkbox"
@@ -287,7 +340,7 @@ function CategoryForm() {
 
                     <div className="toggle-group">
                         <label className="toggle-label">
-                            <span>Special Selection</span>
+                            <span>Special Selection (Show in special selection section)</span>
                             <label className="toggle-switch">
                                 <input
                                     type="checkbox"
@@ -301,9 +354,23 @@ function CategoryForm() {
                 </div>
 
                 <div className="form-actions">
-                    <button type="submit" disabled={loading} className="btn-submit">
-                        {loading ? 'Saving...' : 'Submit'}
+                    <button 
+                        type="submit" 
+                        disabled={loading || (!isEditMode && !imageFile)} 
+                        className="btn-submit"
+                    >
+                        {loading ? (
+                            <>
+                                <span>Saving...</span>
+                                <span style={{ marginLeft: '10px' }}>⏳</span>
+                            </>
+                        ) : (
+                            isEditMode ? 'Update Category' : 'Create Category'
+                        )}
                     </button>
+                    <Link to="/staff/categories" className="btn-cancel">
+                        Cancel
+                    </Link>
                 </div>
             </form>
         </div>
