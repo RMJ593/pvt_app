@@ -252,3 +252,19 @@ Route::get('/debug-env', function() {
         'config_file_exists' => file_exists(config_path('cloudinary.php')),
     ]);
 });
+Route::get('/test-gallery', function() {
+    $gallery = \App\Models\Gallery::all();
+    
+    return response()->json([
+        'total_images' => $gallery->count(),
+        'images' => $gallery->map(function($img) {
+            return [
+                'id' => $img->id,
+                'title' => $img->title,
+                'image_url' => $img->image,
+                'is_active' => $img->is_active,
+                'is_cloudinary' => str_starts_with($img->image ?? '', 'https://res.cloudinary.com')
+            ];
+        })
+    ]);
+});

@@ -10,19 +10,16 @@ export const getApiUrl = (path) => {
 };
 
 // Helper function to get full storage URL
-export const getStorageUrl = (path) => {
-    if (!path) return null;
-
-    // If already a full URL (Cloudinary or external), return as is
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-        return path;
+export const getStorageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // ✅ Cloudinary URLs - use directly
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
     }
-
-    // Legacy: Local storage path
-    const cleanPath = path.replace(/^\/?(storage\/)?/, '');
-    // Use base URL without /api for storage
-    const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://tphrc-int-project.onrender.com';
-    return `${baseUrl}/storage/${cleanPath}`;
+    
+    // ✅ Local paths - add /storage/ prefix
+    return `${API_BASE_URL}/storage/${imagePath}`;
 };
 
 // ✅ NEW: Helper to safely extract array from API response
