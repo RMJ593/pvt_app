@@ -2,7 +2,40 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Footer from '../components/Footer';
 import './AboutPage.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
+
+// Inline API config to avoid import issues
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:8000'
+    : 'https://tphrc-int-project.onrender.com';
+
+const getStorageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    
+    // Cloudinary URLs - return as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+    
+    // Local storage paths
+    return `${API_BASE_URL}/storage/${imagePath}`;
+};
+
+const extractArray = (response) => {
+    if (!response || !response.data) return [];
+    
+    const data = response.data;
+    
+    if (Array.isArray(data)) return data;
+    if (data.success && Array.isArray(data.data)) return data.data;
+    if (data.data && typeof data.data === 'object' && !Array.isArray(data.data)) {
+        return Object.values(data.data);
+    }
+    if (typeof data === 'object' && !Array.isArray(data)) {
+        return Object.values(data);
+    }
+    
+    return [];
+};
 
 function AboutPage() {
     const [settings, setSettings] = useState(null);
@@ -40,15 +73,9 @@ function AboutPage() {
     const fetchSettings = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/api/settings`);
-            console.log('Settings response:', response.data);
             
             if (response.data.success) {
-                const settingsData = response.data.data;
-                console.log('Settings data:', settingsData);
-                console.log('Default image path:', settingsData.default_image);
-                console.log('Default image URL:', settingsData.default_image ? getStorageUrl(settingsData.default_image) : 'Not set');
-                
-                setSettings(settingsData);
+                setSettings(response.data.data);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -60,17 +87,12 @@ function AboutPage() {
             const response = await axios.get(`${API_BASE_URL}/api/gallery`);
             const galleryData = extractArray(response);
             
-            console.log('About Page - Gallery data:', galleryData);
-            
             if (Array.isArray(galleryData) && galleryData.length > 0) {
                 const image2 = galleryData.find(
                     img => img.title && img.title.toLowerCase().trim() === 'image2' && 
                     (img.is_active === 1 || img.is_active === true)
                 );
                 setAboutImage(image2);
-                console.log('Found image2:', image2);
-            } else {
-                console.log('No gallery images available');
             }
         } catch (error) {
             console.error('Error fetching gallery images:', error);
@@ -120,7 +142,7 @@ function AboutPage() {
 
     return (
         <div className="about-page">
-            {/* Hero Section with Background */}
+            {/* Hero Section */}
             <section 
                 className="about-hero"
                 style={{
@@ -151,7 +173,6 @@ function AboutPage() {
             <section className="about-content">
                 <div className="about-container">
                     <div className="about-grid">
-                        {/* Column 1 - Story */}
                         <div className="about-story">
                             <p>
                                 Step into Curry Leaf, where the true taste of India comes alive. 
@@ -172,17 +193,12 @@ function AboutPage() {
                             </p>
                         </div>
 
-                        {/* Column 2 - Image */}
                         <div className="about-image-wrapper">
                             {aboutImage && aboutImage.image ? (
                                 <img
                                     src={getStorageUrl(aboutImage.image)}
                                     alt="Curry Leaf Restaurant"
                                     className="about-main-image"
-                                    onError={(e) => {
-                                        console.error('Failed to load image2');
-                                        e.target.style.display = 'none';
-                                    }}
                                 />
                             ) : (
                                 <div className="about-image-placeholder">
@@ -194,7 +210,6 @@ function AboutPage() {
                             )}
                         </div>
 
-                        {/* Column 3 - Hours & Contact */}
                         <div className="about-info">
                             <div className="info-section">
                                 <h3 className="info-title">Opening Hours</h3>
@@ -247,25 +262,16 @@ function AboutPage() {
                 </div>
             </section>
 
-            {/* Chef Section */}
             <ChefSection />
-
-            {/* Experience Section */}
             <ExperienceSection />
-
-            {/* Services Section */}
             <ServicesSection />
-
-            {/* Gallery Slider Section */}
             <GallerySlider />
-
-            {/* Footer */}
             <Footer />
         </div>
     );
 }
 
-// Chef Section Component
+// Chef Section
 function ChefSection() {
     const [chefImage, setChefImage] = useState(null);
    
@@ -300,7 +306,6 @@ function ChefSection() {
                                 src={getStorageUrl(chefImage.image)} 
                                 alt="Master Chef" 
                                 className="chef-image"
-                                onError={(e) => e.target.style.display = 'none'}
                             />
                         ) : (
                             <div className="chef-image-placeholder">
@@ -327,7 +332,7 @@ function ChefSection() {
     );
 }
 
-// Experience Section Component
+// Experience Section
 function ExperienceSection() {
     const [experienceImage, setExperienceImage] = useState(null);
     
@@ -374,7 +379,6 @@ function ExperienceSection() {
                                 src={getStorageUrl(experienceImage.image)} 
                                 alt="Experience" 
                                 className="experience-image"
-                                onError={(e) => e.target.style.display = 'none'}
                             />
                         ) : (
                             <div className="experience-image-placeholder">
@@ -389,7 +393,7 @@ function ExperienceSection() {
     );
 }
 
-// Services Section Component
+// Services Section
 function ServicesSection() {
     const [serviceImage, setServiceImage] = useState(null);
     
@@ -453,7 +457,6 @@ function ServicesSection() {
                                 src={getStorageUrl(serviceImage.image)} 
                                 alt="Services" 
                                 className="service-image"
-                                onError={(e) => e.target.style.display = 'none'}
                             />
                         ) : (
                             <div className="service-image-placeholder">
@@ -478,7 +481,7 @@ function ServicesSection() {
     );
 }
 
-// Gallery Slider Component
+// Gallery Slider
 function GallerySlider() {
     const [galleryImages, setGalleryImages] = useState([]);
     const sliderRef = useRef(null);
@@ -493,7 +496,6 @@ function GallerySlider() {
             const galleryData = extractArray(response);
 
             if (Array.isArray(galleryData)) {
-                // Filter images with titles image6 to image10
                 const sliderImages = galleryData.filter(img => {
                     const title = img.title?.toLowerCase().trim();
                     return (title === 'image6' || title === 'image7' || title === 'image8' || 
@@ -501,7 +503,6 @@ function GallerySlider() {
                            (img.is_active === 1 || img.is_active === true);
                 });
                 
-                // Sort by title number
                 sliderImages.sort((a, b) => {
                     const numA = parseInt(a.title.replace(/\D/g, ''));
                     const numB = parseInt(b.title.replace(/\D/g, ''));
@@ -525,7 +526,6 @@ function GallerySlider() {
         }
     };
 
-    // Don't render if no images
     if (galleryImages.length === 0) {
         return (
             <section className="gallery-slider-section">
@@ -552,10 +552,6 @@ function GallerySlider() {
                                 <img 
                                     src={getStorageUrl(image.image)} 
                                     alt={image.title}
-                                    onError={(e) => {
-                                        console.error('Failed to load:', image.title);
-                                        e.target.style.display = 'none';
-                                    }}
                                 />
                             </div>
                         ))}
