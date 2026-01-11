@@ -22,6 +22,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Api\FooterLinkController;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Http\Controllers\Api\DiagnosticController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -41,6 +42,8 @@ Route::get('/testimonials', [TestimonialController::class, 'index']);
 Route::get('/gallery', [GalleryController::class, 'index']);
 Route::post('/gallery', [GalleryController::class, 'store']); // ← ADD THIS (for creating new)
 Route::post('/gallery/{id}', [GalleryController::class, 'update']); // (for updating existing)
+Route::get('/diagnose', [DiagnosticController::class, 'diagnose']);
+Route::post('/test-upload', [DiagnosticController::class, 'testUpload']);
 // Hero Banners (Public - no auth required)
 Route::get('/hero-banners', [HeroBannerController::class, 'index']);
 Route::get('/hero-banners/{heroBanner}', [HeroBannerController::class, 'show']);
