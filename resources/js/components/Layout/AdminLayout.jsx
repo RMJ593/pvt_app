@@ -194,7 +194,7 @@ function AdminLayout({ children, onLogout, username = "Super Admin", userEmail =
                         <div className="header-left"></div>
                         <div className="header-center">
                             <button className="sync-button">Sync with Website</button>
-                            <a href="https://www.yourrestaurant.com" target="_blank" rel="noopener noreferrer" className="website-link">
+                            <a href="https://tphrc-int-project.onrender.com" target="_blank" rel="noopener noreferrer" className="website-link">
                                 www.yourrestaurant.com
                             </a>
                         </div>

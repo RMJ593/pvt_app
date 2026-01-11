@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import axios from 'axios';
 import Login from './components/Auth/Login';
 import Dashboard from './components/Dashboard/Dashboard';
 import AdminLayout from './components/Layout/AdminLayout';
@@ -38,7 +39,6 @@ import UserForm from './components/Users/UserForm';
 import UserResponseList from './components/UserResponses/UserResponseList';
 import TableBookingList from './components/TableBookings/TableBookingList';
 import { getApiUrl } from './config/api';
-import axios from 'axios';
 
 function AdminApp() {
     const [isAuthenticated, setIsAuthenticated] = useState(
@@ -97,12 +97,14 @@ function AdminApp() {
 
     return (
         <Routes>
-            <Route path="/login" element={
+            {/* LOGIN ROUTE - Now at /staff/login */}
+            <Route path="/staff/login" element={
                 isAuthenticated ? 
                 <Navigate to="/staff/dashboard" replace /> : 
                 <Login onLogin={handleLogin} />
             } />
             
+            {/* PROTECTED STAFF ROUTES */}
             <Route 
                 path="/staff/*" 
                 element={
@@ -182,12 +184,17 @@ function AdminApp() {
                             </Routes>
                         </AdminLayout>
                     ) : (
-                        <Navigate to="/login" replace />
+                        <Navigate to="/staff/login" replace />
                     )
                 } 
             />
             
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            {/* Redirect /staff to /staff/dashboard if authenticated, otherwise to login */}
+            <Route path="/staff" element={
+                isAuthenticated ? 
+                <Navigate to="/staff/dashboard" replace /> : 
+                <Navigate to="/staff/login" replace />
+            } />
         </Routes>
     );
 }
