@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// ✅ FIX: Always append /api to base URL
-const baseURL = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
+// ✅ FIX: Set baseURL to origin only, NOT /api
+// We'll add /api in individual requests or via getApiUrl()
+const baseURL = import.meta.env.VITE_API_URL || window.location.origin;
 axios.defaults.baseURL = baseURL;
 
 console.log('🔍 Axios Base URL:', baseURL); // Debug log

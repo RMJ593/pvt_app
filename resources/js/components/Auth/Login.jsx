@@ -17,13 +17,13 @@ function Login({ onLogin }) {
         setError('');
         
         try {
-            // FIXED: Pass 'login' instead of 'api/login'
+            // This will call: baseURL + /api/login = window.origin + /api/login
             const response = await axios.post(getApiUrl('login'), {
                 email: email,
                 password: password
             });
             
-            console.log('Login response:', response.data);
+            console.log('✅ Login response:', response.data);
             
             // Handle different response formats
             let token, user;
@@ -43,7 +43,7 @@ function Login({ onLogin }) {
                 setError('Login failed. Invalid response format.');
             }
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('❌ Login error:', error);
             
             if (error.response?.status === 401) {
                 setError('Invalid email or password');
