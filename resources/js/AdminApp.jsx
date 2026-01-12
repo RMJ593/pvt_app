@@ -97,16 +97,19 @@ function AdminApp() {
 
     return (
         <Routes>
-            {/* LOGIN ROUTE - Now at /staff/login */}
-            <Route path="/staff/login" element={
-                isAuthenticated ? 
-                <Navigate to="/staff/dashboard" replace /> : 
-                <Login onLogin={handleLogin} />
-            } />
-            
-            {/* PROTECTED STAFF ROUTES */}
+            {/* LOGIN ROUTE - Only accessible at /staff/login */}
             <Route 
-                path="/staff/*" 
+                path="/login" 
+                element={
+                    isAuthenticated ? 
+                    <Navigate to="/dashboard" replace /> : 
+                    <Login onLogin={handleLogin} />
+                } 
+            />
+            
+            {/* PROTECTED STAFF ROUTES - All other /staff/* routes */}
+            <Route 
+                path="/*" 
                 element={
                     isAuthenticated ? (
                         <AdminLayout onLogout={handleLogout} username={username} userEmail={userEmail}>
@@ -180,21 +183,19 @@ function AdminApp() {
                                 <Route path="users/create" element={<UserForm />} />
                                 <Route path="users/:id/edit" element={<UserForm />} />
                                 
-                                <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
+                                {/* Redirect /staff to /staff/dashboard */}
+                                <Route path="/" element={<Navigate to="/staff/dashboard" replace />} />
+                                
+                                {/* Redirect any unknown /staff/* route to login */}
+                                <Route path="*" element={<Navigate to="/staff/login" replace />} />
                             </Routes>
                         </AdminLayout>
                     ) : (
+                        // If not authenticated, redirect to login
                         <Navigate to="/staff/login" replace />
                     )
                 } 
             />
-            
-            {/* Redirect /staff to /staff/dashboard if authenticated, otherwise to login */}
-            <Route path="/staff" element={
-                isAuthenticated ? 
-                <Navigate to="/staff/dashboard" replace /> : 
-                <Navigate to="/staff/login" replace />
-            } />
         </Routes>
     );
 }

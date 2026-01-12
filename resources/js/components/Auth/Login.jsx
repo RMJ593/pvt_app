@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './login.css';
@@ -9,14 +9,6 @@ function Login({ onLogin }) {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-
-    // Check if already logged in
-    useEffect(() => {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            navigate('/staff/dashboard');
-        }
-    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
