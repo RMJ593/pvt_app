@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-// ✅ FIX: Set baseURL to origin only, NOT /api
-// We'll add /api in individual requests or via getApiUrl()
-const baseURL = import.meta.env.VITE_API_URL || window.location.origin;
-axios.defaults.baseURL = baseURL;
+// TEMPORARY FIX: Hardcode to use current domain
+// This ensures it always calls the same backend it's deployed on
+axios.defaults.baseURL = `${window.location.origin}/api`;
 
-console.log('🔍 Axios Base URL:', baseURL); // Debug log
+console.log('🔍 Axios Base URL:', axios.defaults.baseURL);
 
 // Enable credentials
 axios.defaults.withCredentials = true;
@@ -18,7 +17,7 @@ axios.defaults.headers.common['Content-Type'] = 'application/json';
 // Add request interceptor to include auth token
 axios.interceptors.request.use(
     (config) => {
-        console.log('📤 Request:', config.method?.toUpperCase(), config.url); // Debug log
+        console.log('📤 Request:', config.method?.toUpperCase(), config.url);
         const token = localStorage.getItem('auth_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
