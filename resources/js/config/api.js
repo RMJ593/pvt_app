@@ -3,7 +3,8 @@ export const API_BASE_URL = window.location.origin;
 
 console.log('🔧 API_BASE_URL set to:', API_BASE_URL);
 
-// Helper function to get full API URL
+// Helper function to get API path (NOT full URL)
+// Since axios baseURL is already set to origin/api, we just return the clean path
 export const getApiUrl = (path) => {
     // Remove leading slash if present
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
@@ -11,8 +12,9 @@ export const getApiUrl = (path) => {
     // Remove 'api/' prefix if already present to avoid duplication
     const finalPath = cleanPath.replace(/^api\//, '');
     
-    // Always return relative path with /api/ prefix
-    return `/api/${finalPath}`;
+    // Return just the path WITHOUT /api/ prefix
+    // axios will add the baseURL (which already includes /api)
+    return `/${finalPath}`;
 };
 
 // Helper function to get full storage URL
