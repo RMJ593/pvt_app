@@ -21,41 +21,66 @@ use App\Http\Controllers\Api\MailTemplateController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Api\FooterLinkController;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Http\Controllers\Api\DiagnosticController;
 
-// Public routes
+// ============================================
+// PUBLIC ROUTES (NO AUTH REQUIRED)
+// ============================================
+
+// Auth
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Public data (no auth required)
+// Categories (Public)
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
+
+// Menu Items (Public)
 Route::get('/menu-items', [MenuItemController::class, 'index']);
 Route::get('/menu-items/{menuItem}', [MenuItemController::class, 'show']);
+
+// Pages (Public)
 Route::get('/pages', [PageController::class, 'index']);
 Route::get('/pages/{page}', [PageController::class, 'show']);
+
+// Blogs (Public)
 Route::get('/blogs', [BlogController::class, 'index']);
 Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+
+// Team Members (Public)
 Route::get('/team-members', [TeamMemberController::class, 'index']);
+
+// Testimonials (Public)
 Route::get('/testimonials', [TestimonialController::class, 'index']);
+
+// Gallery (Public)
 Route::get('/gallery', [GalleryController::class, 'index']);
-Route::post('/gallery', [GalleryController::class, 'store']); // ← ADD THIS (for creating new)
-Route::post('/gallery/{id}', [GalleryController::class, 'update']); // (for updating existing)
-Route::get('/diagnose', [DiagnosticController::class, 'diagnose']);
-Route::post('/test-upload', [DiagnosticController::class, 'testUpload']);
-// Hero Banners (Public - no auth required)
+
+// Hero Banners (Public)
 Route::get('/hero-banners', [HeroBannerController::class, 'index']);
 Route::get('/hero-banners/{heroBanner}', [HeroBannerController::class, 'show']);
-Route::post('/hero-banners', [HeroBannerController::class, 'store']);
-Route::put('/hero-banners/{heroBanner}', [HeroBannerController::class, 'update']);
-Route::delete('/hero-banners/{heroBanner}', [HeroBannerController::class, 'destroy']);
+
+// Settings (Public)
+Route::get('/settings', [SettingsController::class, 'index']);
+
+// Menu Links (Public)
+Route::get('/menu-links', [MenuLinkController::class, 'index']);
+
+// Footer Links (Public)
+Route::get('/footer-links', [FooterLinkController::class, 'index']);
 
 // Public contact/booking
 Route::post('/user-responses', [UserResponseController::class, 'store']);
 Route::post('/table-bookings', [TableBookingController::class, 'store']);
 
-// Protected routes (require authentication)
+// Diagnostic routes
+Route::get('/diagnose', [DiagnosticController::class, 'diagnose']);
+Route::post('/test-upload', [DiagnosticController::class, 'testUpload']);
+
+// ============================================
+// PROTECTED ROUTES (AUTH REQUIRED)
+// ============================================
+
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -63,14 +88,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Categories (Admin)
     Route::post('/categories', [CategoryController::class, 'store']);
-    Route::post('/categories/{id}', [CategoryController::class, 'update']); // For FormData
+    Route::post('/categories/{id}', [CategoryController::class, 'update']);
     Route::put('/categories/{category}', [CategoryController::class, 'update']);
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
 
-    // Products / Menu Items (Admin)
-    Route::get('/menu-items/{id}', [MenuItemController::class, 'show']);
+    // Menu Items (Admin)
     Route::post('/menu-items', [MenuItemController::class, 'store']);
-    Route::post('/menu-items/{id}', [MenuItemController::class, 'update']); // For FormData with _method
+    Route::post('/menu-items/{id}', [MenuItemController::class, 'update']);
     Route::put('/menu-items/{id}', [MenuItemController::class, 'update']);
     Route::delete('/menu-items/{id}', [MenuItemController::class, 'destroy']);
 
@@ -86,69 +110,70 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/table-bookings/{tableBooking}', [TableBookingController::class, 'update']);
     Route::delete('/table-bookings/{tableBooking}', [TableBookingController::class, 'destroy']);
 
-    // Pages (Admin)
-    Route::get('/pages', [PageController::class, 'index']);
+    // Pages (Admin CRUD)
     Route::post('/pages', [PageController::class, 'store']);
-    Route::get('/pages/{id}', [PageController::class, 'show']);
     Route::post('/pages/{id}', [PageController::class, 'update']);
     Route::patch('/pages/{id}/status', [PageController::class, 'updateStatus']);
     Route::delete('/pages/{id}', [PageController::class, 'destroy']);
 
-    // Blogs (Admin)
+    // Blogs (Admin CRUD)
     Route::post('/blogs', [BlogController::class, 'store']);
+    Route::post('/blogs/{id}', [BlogController::class, 'update']);
     Route::put('/blogs/{blog}', [BlogController::class, 'update']);
     Route::delete('/blogs/{blog}', [BlogController::class, 'destroy']);
-    Route::get('/blogs/{id}', [BlogController::class, 'show']);
 
-    // Blog Categories (Admin) - apiResource handles all CRUD
+    // Blog Categories (Admin)
     Route::apiResource('blog-categories', BlogCategoryController::class);
 
-    // Team Members (Admin)
-    Route::get('/team-members/{id}', [TeamMemberController::class, 'show']);
+    // Team Members (Admin CRUD)
     Route::post('/team-members', [TeamMemberController::class, 'store']);
-    Route::post('/team-members/{id}', [TeamMemberController::class, 'update']); // For FormData with _method
+    Route::get('/team-members/{id}', [TeamMemberController::class, 'show']);
+    Route::post('/team-members/{id}', [TeamMemberController::class, 'update']);
     Route::put('/team-members/{id}', [TeamMemberController::class, 'update']);
     Route::patch('/team-members/{id}/toggle', [TeamMemberController::class, 'toggle']);
     Route::delete('/team-members/{id}', [TeamMemberController::class, 'destroy']);
 
-    // Testimonials (Admin)
+    // Testimonials (Admin CRUD)
     Route::post('/testimonials', [TestimonialController::class, 'store']);
     Route::get('/testimonials/{id}', [TestimonialController::class, 'show']);
-    Route::post('/testimonials/{id}', [TestimonialController::class, 'update']); // Using POST with _method for file uploads
+    Route::post('/testimonials/{id}', [TestimonialController::class, 'update']);
     Route::put('/testimonials/{id}', [TestimonialController::class, 'update']);
     Route::delete('/testimonials/{id}', [TestimonialController::class, 'destroy']);
 
-    // Gallery (Admin)
-    // Route::post('/gallery', [GalleryController::class, 'store']);
+    // Gallery (Admin CRUD)
+    Route::post('/gallery', [GalleryController::class, 'store']);
     Route::get('/gallery/{id}', [GalleryController::class, 'show']);
-    // Route::post('/gallery/{id}', [GalleryController::class, 'update']); // For FormData
+    Route::post('/gallery/{id}', [GalleryController::class, 'update']);
     Route::put('/gallery/{galleryImage}', [GalleryController::class, 'update']);
     Route::delete('/gallery/{galleryImage}', [GalleryController::class, 'destroy']);
 
+    // Hero Banners (Admin CRUD)
+    Route::post('/hero-banners', [HeroBannerController::class, 'store']);
+    Route::put('/hero-banners/{heroBanner}', [HeroBannerController::class, 'update']);
+    Route::delete('/hero-banners/{heroBanner}', [HeroBannerController::class, 'destroy']);
+
     // Menus & Links (Admin)
-    Route::apiResource('menus', MenuController::class);
-    Route::apiResource('menu-links', MenuLinkController::class);
+    Route::apiResource('menus', MenuController::class)->except(['index', 'show']);
+    
+    // Menu Links (Admin CRUD - except public index)
+    Route::post('/menu-links', [MenuLinkController::class, 'store']);
+    Route::get('/menu-links/{id}', [MenuLinkController::class, 'show']);
+    Route::put('/menu-links/{id}', [MenuLinkController::class, 'update']);
     Route::patch('/menu-links/{id}/toggle', [MenuLinkController::class, 'toggle']);
+    Route::delete('/menu-links/{id}', [MenuLinkController::class, 'destroy']);
 
     // Settings (Admin)
-    Route::get('/settings', [SettingsController::class, 'index']);
     Route::post('/settings', [SettingsController::class, 'update']);
     Route::post('/clear-cache', [SettingsController::class, 'clearCache']);
 
-    // Blogs (Admin) - inside auth:sanctum middleware
-    Route::post('/blogs', [BlogController::class, 'store']);
-    Route::post('/blogs/{id}', [BlogController::class, 'update']); // For FormData with _method
-    Route::put('/blogs/{blog}', [BlogController::class, 'update']);
-    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy']);
-
-    // Roles Routes
+    // Roles (Admin)
     Route::get('/roles', [RoleController::class, 'index']);
     Route::post('/roles', [RoleController::class, 'store']);
     Route::get('/roles/{id}', [RoleController::class, 'show']);
     Route::put('/roles/{id}', [RoleController::class, 'update']);
     Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
 
-    // Users Routes
+    // Users (Admin)
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::get('/users/{id}', [UserController::class, 'show']);
@@ -156,19 +181,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/users/{id}/status', [UserController::class, 'updateStatus']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
-    // Footer Links
-    Route::get('/footer-links', [FooterLinkController::class, 'index']);
+    // Footer Links (Admin CRUD - except public index)
     Route::post('/footer-links', [FooterLinkController::class, 'store']);
     Route::get('/footer-links/{id}', [FooterLinkController::class, 'show']);
     Route::put('/footer-links/{id}', [FooterLinkController::class, 'update']);
     Route::patch('/footer-links/{id}/toggle', [FooterLinkController::class, 'toggle']);
     Route::delete('/footer-links/{id}', [FooterLinkController::class, 'destroy']);
-    
-    // Inside auth:sanctum middleware
+
+    // Mail Templates (Admin)
     Route::apiResource('mail-templates', MailTemplateController::class);
 });
-// === TEMPORARY DEBUG ROUTES - ADD AT THE END OF routes/api.php ===
-use Illuminate\Support\Facades\Storage;
+
+// ============================================
+// DEBUG/TEST ROUTES
+// ============================================
 
 Route::get('/test-storage', function () {
     return response()->json([
@@ -177,12 +203,13 @@ Route::get('/test-storage', function () {
         'symlink_exists' => is_link(public_path('storage')),
         'symlink_target' => is_link(public_path('storage')) ? readlink(public_path('storage')) : null,
         'public_storage_exists' => file_exists(public_path('storage')),
-        'files_in_hero_banners' => Storage::disk('public')->allFiles('hero-banners'),
+        'files_in_hero_banners' => \Illuminate\Support\Facades\Storage::disk('public')->allFiles('hero-banners'),
         'app_url' => config('app.url'),
         'filesystem_disk' => config('filesystems.default'),
         'storage_url' => config('filesystems.disks.public.url'),
     ]);
 });
+
 Route::get('/test-cloudinary', function() {
     try {
         $configured = config('cloudinary.cloud_name') !== null;
@@ -196,65 +223,19 @@ Route::get('/test-cloudinary', function() {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
+
 Route::get('/debug-logs', function() {
     $logFile = storage_path('logs/laravel.log');
     if (file_exists($logFile)) {
         $logs = file_get_contents($logFile);
-        $lastError = substr($logs, -5000); // Last 5000 chars
+        $lastError = substr($logs, -5000);
         return response('<pre>' . htmlspecialchars($lastError) . '</pre>');
     }
     return 'No logs found';
 });
-Route::get('/test-video/{filename}', function ($filename) {
-    $path = "hero-banners/{$filename}";
-    
-    if (!Storage::disk('public')->exists($path)) {
-        return response()->json([
-            'error' => 'File not found',
-            'path' => $path,
-            'full_path' => storage_path('app/public/' . $path),
-            'all_files' => Storage::disk('public')->allFiles('hero-banners'),
-        ], 404);
-    }
-    
-    return response()->json([
-        'exists' => true,
-        'path' => $path,
-        'url' => asset('storage/' . $path),
-        'full_url' => config('app.url') . '/storage/' . $path,
-        'size' => Storage::disk('public')->size($path),
-        'mime_type' => Storage::disk('public')->mimeType($path),
-    ]);
-});
-Route::post('/test-upload', function (Request $request) {
-    try {
-        if ($request->hasFile('image')) {
-            $result = $request->file('image')->storeOnCloudinary('test_uploads');
-            return response()->json([
-                'success' => true,
-                'url' => $result->getSecurePath(),
-                'public_id' => $result->getPublicId()
-            ]);
-        }
-        return response()->json(['error' => 'No file uploaded'], 400);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-Route::get('/debug-env', function() {
-    return response()->json([
-        'env_cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-        'env_api_key' => env('CLOUDINARY_API_KEY'),
-        'env_has_secret' => !empty(env('CLOUDINARY_API_SECRET')),
-        'config_cloud_name' => config('cloudinary.cloud_name'),
-        'config_api_key' => config('cloudinary.api_key'),
-        'config_has_secret' => !empty(config('cloudinary.api_secret')),
-        'config_file_exists' => file_exists(config_path('cloudinary.php')),
-    ]);
-});
+
 Route::get('/test-gallery', function() {
     $gallery = \App\Models\Gallery::all();
-    
     return response()->json([
         'total_images' => $gallery->count(),
         'images' => $gallery->map(function($img) {
