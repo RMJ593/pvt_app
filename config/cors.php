@@ -24,7 +24,7 @@ return [
         'http://127.0.0.1:8000',
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-        'https://tphrc-int-project.onrender.com',
+        'https://tphrc-int-project-cjld.onrender.com',
         'https://delightful-perception-production-9741.up.railway.app',
     ],
 

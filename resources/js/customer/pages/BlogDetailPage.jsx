@@ -19,7 +19,7 @@ const getImageUrl = (imagePath) => {
     // Local storage path
     const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://127.0.0.1:8000'
-        : 'https://tphrc-int-project.onrender.com';
+        : 'https://tphrc-int-project-cjld.onrender.com';
     
     return `${baseUrl}/storage/${imagePath}`;
 };

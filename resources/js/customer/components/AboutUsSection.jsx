@@ -6,7 +6,7 @@ import './AboutUs.css';
 // Inline helper functions to avoid import issues
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://127.0.0.1:8000'
-    : 'https://tphrc-int-project.onrender.com';
+    : 'https://tphrc-int-project-cjld.onrender.com';
 
 const getStorageUrl = (imagePath) => {
     console.log('🔍 getStorageUrl called with:', imagePath);

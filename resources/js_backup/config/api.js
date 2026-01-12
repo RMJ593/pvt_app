@@ -1,5 +1,5 @@
 // Get the API base URL from environment variable or use current origin
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tphrc-int-project.onrender.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tphrc-int-project-cjld.onrender.com/api';
 
 // Helper function to get full API URL
 export const getApiUrl = (path) => {
@@ -21,7 +21,7 @@ export const getStorageUrl = (path) => {
     // Legacy: Local storage path
     const cleanPath = path.replace(/^\/?(storage\/)?/, '');
     // Use base URL without /api for storage
-    const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://tphrc-int-project.onrender.com';
+    const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://tphrc-int-project-cjld.onrender.com';
     return `${baseUrl}/storage/${cleanPath}`;
 };
 

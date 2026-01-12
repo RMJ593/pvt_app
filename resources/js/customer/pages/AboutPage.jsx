@@ -6,7 +6,7 @@ import './AboutPage.css';
 // Inline API config to avoid import issues
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://127.0.0.1:8000'
-    : 'https://tphrc-int-project.onrender.com';
+    : 'https://tphrc-int-project-cjld.onrender.com';
 
 const getStorageUrl = (imagePath) => {
     if (!imagePath) return null;

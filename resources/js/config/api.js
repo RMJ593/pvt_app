@@ -1,5 +1,7 @@
-// Get the API base URL from environment variable or use current origin
-export const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
+// Get the API base URL - ALWAYS use current domain
+export const API_BASE_URL = window.location.origin;
+
+console.log('🔧 API_BASE_URL set to:', API_BASE_URL);
 
 // Helper function to get full API URL
 export const getApiUrl = (path) => {
@@ -22,9 +24,8 @@ export const getStorageUrl = (imagePath) => {
         return imagePath;
     }
     
-    // Local paths - construct full URL
-    const baseUrl = API_BASE_URL.replace(/\/api$/, ''); // Remove /api if present
-    return `${baseUrl}/storage/${imagePath}`;
+    // Local paths - construct full URL using current domain
+    return `${window.location.origin}/storage/${imagePath}`;
 };
 
 // Helper to safely extract array from API response
