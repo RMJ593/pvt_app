@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-// Use current domain only - NO /api suffix here
-axios.defaults.baseURL = window.location.origin;
-
-console.log('🔍 Axios Base URL:', axios.defaults.baseURL);
-
+// Set base URL with /api prefix - this will be used globally
+axios.defaults.baseURL = `${window.location.origin}/api`;
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
+console.log('🔧 Axios Base URL:', axios.defaults.baseURL);
+
+// Request interceptor - add auth token if available
 axios.interceptors.request.use(
     (config) => {
         console.log('📤 Request:', config.method?.toUpperCase(), config.url);
@@ -24,12 +24,20 @@ axios.interceptors.request.use(
     }
 );
 
+// Response interceptor - handle 401 errors
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('auth_token');
-            window.location.href = '/login';
+            // Only redirect to login if NOT already on login page or public pages
+            const currentPath = window.location.pathname;
+            const publicPaths = ['/', '/menu', '/about', '/contact', '/gallery'];
+            const isPublicPath = publicPaths.some(path => currentPath === path || currentPath.startsWith(path));
+            
+            if (!isPublicPath && currentPath !== '/login') {
+                localStorage.removeItem('auth_token');
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }
