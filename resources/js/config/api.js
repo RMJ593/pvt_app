@@ -1,11 +1,15 @@
 // Get the API base URL from environment variable or use current origin
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tphrc-int-project.onrender.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 // Helper function to get full API URL
 export const getApiUrl = (path) => {
+    // Remove leading slash if present
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    // Remove 'api/' if it's already in the path to avoid duplication
+    
+    // Remove 'api/' prefix if already present to avoid duplication
     const finalPath = cleanPath.replace(/^api\//, '');
+    
+    // Always return relative path with /api/ prefix
     return `/api/${finalPath}`;
 };
 
@@ -13,16 +17,17 @@ export const getApiUrl = (path) => {
 export const getStorageUrl = (imagePath) => {
     if (!imagePath) return null;
     
-    // ✅ Cloudinary URLs - use directly
+    // Cloudinary URLs - use directly
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
         return imagePath;
     }
     
-    // ✅ Local paths - add /storage/ prefix
-    return `${API_BASE_URL}/storage/${imagePath}`;
+    // Local paths - construct full URL
+    const baseUrl = API_BASE_URL.replace(/\/api$/, ''); // Remove /api if present
+    return `${baseUrl}/storage/${imagePath}`;
 };
 
-// ✅ NEW: Helper to safely extract array from API response
+// Helper to safely extract array from API response
 export const extractArray = (response) => {
     if (Array.isArray(response.data)) {
         return response.data;

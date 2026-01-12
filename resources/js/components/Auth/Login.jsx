@@ -17,31 +17,44 @@ function Login({ onLogin }) {
         setError('');
         
         try {
-            const response = await axios.post(getApiUrl('api/login'), {
+            // FIXED: Pass 'login' instead of 'api/login'
+            const response = await axios.post(getApiUrl('login'), {
                 email: email,
                 password: password
-            }, {
-                withCredentials: true // Important for sessions/cookies
             });
             
+            console.log('Login response:', response.data);
+            
+            // Handle different response formats
+            let token, user;
+            
             if (response.data.success && response.data.data) {
-                const { token, user } = response.data.data;
+                token = response.data.data.token;
+                user = response.data.data.user;
+            } else if (response.data.token) {
+                token = response.data.token;
+                user = response.data.user;
+            }
+            
+            if (token && user) {
                 onLogin(token, user);
                 navigate('/staff/dashboard');
             } else {
-                setError('Login failed. Please check your credentials.');
+                setError('Login failed. Invalid response format.');
             }
         } catch (error) {
             console.error('Login error:', error);
-            setError(error.response?.data?.message || 'Invalid credentials. Please try again.');
+            
+            if (error.response?.status === 401) {
+                setError('Invalid email or password');
+            } else if (error.response?.data?.message) {
+                setError(error.response.data.message);
+            } else {
+                setError('Login failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
-    };
-
-    const inputStyle = {
-        color: '#000 !important',
-        backgroundColor: '#fff !important'
     };
 
     return (
@@ -62,22 +75,22 @@ function Login({ onLogin }) {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="login-input"
-                            style={inputStyle}
                             placeholder="admin@example.com"
                             required
+                            autoComplete="email"
                         />
                     </div>
                     
-                    <div className="login-form-group-password">
+                    <div className="login-form-group">
                         <label className="login-label">Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="login-input"
-                            style={inputStyle}
                             placeholder="Enter your password"
                             required
+                            autoComplete="current-password"
                         />
                     </div>
                     
@@ -85,6 +98,10 @@ function Login({ onLogin }) {
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
+
+                <div className="login-footer">
+                    <a href="/">← Back to Website</a>
+                </div>
             </div>
         </div>
     );

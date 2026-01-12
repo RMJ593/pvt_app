@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import Login from './components/Auth/Login';
-// import Login from './pages/staff/Login';
 import Dashboard from './components/Dashboard/Dashboard';
 import AdminLayout from './components/Layout/AdminLayout';
 import CategoryList from './components/Categories/CategoryList';
@@ -41,7 +40,6 @@ import UserResponseList from './components/UserResponses/UserResponseList';
 import TableBookingList from './components/TableBookings/TableBookingList';
 import { getApiUrl } from './config/api';
 
-
 function AdminApp() {
     const [isAuthenticated, setIsAuthenticated] = useState(
         !!localStorage.getItem('auth_token')
@@ -58,7 +56,7 @@ function AdminApp() {
     const fetchUserDetails = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(getApiUrl('api/me'), {
+            const response = await axios.get(getApiUrl('me'), {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -99,12 +97,17 @@ function AdminApp() {
 
     return (
         <Routes>
-            <Route path="/login" element={
-                isAuthenticated ? 
-                <Navigate to="/staff/dashboard" replace /> : 
-                <Login onLogin={handleLogin} />
-            } />
+            {/* LOGIN ROUTE at /login */}
+            <Route 
+                path="/login" 
+                element={
+                    isAuthenticated ? 
+                    <Navigate to="/staff/dashboard" replace /> : 
+                    <Login onLogin={handleLogin} />
+                } 
+            />
             
+            {/* PROTECTED STAFF ROUTES */}
             <Route 
                 path="/staff/*" 
                 element={
@@ -180,7 +183,11 @@ function AdminApp() {
                                 <Route path="users/create" element={<UserForm />} />
                                 <Route path="users/:id/edit" element={<UserForm />} />
                                 
-                                <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
+                                {/* Redirect /staff to /staff/dashboard */}
+                                <Route path="/" element={<Navigate to="dashboard" replace />} />
+                                
+                                {/* Catch-all for unknown staff routes */}
+                                <Route path="*" element={<Navigate to="dashboard" replace />} />
                             </Routes>
                         </AdminLayout>
                     ) : (
@@ -188,8 +195,6 @@ function AdminApp() {
                     )
                 } 
             />
-            
-            <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
     );
 }
