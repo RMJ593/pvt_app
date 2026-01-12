@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getApiUrl } from '../../config/api';
 import './login.css';
 
 function Login({ onLogin }) {
@@ -16,63 +17,42 @@ function Login({ onLogin }) {
         setError('');
         
         try {
-            const response = await axios.post('/api/login', {
+            const response = await axios.post(getApiUrl('api/login'), {
                 email: email,
                 password: password
+            }, {
+                withCredentials: true // Important for sessions/cookies
             });
             
-            console.log('Login response:', response.data);
-            
-            // Check different response formats
-            let token, user;
-            
             if (response.data.success && response.data.data) {
-                // Format: { success: true, data: { token, user } }
-                token = response.data.data.token;
-                user = response.data.data.user;
-            } else if (response.data.token) {
-                // Format: { token, user }
-                token = response.data.token;
-                user = response.data.user;
-            }
-            
-            if (token && user) {
-                // Call parent's onLogin function
+                const { token, user } = response.data.data;
                 onLogin(token, user);
-                
-                // Navigate to dashboard
                 navigate('/staff/dashboard');
             } else {
-                setError('Login failed. Invalid response format.');
+                setError('Login failed. Please check your credentials.');
             }
         } catch (error) {
             console.error('Login error:', error);
-            
-            if (error.response?.status === 401) {
-                setError('Invalid email or password');
-            } else if (error.response?.data?.message) {
-                setError(error.response.data.message);
-            } else {
-                setError('Login failed. Please try again.');
-            }
+            setError(error.response?.data?.message || 'Invalid credentials. Please try again.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const inputStyle = {
+        color: '#000 !important',
+        backgroundColor: '#fff !important'
     };
 
     return (
         <div className="login-container">
             <div className="login-card">
                 <div className="login-header">
-                    <h1 className="login-title">Staff Login</h1>
+                    <h1 className="login-title">Admin Login</h1>
                     <p className="login-subtitle">Restaurant Management System</p>
                 </div>
                 
-                {error && (
-                    <div className="login-error">
-                        {error}
-                    </div>
-                )}
+                {error && <div className="login-error">{error}</div>}
                 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="login-form-group">
@@ -82,36 +62,29 @@ function Login({ onLogin }) {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="login-input"
+                            style={inputStyle}
                             placeholder="admin@example.com"
                             required
-                            autoFocus
                         />
                     </div>
                     
-                    <div className="login-form-group">
+                    <div className="login-form-group-password">
                         <label className="login-label">Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="login-input"
+                            style={inputStyle}
                             placeholder="Enter your password"
                             required
                         />
                     </div>
                     
-                    <button 
-                        type="submit" 
-                        disabled={loading} 
-                        className="login-button"
-                    >
+                    <button type="submit" disabled={loading} className="login-button">
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
-
-                <div className="login-footer">
-                    <a href="/">← Back to Website</a>
-                </div>
             </div>
         </div>
     );

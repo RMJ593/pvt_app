@@ -8,12 +8,12 @@ import CustomerApp from './customer/CustomerApp';
 function App() {
     const path = window.location.pathname;
     
-    // Admin routes: /staff/* (includes /staff/login, /staff/signup, /staff/dashboard, etc.)
-    if (path.startsWith('/staff')) {
+    // Admin routes: /login, /staff/*
+    if (path === '/login' || path.startsWith('/staff')) {
         return <AdminApp />;
     }
     
-    // Customer routes: everything else (/, /about, /page/*, /blog/*, etc.)
+    // Customer routes: everything else
     return <CustomerApp />;
 }
 

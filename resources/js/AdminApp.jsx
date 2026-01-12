@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import Login from './components/Auth/Login';
+// import Login from './pages/staff/Login';
 import Dashboard from './components/Dashboard/Dashboard';
 import AdminLayout from './components/Layout/AdminLayout';
 import CategoryList from './components/Categories/CategoryList';
@@ -39,6 +40,7 @@ import UserForm from './components/Users/UserForm';
 import UserResponseList from './components/UserResponses/UserResponseList';
 import TableBookingList from './components/TableBookings/TableBookingList';
 import { getApiUrl } from './config/api';
+
 
 function AdminApp() {
     const [isAuthenticated, setIsAuthenticated] = useState(
@@ -97,19 +99,14 @@ function AdminApp() {
 
     return (
         <Routes>
-            {/* LOGIN ROUTE - Only accessible at /staff/login */}
-            <Route 
-                path="/login" 
-                element={
-                    isAuthenticated ? 
-                    <Navigate to="/dashboard" replace /> : 
-                    <Login onLogin={handleLogin} />
-                } 
-            />
+            <Route path="/login" element={
+                isAuthenticated ? 
+                <Navigate to="/staff/dashboard" replace /> : 
+                <Login onLogin={handleLogin} />
+            } />
             
-            {/* PROTECTED STAFF ROUTES - All other /staff/* routes */}
             <Route 
-                path="/*" 
+                path="/staff/*" 
                 element={
                     isAuthenticated ? (
                         <AdminLayout onLogout={handleLogout} username={username} userEmail={userEmail}>
@@ -183,19 +180,16 @@ function AdminApp() {
                                 <Route path="users/create" element={<UserForm />} />
                                 <Route path="users/:id/edit" element={<UserForm />} />
                                 
-                                {/* Redirect /staff to /staff/dashboard */}
-                                <Route path="/" element={<Navigate to="/staff/dashboard" replace />} />
-                                
-                                {/* Redirect any unknown /staff/* route to login */}
-                                <Route path="*" element={<Navigate to="/staff/login" replace />} />
+                                <Route path="*" element={<Navigate to="/staff/dashboard" replace />} />
                             </Routes>
                         </AdminLayout>
                     ) : (
-                        // If not authenticated, redirect to login
-                        <Navigate to="/staff/login" replace />
+                        <Navigate to="/login" replace />
                     )
                 } 
             />
+            
+            <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
     );
 }
