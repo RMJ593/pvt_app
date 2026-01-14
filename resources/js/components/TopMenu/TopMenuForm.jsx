@@ -73,18 +73,25 @@ function TopMenuForm() {
         setError('');
 
         try {
+            // Get the selected page's slug
+            const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
+            const pageSlug = selectedPage?.slug || '';
+
             const dataToSend = {
                 title: formData.name,
                 link_text: formData.link_text,
                 page_type: formData.page_type,
                 page_id: formData.page_id || null,
-                url: formData.page_id ? `/page/${formData.page_id}` : '',
+                url: pageSlug ? `/page/${pageSlug}` : '',
                 target: formData.open_new_tab ? '_blank' : '_self',
+                link_type: 'top_menu',  // ‚úÖ ADDED: Mark as top menu link
                 menu_id: 1,
                 order: 1,
                 is_active: true,
                 is_group: false
             };
+
+            console.log('Submitting top menu link:', dataToSend);
 
             let response;
             if (isEditMode) {
@@ -93,11 +100,15 @@ function TopMenuForm() {
                 response = await axios.post('/menu-links', dataToSend);
             }
 
+            console.log('Response:', response.data);
+
             if (response.data.success) {
                 navigate('/staff/top-menu');
             }
         } catch (error) {
             console.error('Error saving link:', error);
+            console.error('Error details:', error.response?.data);
+            
             if (error.response?.data?.errors) {
                 const errors = Object.values(error.response.data.errors).flat();
                 setError(errors.join(', '));
@@ -114,7 +125,7 @@ function TopMenuForm() {
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Menu Link' : 'Create Menu Link'}</h1>
                 <Link to="/staff/top-menu" className="btn-back">
-                    Üê Back to List
+                    ‚Üê Back to List
                 </Link>
             </div>
 
@@ -187,7 +198,7 @@ function TopMenuForm() {
                             <option value="">-- Select Page --</option>
                             {pages.map((page) => (
                                 <option key={page.id} value={page.id}>
-                                    {page.title}
+                                    {page.page_title || page.title}
                                 </option>
                             ))}
                         </select>
@@ -223,5 +234,3 @@ function TopMenuForm() {
 }
 
 export default TopMenuForm;
-
-

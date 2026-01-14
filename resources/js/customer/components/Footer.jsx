@@ -7,12 +7,12 @@ import { getStorageUrl, extractArray } from '../../config/api';
 function Footer() {
     const navigate = useNavigate();
     const [settings, setSettings] = useState(null);
-    const [menuLinks, setMenuLinks] = useState([]);
+    const [footerLinks, setFooterLinks] = useState([]);
     const [pages, setPages] = useState({});
     
     useEffect(() => {
         fetchSettings();
-        fetchMenuLinks();
+        fetchFooterLinks();
         fetchPages();
     }, []);
 
@@ -20,21 +20,28 @@ function Footer() {
         try {
             const response = await axios.get('/settings');
             const settingsData = response.data.data || response.data;
-            console.log('Footer Settings:', settingsData); // Debug log
+            console.log('✅ Footer Settings Loaded:', settingsData);
             setSettings(settingsData);
+            
+            // Apply main color to CSS variables
+            if (settingsData.main_color) {
+                document.documentElement.style.setProperty('--footer-main-color', settingsData.main_color);
+            }
         } catch (error) {
             console.error('Error fetching settings:', error);
         }
     };
 
-    const fetchMenuLinks = async () => {
+    const fetchFooterLinks = async () => {
         try {
-            const response = await axios.get('/menu-links');
+            const response = await axios.get('/footer-links');
             const allLinks = extractArray(response);
-            setMenuLinks(allLinks);
+            const activeLinks = allLinks.filter(link => link.is_active);
+            console.log('✅ Footer Links Loaded:', activeLinks);
+            setFooterLinks(activeLinks);
         } catch (error) {
-            console.error('Error fetching menu links:', error);
-            setMenuLinks([]);
+            console.error('Error fetching footer links:', error);
+            setFooterLinks([]);
         }
     };
 
@@ -44,7 +51,7 @@ function Footer() {
             const allPages = extractArray(response);
             const pagesMap = {};
             allPages.forEach(page => {
-                pagesMap[page.slug] = page;
+                pagesMap[page.id] = page;
             });
             setPages(pagesMap);
         } catch (error) {
@@ -54,31 +61,33 @@ function Footer() {
     };
 
     const getLogoUrl = () => {
-        // Fetch from website_logo in Domain Settings
-        const logoPath = settings?.website_logo || settings?.logo;
+        const logoPath = settings?.website_logo;
         if (!logoPath) return null;
         if (logoPath.startsWith('http')) return logoPath;
         return getStorageUrl(logoPath);
     };
 
-    const handleLinkClick = (type, value) => {
-        if (type === 'section') {
+    const handleFooterLinkClick = (link) => {
+        if (link.page_id && pages[link.page_id]) {
+            const page = pages[link.page_id];
+            navigate(`/page/${page.slug}`, { state: { page } });
+        } else if (link.url && link.url.startsWith('#')) {
             navigate('/');
             setTimeout(() => {
-                const element = document.getElementById(value);
+                const sectionId = link.url.replace('#', '');
+                const element = document.getElementById(sectionId);
                 if (element) {
                     element.scrollIntoView({ behavior: 'smooth' });
                 }
             }, 100);
-        } else if (type === 'page') {
-            const page = pages[value];
-            if (page) {
-                navigate(`/page/${value}`, { state: { page } });
+        } else if (link.url && link.url.startsWith('/')) {
+            navigate(link.url);
+        } else if (link.url && link.url !== '#') {
+            if (link.target === '_blank') {
+                window.open(link.url, '_blank');
+            } else {
+                window.location.href = link.url;
             }
-        } else if (type === 'route') {
-            navigate(value);
-        } else if (type === 'external') {
-            window.open(value, '_blank');
         }
     };
 
@@ -86,18 +95,6 @@ function Footer() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const findMenuLink = (linkType, url) => {
-        return menuLinks.find(link => 
-            link.is_active && 
-            link.link_type === linkType && 
-            link.url === url
-        );
-    };
-
-    const aboutLink = findMenuLink('top_menu', '#about');
-    const contactLink = findMenuLink('top_menu', '#booking');
-
-    // Format time from 24hr to 12hr format
     const formatTime = (time) => {
         if (!time) return '';
         const [hours, minutes] = time.split(':');
@@ -107,60 +104,54 @@ function Footer() {
         return `${hour12}:${minutes} ${ampm}`;
     };
 
+    // Get main color for styling
+    const mainColor = settings?.main_color || '#e4e590';
+
     return (
-        <footer className="footer-elegant">
+        <footer className="footer-elegant" style={{ '--main-color': mainColor }}>
             <div className="footer-elegant-container">
                 {/* Left Section - Quick Links */}
                 <div className="footer-elegant-section footer-links-section">
                     <nav className="footer-nav-elegant">
                         <button 
-                            onClick={() => handleLinkClick('route', '/')}
+                            onClick={() => navigate('/')}
                             className="footer-nav-link"
                         >
                             Home
                         </button>
                         
-                        {aboutLink && (
-                            <button 
-                                onClick={() => handleLinkClick('section', 'about')}
-                                className="footer-nav-link"
-                            >
-                                About Us
-                            </button>
+                        {/* Dynamic Footer Links from Database */}
+                        {footerLinks.length > 0 ? (
+                            footerLinks.map((link) => (
+                                <button
+                                    key={link.id}
+                                    onClick={() => handleFooterLinkClick(link)}
+                                    className="footer-nav-link"
+                                >
+                                    {link.title}
+                                </button>
+                            ))
+                        ) : (
+                            <>
+                                {/* Fallback links if no footer links in database */}
+                                <button onClick={() => navigate('/about')} className="footer-nav-link">
+                                    About Us
+                                </button>
+                                <button onClick={() => navigate('/contact')} className="footer-nav-link">
+                                    Contact Us
+                                </button>
+                            </>
                         )}
                         
                         <button 
-                            onClick={() => handleLinkClick('page', 'team')}
-                            className="footer-nav-link"
-                        >
-                            Our Chefs
-                        </button>
-                        
-                        <button 
-                            onClick={() => handleLinkClick('route', '/blogs')}
-                            className="footer-nav-link"
-                        >
-                            Blogs
-                        </button>
-                        
-                        {contactLink && (
-                            <button 
-                                onClick={() => handleLinkClick('section', 'booking')}
-                                className="footer-nav-link"
-                            >
-                                Contact Us
-                            </button>
-                        )}
-                        
-                        <button 
-                            onClick={() => handleLinkClick('external', 'https://drive.google.com/your-menu-pdf')}
+                            onClick={() => window.open('https://drive.google.com/your-menu-pdf', '_blank')}
                             className="footer-download-btn"
                         >
                             DOWNLOAD MENU
                         </button>
                         
                         <button 
-                            onClick={() => handleLinkClick('section', 'booking')}
+                            onClick={() => navigate('/booking')}
                             className="footer-book-btn"
                         >
                             BOOK A TABLE
@@ -171,13 +162,13 @@ function Footer() {
                 {/* Vertical Divider 1 */}
                 <div className="footer-divider">
                     <svg width="2" height="200" viewBox="0 0 2 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="1" y1="0" x2="1" y2="60" stroke="#e4e590" strokeWidth="1" opacity="0.3"/>
-                        <circle cx="1" cy="70" r="3" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="85" r="2" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="100" r="4" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="115" r="2" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="130" r="3" fill="#e4e590" opacity="0.3"/>
-                        <line x1="1" y1="140" x2="1" y2="200" stroke="#e4e590" strokeWidth="1" opacity="0.3"/>
+                        <line x1="1" y1="0" x2="1" y2="60" stroke={mainColor} strokeWidth="1" opacity="0.3"/>
+                        <circle cx="1" cy="70" r="3" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="85" r="2" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="100" r="4" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="115" r="2" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="130" r="3" fill={mainColor} opacity="0.3"/>
+                        <line x1="1" y1="140" x2="1" y2="200" stroke={mainColor} strokeWidth="1" opacity="0.3"/>
                     </svg>
                 </div>
 
@@ -187,7 +178,7 @@ function Footer() {
                         {getLogoUrl() ? (
                             <img 
                                 src={getLogoUrl()} 
-                                alt={settings?.site_name || 'Curry Leaf'} 
+                                alt={settings?.site_name || 'Restaurant'} 
                                 className="footer-logo-img-elegant"
                             />
                         ) : (
@@ -244,13 +235,13 @@ function Footer() {
                 {/* Vertical Divider 2 */}
                 <div className="footer-divider">
                     <svg width="2" height="200" viewBox="0 0 2 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="1" y1="0" x2="1" y2="60" stroke="#e4e590" strokeWidth="1" opacity="0.3"/>
-                        <circle cx="1" cy="70" r="3" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="85" r="2" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="100" r="4" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="115" r="2" fill="#e4e590" opacity="0.3"/>
-                        <circle cx="1" cy="130" r="3" fill="#e4e590" opacity="0.3"/>
-                        <line x1="1" y1="140" x2="1" y2="200" stroke="#e4e590" strokeWidth="1" opacity="0.3"/>
+                        <line x1="1" y1="0" x2="1" y2="60" stroke={mainColor} strokeWidth="1" opacity="0.3"/>
+                        <circle cx="1" cy="70" r="3" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="85" r="2" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="100" r="4" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="115" r="2" fill={mainColor} opacity="0.3"/>
+                        <circle cx="1" cy="130" r="3" fill={mainColor} opacity="0.3"/>
+                        <line x1="1" y1="140" x2="1" y2="200" stroke={mainColor} strokeWidth="1" opacity="0.3"/>
                     </svg>
                 </div>
 

@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Pages.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
+import { extractArray } from '../../config/api';
 
 function PageList() {
     const [pages, setPages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    
     useEffect(() => {
         fetchPages();
     }, []);
@@ -18,7 +17,7 @@ function PageList() {
         try {
             setLoading(true);
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/pages`, {
+            const response = await axios.get('/pages', {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -42,31 +41,17 @@ function PageList() {
 
             console.log('Toggling status for page:', id, 'from', currentStatus, 'to', newStatus);
 
-            let response;
-            try {
-                response = await axios.patch(
-                    `/api/pages/${id}/status`,
-                    { status: newStatus },
-                    {
-                        headers: { 
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
+            // ✅ FIXED: Removed /api prefix (axios baseURL already has it)
+            const response = await axios.patch(
+                `/pages/${id}/status`,
+                { status: newStatus },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
-                );
-            } catch (err1) {
-                console.log('Method 1 failed, trying PUT method...');
-                response = await axios.put(
-                    `/api/pages/${id}`,
-                    { is_active: newStatus },
-                    {
-                        headers: { 
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-            }
+                }
+            );
 
             console.log('Status update response:', response.data);
 
@@ -78,7 +63,7 @@ function PageList() {
         } catch (error) {
             console.error('Error toggling status:', error);
             console.error('Error response:', error.response?.data);
-            alert('Failed to update status. Please check console for details.');
+            alert('Failed to update status: ' + (error.response?.data?.message || 'Unknown error'));
         }
     };
 
@@ -167,7 +152,7 @@ function PageList() {
                                                 className="btn-edit"
                                                 title="Edit"
                                             >
-                                                jhug
+                                                ✏️
                                             </Link>
                                         </div>
                                     </td>
@@ -182,5 +167,3 @@ function PageList() {
 }
 
 export default PageList;
-
-

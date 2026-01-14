@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './FooterLinks.css';
-import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
+import { extractArray } from '../../config/api';
 
 function FooterLinksForm() {
     const navigate = useNavigate();
@@ -21,7 +21,6 @@ function FooterLinksForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    
     const pageTypes = ['Page', 'Blog', 'Portfolio', 'Gallery', 'Contact', 'Custom'];
 
     useEffect(() => {
@@ -34,10 +33,10 @@ function FooterLinksForm() {
     const fetchPages = async () => {
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await axios.get(`/pages`, {
+            const response = await axios.get('/pages', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             const pagesData = extractArray(response);
             setPages(pagesData);
         } catch (error) {
@@ -52,7 +51,7 @@ function FooterLinksForm() {
             const response = await axios.get(`/footer-links/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             if (response.data.success) {
                 const link = response.data.data;
                 setFormData({
@@ -86,20 +85,30 @@ function FooterLinksForm() {
 
         try {
             const token = localStorage.getItem('auth_token');
-            
+
+            // Get the selected page's slug
+            const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
+            const pageSlug = selectedPage?.slug || '';
+
             // Prepare data for API
             const dataToSend = {
-                title: formData.name,
-                url: formData.page_id ? `/page/${formData.page_id}` : '#',
+                title: formData.link_text || formData.name,
+                page_type: formData.page_type || null,
+                page_id: formData.page_id || null,
+                url: pageSlug ? `/page/${pageSlug}` : '#',
+                target: formData.open_new_tab ? '_blank' : '_self',
                 order: 0,
                 is_active: true
             };
 
+            console.log('Sending data:', dataToSend);
+
             let response;
 
+            // ✅ FIXED: Removed /api prefix (axios baseURL already has it)
             if (isEditMode) {
                 response = await axios.put(
-                    `/api/footer-links/${id}`,
+                    `/footer-links/${id}`,
                     dataToSend,
                     {
                         headers: {
@@ -110,7 +119,7 @@ function FooterLinksForm() {
                 );
             } else {
                 response = await axios.post(
-                    `/api/footer-links`,
+                    '/footer-links',
                     dataToSend,
                     {
                         headers: {
@@ -125,12 +134,12 @@ function FooterLinksForm() {
 
             if (response.data.success) {
                 console.log('Success! Redirecting...');
-                window.location.href = '/staff/footer-links';
+                navigate('/staff/footer-links');
             }
         } catch (error) {
             console.error('Error saving link:', error);
             console.error('Error response:', error.response?.data);
-            
+
             if (error.response?.data?.errors) {
                 const errors = Object.values(error.response.data.errors).flat();
                 setError(errors.join(', '));
@@ -142,20 +151,16 @@ function FooterLinksForm() {
         }
     };
 
-    const handleBackClick = () => {
-        window.location.href = '/staff/footer-links';
-    };
-
     return (
         <div className="footer-links-form-container">
             <div className="form-header">
                 <h1>{isEditMode ? 'Edit Footer Link' : 'Create Footer Link'}</h1>
-                <button 
+                <button
                     type="button"
-                    onClick={handleBackClick} 
+                    onClick={() => navigate('/staff/footer-links')}
                     className="btn-back"
                 >
-                     Back to List
+                    ← Back to List
                 </button>
             </div>
 
@@ -214,14 +219,15 @@ function FooterLinksForm() {
                     </div>
 
                     <div className="form-group">
-                        <label>Page</label>
+                        <label>Page *</label>
                         <select
                             name="page_id"
                             value={formData.page_id}
                             onChange={handleChange}
                             className="form-control"
+                            required
                         >
-                            <option value="">-- Select Page (Optional) --</option>
+                            <option value="">-- Select Page --</option>
                             {pages.map((page) => (
                                 <option key={page.id} value={page.id}>
                                     {page.page_title || page.title}
@@ -248,7 +254,14 @@ function FooterLinksForm() {
 
                 <div className="form-actions">
                     <button type="submit" disabled={loading} className="btn-submit">
-                        {loading ? 'Saving...' : 'Submit'}
+                        {loading ? 'Saving...' : (isEditMode ? 'Update Link' : 'Create Link')}
+                    </button>
+                    <button 
+                        type="button" 
+                        onClick={() => navigate('/staff/footer-links')} 
+                        className="btn-cancel"
+                    >
+                        Cancel
                     </button>
                 </div>
             </form>
@@ -257,5 +270,3 @@ function FooterLinksForm() {
 }
 
 export default FooterLinksForm;
-
-
