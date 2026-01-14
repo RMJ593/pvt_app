@@ -12,13 +12,22 @@ class SettingsController extends Controller
     public function index()
     {
         try {
-            // Get all settings and convert to key-value array
-            $settings = Setting::all();
-            
-            $settingsArray = [];
-            foreach ($settings as $setting) {
-                $settingsArray[$setting->key] = $setting->value;
+            // Get the first settings record (it's a hybrid table)
+            $settings = Setting::first();
+
+            if (!$settings) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No settings found'
+                ], 404);
             }
+
+            // Convert to array and include ALL fields
+            $settingsArray = $settings->toArray();
+
+            // The key and value are for the site_name
+            // All other settings are in their own columns
+            $settingsArray['site_name'] = $settings->value;
 
             return response()->json([
                 'success' => true,
@@ -44,10 +53,16 @@ class SettingsController extends Controller
         try {
             \Log::info('Settings update request:', $request->all());
 
-            // Get all input data
-            $data = $request->all();
+            $settings = Setting::first();
 
-            // Initialize Cloudinary for file uploads
+            if (!$settings) {
+                $settings = new Setting();
+                $settings->key = 'site_name';
+                $settings->type = 'text';
+                $settings->group = 'general';
+            }
+
+            // Initialize Cloudinary
             $cloudinary = new Cloudinary([
                 'cloud' => [
                     'cloud_name' => config('cloudinary.cloud_name'),
@@ -57,7 +72,7 @@ class SettingsController extends Controller
                 'url' => ['secure' => true]
             ]);
 
-            // Handle file uploads first
+            // Handle file uploads
             if ($request->hasFile('website_logo')) {
                 \Log::info('Uploading website logo to Cloudinary...');
                 
@@ -70,7 +85,7 @@ class SettingsController extends Controller
                     ]
                 );
 
-                $data['website_logo'] = $result['secure_url'];
+                $settings->website_logo = $result['secure_url'];
                 \Log::info('Logo uploaded:', ['url' => $result['secure_url']]);
             }
 
@@ -86,32 +101,38 @@ class SettingsController extends Controller
                     ]
                 );
 
-                $data['meta_image'] = $result['secure_url'];
+                $settings->meta_image = $result['secure_url'];
                 \Log::info('Meta image uploaded:', ['url' => $result['secure_url']]);
             }
 
-            // Update or create each setting
-            foreach ($data as $key => $value) {
-                // Skip files that were already handled
-                if ($key === 'website_logo' && $request->hasFile('website_logo')) continue;
-                if ($key === 'meta_image' && $request->hasFile('meta_image')) continue;
+            // Update all other fields from the request
+            $fillableFields = [
+                'main_color', 'white_color', 'color_one', 'color_two', 'color_three',
+                'color_four', 'color_five', 'color_six', 'color_seven', 'color_eight',
+                'black_color', 'text_color', 'heading_color',
+                'admin_emails', 'short_about', 'contact_address', 'contact_phone',
+                'contact_email', 'meta_description', 'meta_keywords',
+                'facebook_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url',
+                'head_code', 'footer_code', 'body_code'
+            ];
 
-                // Skip Laravel/PHP internal keys
-                if (in_array($key, ['_method', '_token'])) continue;
-
-                Setting::updateOrCreate(
-                    ['key' => $key],
-                    [
-                        'value' => is_array($value) ? json_encode($value) : $value,
-                        'type' => 'text',
-                        'group' => 'general'
-                    ]
-                );
+            foreach ($fillableFields as $field) {
+                if ($request->has($field)) {
+                    $settings->$field = $request->input($field);
+                }
             }
+
+            // Special handling for site_name (stored in 'value' column)
+            if ($request->has('site_name')) {
+                $settings->value = $request->input('site_name');
+            }
+
+            $settings->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Settings updated successfully'
+                'message' => 'Settings updated successfully',
+                'data' => $settings
             ]);
 
         } catch (\Exception $e) {
