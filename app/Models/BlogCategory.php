@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BlogCategory extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'slug',
-        'location',
         'description',
         'is_active'
     ];
@@ -18,6 +20,7 @@ class BlogCategory extends Model
         'is_active' => 'boolean',
     ];
 
+    // Relationship with Blogs
     public function blogs()
     {
         return $this->hasMany(Blog::class, 'category_id');
