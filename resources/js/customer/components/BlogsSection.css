@@ -211,6 +211,58 @@
     background-color: var(--main-color, #e4e590);
     color: #000000;
 }
+/* Add these styles to your existing BlogsSection.css */
+
+/* View All Blogs Button */
+.view-all-blogs-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+}
+
+.view-all-blogs-btn {
+    padding: 1rem 3rem;
+    background-color: transparent;
+    border: 2px solid var(--main-color, #d4af37);
+    color: var(--main-color, #d4af37);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    border-radius: 30px;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
+}
+
+.view-all-blogs-btn:hover {
+    background-color: var(--main-color, #d4af37);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.view-all-blogs-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .view-all-blogs-btn {
+        padding: 0.875rem 2.5rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .view-all-blogs-btn {
+        padding: 0.75rem 2rem;
+        font-size: 0.8rem;
+        width: 100%;
+        max-width: 300px;
+    }
+}
 
 /* Responsive Design */
 @media screen and (max-width: 1024px) {

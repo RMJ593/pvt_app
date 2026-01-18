@@ -6,19 +6,7 @@ import { Editor } from 'react-draft-wysiwyg';
 import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import './Blogs.css';
-
-// Replace the getImageUrl function at the top of BlogForm.js
-import { API_BASE_URL, getStorageUrl } from '../../config/api'; // Add this import
-
-const getImageUrl = (imagePath) => {
-    if (!imagePath) return null;
-    
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-        return imagePath;
-    }
-    
-    return getStorageUrl(imagePath);
-};
+import { getStorageUrl } from '../../config/api';
 
 function BlogForm() {
     const navigate = useNavigate();
@@ -87,7 +75,10 @@ function BlogForm() {
             const response = await axios.get(`/blogs/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            const blog = response.data;
+            
+            const blog = response.data.data || response.data;
+            
+            console.log('Fetched blog data:', blog);
             
             setFormData({
                 title: blog.title || '',
@@ -101,21 +92,27 @@ function BlogForm() {
                 og_type: blog.og_type || 'article'
             });
 
+            // Load content into editor
             if (blog.content) {
-                const blocksFromHTML = convertFromHTML(blog.content);
-                if (blocksFromHTML.contentBlocks) {
-                    const contentState = ContentState.createFromBlockArray(
-                        blocksFromHTML.contentBlocks,
-                        blocksFromHTML.entityMap
-                    );
-                    setEditorState(EditorState.createWithContent(contentState));
+                try {
+                    const blocksFromHTML = convertFromHTML(blog.content);
+                    if (blocksFromHTML && blocksFromHTML.contentBlocks) {
+                        const contentState = ContentState.createFromBlockArray(
+                            blocksFromHTML.contentBlocks,
+                            blocksFromHTML.entityMap
+                        );
+                        setEditorState(EditorState.createWithContent(contentState));
+                    }
+                } catch (err) {
+                    console.error('Error loading content:', err);
                 }
             }
 
-            // Use getImageUrl helper for all images
-            if (blog.image) setImagePreview(getImageUrl(blog.image));
-            if (blog.banner_image) setBannerImagePreview(getImageUrl(blog.banner_image));
-            if (blog.meta_image) setMetaImagePreview(getImageUrl(blog.meta_image));
+            // Set image previews (Cloudinary URLs)
+            if (blog.image) setImagePreview(blog.image);
+            if (blog.banner_image) setBannerImagePreview(blog.banner_image);
+            if (blog.meta_image) setMetaImagePreview(blog.meta_image);
+            
         } catch (error) {
             console.error('Error fetching blog:', error);
             setError('Failed to load blog');
@@ -264,6 +261,7 @@ function BlogForm() {
                             className="form-control"
                             placeholder="Enter blog title"
                             required
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         />
                     </div>
 
@@ -277,6 +275,7 @@ function BlogForm() {
                             rows="3"
                             placeholder="Brief description"
                             required
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         />
                     </div>
 
@@ -288,6 +287,7 @@ function BlogForm() {
                             onChange={handleChange}
                             className="form-control"
                             required
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         >
                             <option value="">Select Category</option>
                             {categories.map((category) => (
@@ -312,7 +312,7 @@ function BlogForm() {
                             required={!isEditMode}
                         />
                         <small className="form-text">
-                            Preferred dimension: 350px x 450px. Max 2MB.
+                            Preferred dimension: 350px x 450px. Max 2MB. Will be saved to Cloudinary.
                         </small>
                     </div>
 
@@ -331,7 +331,7 @@ function BlogForm() {
                             className="form-control-file"
                         />
                         <small className="form-text">
-                            Preferred dimension: 1880px x 600px. Max 5MB.
+                            Preferred dimension: 1880px x 600px. Max 5MB. Will be saved to Cloudinary.
                         </small>
                     </div>
 
@@ -344,7 +344,7 @@ function BlogForm() {
 
                 <div className={`form-section ${isFullscreen ? 'fullscreen-editor' : ''}`}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h2>Content</h2>
+                        <h2>Content *</h2>
                         <button
                             type="button"
                             onClick={toggleFullscreen}
@@ -361,12 +361,22 @@ function BlogForm() {
                             wrapperClassName="draft-wrapper"
                             editorClassName="draft-editor"
                             toolbarClassName="draft-toolbar"
+                            toolbar={{
+                                options: ['inline', 'blockType', 'fontSize', 'list', 'textAlign', 'colorPicker', 'link', 'embedded', 'emoji', 'image', 'remove', 'history'],
+                                inline: { inDropdown: false },
+                                list: { inDropdown: false },
+                                textAlign: { inDropdown: false },
+                                link: { inDropdown: false },
+                                history: { inDropdown: false },
+                            }}
                             editorStyle={{
                                 border: '1px solid #ddd',
                                 padding: '10px',
                                 minHeight: isFullscreen ? 'calc(100vh - 300px)' : '400px',
-                                backgroundColor: 'white',
-                                borderRadius: '4px'
+                                backgroundColor: '#ffffff',
+                                color: '#333333',
+                                borderRadius: '4px',
+                                cursor: 'text'
                             }}
                         />
                     </div>
@@ -383,6 +393,7 @@ function BlogForm() {
                             onChange={handleChange}
                             className="form-control"
                             placeholder="tag1, tag2, tag3"
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         />
                         <small className="form-text">
                             Separate tags with commas
@@ -402,6 +413,7 @@ function BlogForm() {
                             onChange={handleChange}
                             className="form-control"
                             placeholder="Title for search engines"
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         />
                     </div>
 
@@ -414,6 +426,7 @@ function BlogForm() {
                             onChange={handleChange}
                             className="form-control"
                             placeholder="keyword1, keyword2, keyword3"
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         />
                         <small className="form-text">
                             Separate each keyword with a comma (,)
@@ -429,6 +442,7 @@ function BlogForm() {
                             className="form-control"
                             rows="3"
                             placeholder="Brief description for search engines"
+                            style={{ color: '#333', backgroundColor: '#fff' }}
                         />
                     </div>
 
@@ -440,6 +454,7 @@ function BlogForm() {
                                 value={formData.robots}
                                 onChange={handleChange}
                                 className="form-control"
+                                style={{ color: '#333', backgroundColor: '#fff' }}
                             >
                                 {robotsOptions.map((option) => (
                                     <option key={option} value={option}>{option}</option>
@@ -454,6 +469,7 @@ function BlogForm() {
                                 value={formData.og_type}
                                 onChange={handleChange}
                                 className="form-control"
+                                style={{ color: '#333', backgroundColor: '#fff' }}
                             >
                                 {ogTypes.map((type) => (
                                     <option key={type} value={type}>{type}</option>
@@ -471,7 +487,7 @@ function BlogForm() {
                             className="form-control-file"
                         />
                         <small className="form-text">
-                            Preferred dimension: 249px x 231px. Max 2MB.
+                            Preferred dimension: 1200px x 630px (OG Image standard). Max 2MB. Will be saved to Cloudinary.
                         </small>
                     </div>
 
@@ -484,7 +500,7 @@ function BlogForm() {
 
                 <div className="form-actions">
                     <button type="submit" disabled={loading} className="btn-submit">
-                        {loading ? 'Saving...' : 'Submit'}
+                        {loading ? 'Saving...' : isEditMode ? 'Update Blog' : 'Create Blog'}
                     </button>
                 </div>
             </form>

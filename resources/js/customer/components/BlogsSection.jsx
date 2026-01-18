@@ -19,7 +19,7 @@ function BlogsSection() {
             const response = await axios.get('/blogs');
             const allBlogs = extractArray(response);
             
-            console.log('All Blogs:', allBlogs); // Debug log
+            console.log('All Blogs:', allBlogs);
             
             // Filter active blogs and get latest 6
             const activeBlogs = allBlogs
@@ -27,7 +27,7 @@ function BlogsSection() {
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                 .slice(0, 6);
             
-            console.log('Active Blogs:', activeBlogs); // Debug log
+            console.log('Active Blogs:', activeBlogs);
             setBlogs(activeBlogs);
         } catch (error) {
             console.error('Error fetching blogs:', error);
@@ -46,7 +46,6 @@ function BlogsSection() {
         }
     };
 
-    // In BlogsSection.js - replace getImageUrl with:
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         
@@ -171,6 +170,16 @@ function BlogsSection() {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* View All Blogs Button */}
+                <div className="view-all-blogs-container">
+                    <button 
+                        className="view-all-blogs-btn"
+                        onClick={() => navigate('/blogs')}
+                    >
+                        VIEW ALL BLOGS
+                    </button>
                 </div>
             </div>
         </section>

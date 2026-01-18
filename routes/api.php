@@ -117,11 +117,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/pages/{id}', [PageController::class, 'destroy']);
 
     // Blogs (Admin CRUD)
-    Route::post('/blogs', [BlogController::class, 'store']);
-    Route::post('/blogs/{id}', [BlogController::class, 'update']);
-    Route::put('/blogs/{blog}', [BlogController::class, 'update']);
-    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy']);
-
+    Route::get('/blogs', [BlogController::class, 'index']);
+    Route::get('/blogs/{slug}', [BlogController::class, 'show']);
+    Route::get('/blog-categories', [BlogCategoryController::class, 'index']);
+    Route::get('/settings', [SettingsController::class, 'index']);
+    Route::get('/menu-links', [MenuLinkController::class, 'index']);
     // Blog Categories (Admin)
     Route::apiResource('blog-categories', BlogCategoryController::class);
 

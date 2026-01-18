@@ -1,218 +1,247 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
     public function index()
     {
-        try {
-            $blogs = Blog::orderBy('created_at', 'desc')->get();
-            return response()->json([
-                'success' => true,
-                'data' => $blogs
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching blogs: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch blogs'
-            ], 500);
-        }
+        $blogs = Blog::with('category')->latest()->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $blogs
+        ]);
+    }
+
+    public function show($identifier)
+    {
+        // Try to find by slug first, then by ID
+        $blog = Blog::where('slug', $identifier)
+            ->orWhere('id', $identifier)
+            ->with('category')
+            ->firstOrFail();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $blog
+        ]);
     }
 
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'content' => 'required|string',
-                'excerpt' => 'nullable|string',
-                'author' => 'nullable|string|max:255',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'is_featured' => 'nullable',
-                'is_active' => 'nullable'
-            ]);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'small_description' => 'required|string',
+            'category_id' => 'required|exists:blog_categories,id',
+            'content' => 'required|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'tags' => 'nullable|string',
+            'seo_title' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+            'meta_description' => 'nullable|string',
+            'robots' => 'nullable|string',
+            'og_type' => 'nullable|string',
+        ]);
 
-            $imageUrl = null;
-            if ($request->hasFile('image')) {
-                try {
-                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
-                        config('cloudinary.cloud_name')) {
-                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                            $request->file('image')->getRealPath(),
-                            ['folder' => 'resto_int/blogs', 'resource_type' => 'image']
-                        )->getSecurePath();
-                        $imageUrl = $uploadedFileUrl;
-                        Log::info('Blog image uploaded to Cloudinary: ' . $imageUrl);
-                    } else {
-                        throw new \Exception('Cloudinary not configured');
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Cloudinary upload failed: ' . $e->getMessage());
-                    $imageUrl = $request->file('image')->store('blogs', 'public');
-                }
-            }
-
-            // Generate unique slug
-            $slug = Str::slug($validated['title']);
-            $originalSlug = $slug;
-            $count = 1;
-            while (Blog::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $count;
-                $count++;
-            }
-
-            $blog = Blog::create([
-                'title' => $validated['title'],
-                'slug' => $slug,
-                'content' => $validated['content'],
-                'excerpt' => $validated['excerpt'] ?? null,
-                'author' => $validated['author'] ?? 'Admin',
-                'image' => $imageUrl,
-                'is_featured' => $request->is_featured === '1' || $request->is_featured === 1 || $request->is_featured === true,
-                'is_active' => $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true || !$request->has('is_active')
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'data' => $blog,
-                'message' => 'Blog created successfully'
-            ], 201);
-
-        } catch (\Exception $e) {
-            Log::error('Error creating blog: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create blog: ' . $e->getMessage()
-            ], 500);
+        // Upload main image to Cloudinary
+        if ($request->hasFile('image')) {
+            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
+                'folder' => 'blogs',
+                'transformation' => [
+                    'width' => 800,
+                    'height' => 1000,
+                    'crop' => 'limit',
+                    'quality' => 'auto'
+                ]
+            ])->getSecurePath();
+            $validated['image'] = $uploadedFileUrl;
         }
-    }
 
-    public function show($id)
-    {
-        try {
-            $blog = Blog::findOrFail($id);
-            return response()->json([
-                'success' => true,
-                'data' => $blog
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Blog not found'
-            ], 404);
+        // Upload banner image to Cloudinary
+        if ($request->hasFile('banner_image')) {
+            $bannerUrl = Cloudinary::upload($request->file('banner_image')->getRealPath(), [
+                'folder' => 'blogs/banners',
+                'transformation' => [
+                    'width' => 1880,
+                    'height' => 600,
+                    'crop' => 'limit',
+                    'quality' => 'auto'
+                ]
+            ])->getSecurePath();
+            $validated['banner_image'] = $bannerUrl;
         }
+
+        // Upload meta image to Cloudinary
+        if ($request->hasFile('meta_image')) {
+            $metaUrl = Cloudinary::upload($request->file('meta_image')->getRealPath(), [
+                'folder' => 'blogs/meta',
+                'transformation' => [
+                    'width' => 500,
+                    'height' => 500,
+                    'crop' => 'limit',
+                    'quality' => 'auto'
+                ]
+            ])->getSecurePath();
+            $validated['meta_image'] = $metaUrl;
+        }
+
+        // Generate slug from title
+        $slug = Str::slug($validated['title']);
+        $count = Blog::where('slug', 'like', $slug . '%')->count();
+        $validated['slug'] = $count > 0 ? $slug . '-' . ($count + 1) : $slug;
+        
+        $validated['is_active'] = true;
+        $validated['status'] = 'published';
+
+        $blog = Blog::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Blog created successfully',
+            'data' => $blog
+        ], 201);
     }
 
     public function update(Request $request, $id)
     {
-        try {
-            $blog = Blog::findOrFail($id);
+        $blog = Blog::findOrFail($id);
 
-            $validated = $request->validate([
-                'title' => 'sometimes|required|string|max:255',
-                'content' => 'sometimes|required|string',
-                'excerpt' => 'nullable|string',
-                'author' => 'nullable|string|max:255',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'is_featured' => 'sometimes',
-                'is_active' => 'sometimes'
-            ]);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'small_description' => 'required|string',
+            'category_id' => 'required|exists:blog_categories,id',
+            'content' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'meta_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'tags' => 'nullable|string',
+            'seo_title' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+            'meta_description' => 'nullable|string',
+            'robots' => 'nullable|string',
+            'og_type' => 'nullable|string',
+        ]);
 
-            $data = [];
-            
-            if ($request->has('title')) {
-                $data['title'] = $validated['title'];
-                
-                // Regenerate slug if title changed
-                $slug = Str::slug($validated['title']);
-                $originalSlug = $slug;
-                $count = 1;
-                while (Blog::where('slug', $slug)->where('id', '!=', $id)->exists()) {
-                    $slug = $originalSlug . '-' . $count;
-                    $count++;
-                }
-                $data['slug'] = $slug;
-            }
-            
-            if ($request->has('content')) $data['content'] = $validated['content'];
-            if ($request->has('excerpt')) $data['excerpt'] = $validated['excerpt'];
-            if ($request->has('author')) $data['author'] = $validated['author'];
-
-            if ($request->hasFile('image')) {
-                try {
-                    if (class_exists(\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::class) && 
-                        config('cloudinary.cloud_name')) {
-                        $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                            $request->file('image')->getRealPath(),
-                            ['folder' => 'resto_int/blogs', 'resource_type' => 'image']
-                        )->getSecurePath();
-                        $data['image'] = $uploadedFileUrl;
-                    } else {
-                        throw new \Exception('Cloudinary not configured');
-                    }
-                } catch (\Exception $e) {
-                    if ($blog->image && !filter_var($blog->image, FILTER_VALIDATE_URL)) {
-                        Storage::disk('public')->delete($blog->image);
-                    }
-                    $data['image'] = $request->file('image')->store('blogs', 'public');
-                }
+        // Upload new main image if provided
+        if ($request->hasFile('image')) {
+            // Delete old image from Cloudinary if exists
+            if ($blog->image && strpos($blog->image, 'cloudinary') !== false) {
+                $this->deleteCloudinaryImage($blog->image);
             }
 
-            if ($request->has('is_featured')) {
-                $data['is_featured'] = $request->is_featured === '1' || $request->is_featured === 1 || $request->is_featured === true;
-            }
-            if ($request->has('is_active')) {
-                $data['is_active'] = $request->is_active === '1' || $request->is_active === 1 || $request->is_active === true;
-            }
-
-            $blog->update($data);
-
-            return response()->json([
-                'success' => true,
-                'data' => $blog,
-                'message' => 'Blog updated successfully'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error updating blog: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update blog'
-            ], 500);
+            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
+                'folder' => 'blogs',
+                'transformation' => [
+                    'width' => 800,
+                    'height' => 1000,
+                    'crop' => 'limit',
+                    'quality' => 'auto'
+                ]
+            ])->getSecurePath();
+            $validated['image'] = $uploadedFileUrl;
         }
+
+        // Upload new banner image if provided
+        if ($request->hasFile('banner_image')) {
+            if ($blog->banner_image && strpos($blog->banner_image, 'cloudinary') !== false) {
+                $this->deleteCloudinaryImage($blog->banner_image);
+            }
+
+            $bannerUrl = Cloudinary::upload($request->file('banner_image')->getRealPath(), [
+                'folder' => 'blogs/banners',
+                'transformation' => [
+                    'width' => 1880,
+                    'height' => 600,
+                    'crop' => 'limit',
+                    'quality' => 'auto'
+                ]
+            ])->getSecurePath();
+            $validated['banner_image'] = $bannerUrl;
+        }
+
+        // Upload new meta image if provided
+        if ($request->hasFile('meta_image')) {
+            if ($blog->meta_image && strpos($blog->meta_image, 'cloudinary') !== false) {
+                $this->deleteCloudinaryImage($blog->meta_image);
+            }
+
+            $metaUrl = Cloudinary::upload($request->file('meta_image')->getRealPath(), [
+                'folder' => 'blogs/meta',
+                'transformation' => [
+                    'width' => 500,
+                    'height' => 500,
+                    'crop' => 'limit',
+                    'quality' => 'auto'
+                ]
+            ])->getSecurePath();
+            $validated['meta_image'] = $metaUrl;
+        }
+
+        // Update slug if title changed
+        if ($validated['title'] !== $blog->title) {
+            $slug = Str::slug($validated['title']);
+            $count = Blog::where('slug', 'like', $slug . '%')->where('id', '!=', $blog->id)->count();
+            $validated['slug'] = $count > 0 ? $slug . '-' . ($count + 1) : $slug;
+        }
+
+        $blog->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Blog updated successfully',
+            'data' => $blog
+        ]);
     }
 
     public function destroy($id)
     {
+        $blog = Blog::findOrFail($id);
+        
+        // Delete images from Cloudinary
+        if ($blog->image && strpos($blog->image, 'cloudinary') !== false) {
+            $this->deleteCloudinaryImage($blog->image);
+        }
+        if ($blog->banner_image && strpos($blog->banner_image, 'cloudinary') !== false) {
+            $this->deleteCloudinaryImage($blog->banner_image);
+        }
+        if ($blog->meta_image && strpos($blog->meta_image, 'cloudinary') !== false) {
+            $this->deleteCloudinaryImage($blog->meta_image);
+        }
+        
+        $blog->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Blog deleted successfully'
+        ]);
+    }
+
+    private function deleteCloudinaryImage($imageUrl)
+    {
         try {
-            $blog = Blog::findOrFail($id);
+            // Extract public ID from Cloudinary URL
+            $parts = explode('/', $imageUrl);
+            $filename = end($parts);
+            $publicId = pathinfo($filename, PATHINFO_FILENAME);
             
-            if ($blog->image && !filter_var($blog->image, FILTER_VALIDATE_URL)) {
-                Storage::disk('public')->delete($blog->image);
+            // Find the folder path
+            $folderStart = strpos($imageUrl, '/blogs/');
+            if ($folderStart !== false) {
+                $pathAfterVersion = substr($imageUrl, $folderStart + 1);
+                $publicId = pathinfo($pathAfterVersion, PATHINFO_DIRNAME) . '/' . $publicId;
             }
-
-            $blog->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Blog deleted successfully'
-            ]);
-
+            
+            Cloudinary::destroy($publicId);
         } catch (\Exception $e) {
-            Log::error('Error deleting blog: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to delete blog'
-            ], 500);
+            \Log::error('Failed to delete Cloudinary image: ' . $e->getMessage());
         }
     }
 }
