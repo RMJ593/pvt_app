@@ -7,17 +7,17 @@ import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import './Blogs.css';
 
-// Helper function for image URLs
+// Replace the getImageUrl function at the top of BlogForm.js
+import { API_BASE_URL, getStorageUrl } from '../../config/api'; // Add this import
+
 const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     
-    // If it's already a full URL (Cloudinary), return as-is
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
         return imagePath;
     }
     
-    // Local storage path
-    return `/storage/${imagePath}`;
+    return getStorageUrl(imagePath);
 };
 
 function BlogForm() {

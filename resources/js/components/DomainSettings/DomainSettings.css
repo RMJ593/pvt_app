@@ -99,6 +99,8 @@
     font-size: 0.875rem;
     font-family: 'Courier New', monospace;
     transition: border-color 0.2s;
+    color: #333; /* ADD THIS LINE */
+    background-color: #ffffff;
 }
 
 .color-input:focus {
@@ -134,6 +136,8 @@
     font-size: 0.875rem;
     font-family: inherit;
     transition: all 0.2s;
+    color: #333; /* ADD THIS LINE */
+    background-color: #ffffff;
 }
 
 .form-control:focus {

@@ -46,24 +46,17 @@ function BlogsSection() {
         }
     };
 
+    // In BlogsSection.js - replace getImageUrl with:
     const getImageUrl = (imagePath) => {
-        if (!imagePath) {
-            console.log('No image path provided');
-            return null;
-        }
+        if (!imagePath) return null;
         
-        console.log('Original image path:', imagePath);
-        
-        // If it's already a full URL (Cloudinary or external), return as-is
+        // If it's already a full URL, return as-is
         if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-            console.log('Returning full URL:', imagePath);
             return imagePath;
         }
         
-        // For local storage paths, use getStorageUrl helper
-        const fullUrl = getStorageUrl(imagePath);
-        console.log('Converted to storage URL:', fullUrl);
-        return fullUrl;
+        // Use the helper from config
+        return getStorageUrl(imagePath);
     };
 
     const formatDate = (dateString) => {
