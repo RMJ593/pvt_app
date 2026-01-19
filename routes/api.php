@@ -43,9 +43,12 @@ Route::get('/menu-items/{menuItem}', [MenuItemController::class, 'show']);
 Route::get('/pages', [PageController::class, 'index']);
 Route::get('/pages/{page}', [PageController::class, 'show']);
 
-// Blogs (Public)
+// Blogs (Public) ✅ KEEP THESE
 Route::get('/blogs', [BlogController::class, 'index']);
 Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+
+// Blog Categories (Public) ✅ ADD THIS
+Route::get('/blog-categories', [BlogCategoryController::class, 'index']);
 
 // Team Members (Public)
 Route::get('/team-members', [TeamMemberController::class, 'index']);
@@ -72,6 +75,7 @@ Route::get('/footer-links', [FooterLinkController::class, 'index']);
 // Public contact/booking
 Route::post('/user-responses', [UserResponseController::class, 'store']);
 Route::post('/table-bookings', [TableBookingController::class, 'store']);
+Route::post('/bookings', [TableBookingController::class, 'store']); // Alias
 
 // Diagnostic routes
 Route::get('/diagnose', [DiagnosticController::class, 'diagnose']);
@@ -116,14 +120,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/pages/{id}/status', [PageController::class, 'updateStatus']);
     Route::delete('/pages/{id}', [PageController::class, 'destroy']);
 
-    // Blogs (Admin CRUD)
-    Route::get('/blogs', [BlogController::class, 'index']);
-    Route::get('/blogs/{slug}', [BlogController::class, 'show']);
-    Route::get('/blog-categories', [BlogCategoryController::class, 'index']);
-    Route::get('/settings', [SettingsController::class, 'index']);
-    Route::get('/menu-links', [MenuLinkController::class, 'index']);
-    // Blog Categories (Admin)
-    Route::apiResource('blog-categories', BlogCategoryController::class);
+    // Blogs (Admin CRUD) ✅ FIXED - REMOVED DUPLICATE GET ROUTES
+    Route::post('/blogs', [BlogController::class, 'store']);
+    Route::put('/blogs/{id}', [BlogController::class, 'update']);
+    Route::post('/blogs/{id}', [BlogController::class, 'update']); // For FormData with _method
+    Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);
+    
+    // Blog Categories (Admin) ✅ FIXED - REMOVED DUPLICATE INDEX
+    Route::post('/blog-categories', [BlogCategoryController::class, 'store']);
+    Route::get('/blog-categories/{id}', [BlogCategoryController::class, 'show']);
+    Route::put('/blog-categories/{id}', [BlogCategoryController::class, 'update']);
+    Route::post('/blog-categories/{id}', [BlogCategoryController::class, 'update']);
+    Route::delete('/blog-categories/{id}', [BlogCategoryController::class, 'destroy']);
 
     // Team Members (Admin CRUD)
     Route::post('/team-members', [TeamMemberController::class, 'store']);

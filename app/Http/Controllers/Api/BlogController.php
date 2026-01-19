@@ -11,18 +11,24 @@ class BlogController extends Controller
     public function index()
     {
         try {
-            $blogs = Blog::with('category')->latest()->get();
+            // Get all blogs without any relationships first
+            $blogs = Blog::latest()->get();
             
             return response()->json([
                 'success' => true,
                 'data' => $blogs
             ]);
+            
         } catch (\Exception $e) {
+            // Log the actual error
             \Log::error('Blog Index Error: ' . $e->getMessage());
+            \Log::error('File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching blogs: ' . $e->getMessage()
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ], 500);
         }
     }
@@ -30,23 +36,23 @@ class BlogController extends Controller
     public function show($identifier)
     {
         try {
-            // Try to find by slug first, then by ID
-            $blog = Blog::where('slug', $identifier)
-                ->orWhere('id', $identifier)
-                ->with('category')
+            // Find blog by ID or slug
+            $blog = Blog::where('id', $identifier)
+                ->orWhere('slug', $identifier)
                 ->firstOrFail();
             
             return response()->json([
                 'success' => true,
                 'data' => $blog
             ]);
+            
         } catch (\Exception $e) {
             \Log::error('Blog Show Error: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Blog not found: ' . $e->getMessage()
-            ], 404);
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -58,9 +64,6 @@ class BlogController extends Controller
                 'small_description' => 'required|string',
                 'category_id' => 'required|exists:blog_categories,id',
                 'content' => 'required|string',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-                'meta_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'tags' => 'nullable|string',
                 'seo_title' => 'nullable|string',
                 'meta_keywords' => 'nullable|string',
@@ -68,19 +71,6 @@ class BlogController extends Controller
                 'robots' => 'nullable|string',
                 'og_type' => 'nullable|string',
             ]);
-
-            // Handle image uploads
-            if ($request->hasFile('image')) {
-                $validated['image'] = $this->uploadImage($request->file('image'), 'blogs');
-            }
-
-            if ($request->hasFile('banner_image')) {
-                $validated['banner_image'] = $this->uploadImage($request->file('banner_image'), 'blogs/banners');
-            }
-
-            if ($request->hasFile('meta_image')) {
-                $validated['meta_image'] = $this->uploadImage($request->file('meta_image'), 'blogs/meta');
-            }
 
             // Generate slug
             $slug = Str::slug($validated['title']);
@@ -103,7 +93,7 @@ class BlogController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating blog: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -118,9 +108,6 @@ class BlogController extends Controller
                 'small_description' => 'required|string',
                 'category_id' => 'required|exists:blog_categories,id',
                 'content' => 'required|string',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-                'meta_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'tags' => 'nullable|string',
                 'seo_title' => 'nullable|string',
                 'meta_keywords' => 'nullable|string',
@@ -128,26 +115,6 @@ class BlogController extends Controller
                 'robots' => 'nullable|string',
                 'og_type' => 'nullable|string',
             ]);
-
-            // Upload new images if provided
-            if ($request->hasFile('image')) {
-                $validated['image'] = $this->uploadImage($request->file('image'), 'blogs');
-            }
-
-            if ($request->hasFile('banner_image')) {
-                $validated['banner_image'] = $this->uploadImage($request->file('banner_image'), 'blogs/banners');
-            }
-
-            if ($request->hasFile('meta_image')) {
-                $validated['meta_image'] = $this->uploadImage($request->file('meta_image'), 'blogs/meta');
-            }
-
-            // Update slug if title changed
-            if ($validated['title'] !== $blog->title) {
-                $slug = Str::slug($validated['title']);
-                $count = Blog::where('slug', 'like', $slug . '%')->where('id', '!=', $blog->id)->count();
-                $validated['slug'] = $count > 0 ? $slug . '-' . ($count + 1) : $slug;
-            }
 
             $blog->update($validated);
 
@@ -162,7 +129,7 @@ class BlogController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating blog: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -183,40 +150,8 @@ class BlogController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting blog: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Upload image to Cloudinary or local storage
-     */
-    private function uploadImage($file, $folder)
-    {
-        // Try Cloudinary first
-        if (class_exists('\CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary')) {
-            try {
-                $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload(
-                    $file->getRealPath(),
-                    [
-                        'folder' => $folder,
-                        'transformation' => [
-                            'quality' => 'auto',
-                            'fetch_format' => 'auto'
-                        ]
-                    ]
-                )->getSecurePath();
-                
-                return $uploadedFileUrl;
-            } catch (\Exception $e) {
-                \Log::warning('Cloudinary upload failed, using local storage: ' . $e->getMessage());
-            }
-        }
-
-        // Fallback to local storage
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs($folder, $filename, 'public');
-        
-        return $path;
     }
 }
