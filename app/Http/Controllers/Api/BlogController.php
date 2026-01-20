@@ -13,7 +13,11 @@ class BlogController extends Controller
     public function index()
     {
         try {
-            $blogs = Blog::with('category')->latest()->get();
+            // Load blogs without forcing category relationship
+            $blogs = Blog::latest()->get();
+            
+            // Manually load categories for blogs that have them
+            $blogs->load('category');
             
             return response()->json([
                 'success' => true,
@@ -35,8 +39,10 @@ class BlogController extends Controller
         try {
             $blog = Blog::where('id', $identifier)
                 ->orWhere('slug', $identifier)
-                ->with('category')
                 ->firstOrFail();
+            
+            // Load category if it exists
+            $blog->load('category');
             
             return response()->json([
                 'success' => true,
