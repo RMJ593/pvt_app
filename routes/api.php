@@ -257,3 +257,28 @@ Route::get('/test-gallery', function() {
         })
     ]);
 });
+Route::get('/test-blog-create', function() {
+    try {
+        $blog = \App\Models\Blog::create([
+            'title' => 'Test Blog',
+            'slug' => 'test-blog-' . time(),
+            'small_description' => 'Test description',
+            'content' => 'Test content',
+            'category_id' => 1, // Make sure category 1 exists!
+            'is_active' => true,
+            'status' => 'published'
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Blog created without image',
+            'data' => $blog
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ], 500);
+    }
+});
