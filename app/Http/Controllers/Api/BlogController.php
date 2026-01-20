@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -20,7 +21,6 @@ class BlogController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            // Log the actual error
             \Log::error('Blog Index Error: ' . $e->getMessage());
             \Log::error('File: ' . $e->getFile() . ' Line: ' . $e->getLine());
             
