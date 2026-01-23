@@ -360,7 +360,235 @@ textarea.form-control {
     color: #6c757d;
     font-size: 18px;
 }
+/* Add these styles to your Pages.css file */
 
+/* Header Actions */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.btn-secondary {
+    padding: 0.625rem 1.25rem;
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* Info Box */
+.info-box {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.375rem;
+}
+
+.info-box h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #1e40af;
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #1e3a8a;
+    line-height: 1.6;
+}
+
+.info-box strong {
+    color: #1e40af;
+}
+
+/* Navigation Status Badges */
+.navigation-status {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.badge-primary {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-info {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-muted {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.badge-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+/* Page Subtitle */
+.page-subtitle {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* URL Display */
+code {
+    background-color: #f3f4f6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #1f2937;
+    font-family: 'Courier New', monospace;
+}
+
+/* Action Buttons */
+.actions-cell {
+    white-space: nowrap;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-edit,
+.btn-delete {
+    padding: 0.375rem 0.75rem;
+    background: none;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-edit:hover {
+    background-color: #fef3c7;
+    border-color: #fbbf24;
+}
+
+.btn-delete {
+    border: none;
+    background-color: transparent;
+}
+
+.btn-delete:hover {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #22c55e;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-secondary,
+    .btn-new {
+        width: 100%;
+        text-align: center;
+    }
+
+    .navigation-status {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap;
+    }
+}
 /* Responsive Design */
 @media (max-width: 768px) {
     .page-header,

@@ -250,11 +250,13 @@
     overflow: hidden;
     margin-left: 16rem; /* Default: sidebar open */
     transition: margin-left 0.3s ease; /* Smooth transition when sidebar toggles */
+    width: calc(100% - 16rem); /* ADDED: Prevent content from going under sidebar */
 }
 
 /* When sidebar is closed, reduce left margin */
 .admin-container.sidebar-is-closed .main-content {
     margin-left: 5rem;
+    width: calc(100% - 5rem); /* ADDED: Adjust width when sidebar is closed */
 }
 
 /* ===== TOP HEADER ===== */
@@ -383,8 +385,15 @@
 .page-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden; /* ADDED: Prevent horizontal scroll */
     background-color: rgb(249, 250, 251);
     padding: 1.5rem;
+    max-width: 100%; /* ADDED: Ensure content doesn't exceed container */
+}
+
+/* Ensure all child elements respect width */
+.page-content > * {
+    max-width: 100%;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
