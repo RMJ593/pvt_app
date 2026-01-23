@@ -9,18 +9,35 @@ function PageView() {
     const navigate = useNavigate();
     const location = useLocation();
     const [page, setPage] = useState(location.state?.page || null);
+    const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(!page);
 
-    
     useEffect(() => {
+        fetchSettings();
         if (!page) {
             fetchPageBySlug();
         }
     }, [slug]);
 
+    const fetchSettings = async () => {
+        try {
+            const response = await axios.get('/settings');
+            if (response.data.success) {
+                const settingsData = response.data.data;
+                setSettings(settingsData);
+                
+                if (settingsData.main_color) {
+                    document.documentElement.style.setProperty('--main-color', settingsData.main_color);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+        }
+    };
+
     const fetchPageBySlug = async () => {
         try {
-            const response = await axios.get(`/pages`);
+            const response = await axios.get('/pages');
             const allPages = extractArray(response);
             const foundPage = allPages.find(p => p.slug === slug);
             
@@ -37,10 +54,11 @@ function PageView() {
         }
     };
 
+    // Use default_image from General Settings instead of page banner
     const getBannerUrl = () => {
-        if (!page?.banner_image) return null;
-        if (page.banner_image.startsWith('http')) return page.banner_image;
-        return `http://127.0.0.1:8000/storage/${page.banner_image}`;
+        if (!settings?.default_image) return null;
+        if (settings.default_image.startsWith('http')) return settings.default_image;
+        return `${API_BASE_URL}/storage/${settings.default_image}`;
     };
 
     if (loading) {
@@ -57,7 +75,7 @@ function PageView() {
 
     return (
         <div className="page-view">
-            {/* Banner Section */}
+            {/* Banner Section with Default Image from General Settings */}
             <section className="page-banner">
                 {getBannerUrl() ? (
                     <img src={getBannerUrl()} alt={page.page_title} className="banner-image" />
