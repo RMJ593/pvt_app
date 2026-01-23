@@ -141,7 +141,7 @@ function AdminLayout({ children, onLogout, username = "Super Admin", userEmail =
     };
 
     return (
-        <div className={`admin-container ${sidebarOpen ? '' : 'sidebar-is-closed'}`}>
+        <div className={`admin-container ${!sidebarOpen ? 'sidebar-is-closed' : ''}`}>
             <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
                 <div className="sidebar-header">
                     {sidebarOpen ? (
@@ -191,7 +191,15 @@ function AdminLayout({ children, onLogout, username = "Super Admin", userEmail =
             <div className="main-content">
                 <header className="top-header">
                     <div className="header-container">
-                        <div className="header-left"></div>
+                        <div className="header-left">
+                            {/* Add menu toggle button here for mobile */}
+                            <button 
+                                onClick={() => setSidebarOpen(!sidebarOpen)} 
+                                className="mobile-menu-toggle"
+                            >
+                                <Menu size={24} />
+                            </button>
+                        </div>
                         <div className="header-center">
                             <button className="sync-button">Sync with Website</button>
                             <a href="https://tphrc-int-project-cjld.onrender.com" target="_blank" rel="noopener noreferrer" className="website-link">
@@ -215,4 +223,3 @@ function AdminLayout({ children, onLogout, username = "Super Admin", userEmail =
 }
 
 export default AdminLayout;
-

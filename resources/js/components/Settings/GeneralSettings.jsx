@@ -63,6 +63,10 @@ function GeneralSettings() {
         popup_ad_image: null,
         default_image: null
     });
+    const [imagePreviews, setImagePreviews] = useState({
+        popup_ad_image: null,
+        default_image: null
+    });
 
     useEffect(() => {
         fetchSettings();
@@ -143,13 +147,13 @@ function GeneralSettings() {
     };
 
     const handleChange = (field, value) => {
-        setSettings({
-            ...settings,
-            [field]: value
-        });
-    };
+            setSettings({
+                ...settings,
+                [field]: value
+            });
+        };
 
-    const handleImageUpload = (e, field) => {
+        const handleImageUpload = (e, field) => {
         const file = e.target.files[0];
         if (file) {
             // Validate file size (max 5MB)
@@ -158,11 +162,33 @@ function GeneralSettings() {
                 return;
             }
 
-            // Store the file for upload
-            setUploadFiles({
-                ...uploadFiles,
-                [field]: file
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setMessage('Please select a valid image file');
+                return;
+            }
+
+            console.log('📁 File selected:', {
+                name: file.name,
+                size: file.size,
+                type: file.type
             });
+
+            // Store the ACTUAL file for upload
+            setUploadFiles(prev => ({
+                ...prev,
+                [field]: file
+            }));
+
+            // Create preview using FileReader
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreviews(prev => ({
+                    ...prev,
+                    [field]: reader.result
+                }));
+            };
+            reader.readAsDataURL(file);
 
             setMessage('');
         }
@@ -224,10 +250,12 @@ function GeneralSettings() {
         try {
             const formData = new FormData();
             
+            console.log('=== FORM SUBMISSION DEBUG ===');
+            
             // Add all text/boolean fields
             Object.keys(settings).forEach(key => {
                 if (key === 'popup_ad_image' || key === 'default_image') {
-                    // Skip image fields - we'll handle them separately
+                    // Skip - we'll add files separately
                     return;
                 }
                 
@@ -238,31 +266,64 @@ function GeneralSettings() {
                 }
             });
 
-            // Add new uploaded files
-            if (uploadFiles.popup_ad_image) {
+            // Add uploaded files
+            if (uploadFiles.popup_ad_image instanceof File) {
+                console.log('✅ Adding popup_ad_image:', uploadFiles.popup_ad_image.name);
                 formData.append('popup_ad_image', uploadFiles.popup_ad_image);
+            } else {
+                console.log('❌ No popup_ad_image file to upload');
             }
-            if (uploadFiles.default_image) {
+            
+            if (uploadFiles.default_image instanceof File) {
+                console.log('✅ Adding default_image:', uploadFiles.default_image.name);
                 formData.append('default_image', uploadFiles.default_image);
+            } else {
+                console.log('❌ No default_image file to upload');
             }
 
+            // Debug: Log all FormData entries
+            console.log('=== FormData Contents ===');
+            for (let pair of formData.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(pair[0], ':', 'FILE -', pair[1].name, pair[1].size, 'bytes');
+                } else {
+                    console.log(pair[0], ':', pair[1]);
+                }
+            }
+
+            const token = localStorage.getItem('auth_token');
             const response = await axios.post('/settings', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}` // Add if needed
                 }
             });
 
+            console.log('=== SERVER RESPONSE ===', response.data);
+
             if (response.data.success) {
                 setMessage('Settings updated successfully!');
-                fetchSettings();
+                
                 // Clear upload files
                 setUploadFiles({
                     popup_ad_image: null,
                     default_image: null
                 });
+                
+                // Clear previews
+                setImagePreviews({
+                    popup_ad_image: null,
+                    default_image: null
+                });
+                
+                // Refetch settings to get new image paths from server
+                await fetchSettings();
             }
         } catch (error) {
-            console.error('Update error:', error);
+            console.error('=== SUBMISSION ERROR ===');
+            console.error('Error:', error);
+            console.error('Response:', error.response?.data);
+            
             setMessage('Failed to update settings: ' + (error.response?.data?.message || error.message));
         } finally {
             setLoading(false);
@@ -319,6 +380,7 @@ function GeneralSettings() {
                         </label>
                     </div>
 
+                    // UPDATED JSX for popup ad image section
                     <div className="form-group">
                         <label>Popup Image</label>
                         <input
@@ -327,20 +389,31 @@ function GeneralSettings() {
                             onChange={(e) => handleImageUpload(e, 'popup_ad_image')}
                             className="form-control-file"
                         />
-                        {currentImages.popup_ad_image && !uploadFiles.popup_ad_image && (
+                        
+                        {/* Show current image from server if exists and no new file selected */}
+                        {currentImages.popup_ad_image && !imagePreviews.popup_ad_image && (
                             <div className="current-image-preview">
                                 <img 
                                     src={getStorageUrl(currentImages.popup_ad_image)} 
                                     alt="Current popup" 
                                     style={{maxWidth: '200px', marginTop: '10px'}}
                                 />
-                                <small>Current image</small>
+                                <small style={{display: 'block', marginTop: '5px'}}>Current image</small>
                             </div>
                         )}
-                        {uploadFiles.popup_ad_image && (
-                            <small style={{color: 'green', display: 'block', marginTop: '5px'}}>
-                                ? New image selected: {uploadFiles.popup_ad_image.name}
-                            </small>
+                        
+                        {/* Show preview of newly selected file */}
+                        {imagePreviews.popup_ad_image && (
+                            <div className="current-image-preview">
+                                <img 
+                                    src={imagePreviews.popup_ad_image} 
+                                    alt="New popup preview" 
+                                    style={{maxWidth: '200px', marginTop: '10px'}}
+                                />
+                                <small style={{color: 'green', display: 'block', marginTop: '5px'}}>
+                                    ✓ New image selected: {uploadFiles.popup_ad_image?.name}
+                                </small>
+                            </div>
                         )}
                     </div>
 
@@ -591,7 +664,7 @@ function GeneralSettings() {
                             <div key={day} className="off-day-item">
                                 <span>{day}</span>
                                 <button type="button" onClick={() => removeOffDay(day)} className="btn-remove">
-                                    �
+                                    �
                                 </button>
                             </div>
                         ))}

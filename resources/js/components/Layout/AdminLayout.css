@@ -277,6 +277,21 @@
     flex: 1;
 }
 
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: rgb(31, 41, 55);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+}
+
 .header-center {
     display: flex;
     align-items: center;
