@@ -126,7 +126,6 @@ class BlogController extends Controller
             $validated['slug'] = $count > 0 ? $slug . '-' . ($count + 1) : $slug;
             
             $validated['is_active'] = true;
-            $validated['status'] = 'published';
 
             $blog = Blog::create($validated);
 

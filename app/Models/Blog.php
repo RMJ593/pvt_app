@@ -25,7 +25,7 @@ class Blog extends Model
         'robots',
         'og_type',
         'is_active',
-        'status',
+        // 'status',
         'author'
     ];
 
