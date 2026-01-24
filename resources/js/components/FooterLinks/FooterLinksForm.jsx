@@ -12,16 +12,15 @@ function FooterLinksForm() {
     const [formData, setFormData] = useState({
         name: '',
         link_text: '',
-        page_type: '',
+        link_type: 'custom_url', // 'custom_url' or 'page'
         page_id: '',
+        custom_url: '',
         open_new_tab: false
     });
 
     const [pages, setPages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const pageTypes = ['Page', 'Blog', 'Portfolio', 'Gallery', 'Contact', 'Custom'];
 
     useEffect(() => {
         fetchPages();
@@ -54,11 +53,16 @@ function FooterLinksForm() {
 
             if (response.data.success) {
                 const link = response.data.data;
+                
+                // Determine if it's a page link or custom URL
+                const isPageLink = link.page_id && link.page_id !== null;
+                
                 setFormData({
                     name: link.title || '',
                     link_text: link.title || '',
-                    page_type: link.page_type || '',
+                    link_type: isPageLink ? 'page' : 'custom_url',
                     page_id: link.page_id || '',
+                    custom_url: !isPageLink ? link.url : '',
                     open_new_tab: link.target === '_blank'
                 });
             }
@@ -86,16 +90,27 @@ function FooterLinksForm() {
         try {
             const token = localStorage.getItem('auth_token');
 
-            // Get the selected page's slug
-            const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
-            const pageSlug = selectedPage?.slug || '';
+            let finalUrl = '';
+            let finalPageId = null;
 
-            // Prepare data for API
+            if (formData.link_type === 'page') {
+                // Link to a CMS page
+                const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
+                if (selectedPage) {
+                    finalUrl = `/page/${selectedPage.slug}`;
+                    finalPageId = formData.page_id;
+                }
+            } else {
+                // Custom URL (hardcoded pages or external links)
+                finalUrl = formData.custom_url;
+                finalPageId = null;
+            }
+
             const dataToSend = {
                 title: formData.link_text || formData.name,
-                page_type: formData.page_type || null,
-                page_id: formData.page_id || null,
-                url: pageSlug ? `/page/${pageSlug}` : '#',
+                page_type: null,
+                page_id: finalPageId,
+                url: finalUrl,
                 target: formData.open_new_tab ? '_blank' : '_self',
                 order: 0,
                 is_active: true
@@ -105,7 +120,6 @@ function FooterLinksForm() {
 
             let response;
 
-            // ✅ FIXED: Removed /api prefix (axios baseURL already has it)
             if (isEditMode) {
                 response = await axios.put(
                     `/footer-links/${id}`,
@@ -170,6 +184,15 @@ function FooterLinksForm() {
                 </div>
             )}
 
+            <div className="info-box">
+                <h3>💡 Quick Examples:</h3>
+                <p>
+                    <strong>Hardcoded Pages:</strong> /about, /contact, /blogs, /booking<br/>
+                    <strong>External Links:</strong> https://drive.google.com/your-menu-pdf<br/>
+                    <strong>CMS Pages:</strong> Select from "Page" dropdown (e.g., Terms & Conditions)
+                </p>
+            </div>
+
             <form onSubmit={handleSubmit} className="footer-links-form">
                 <div className="form-section">
                     <div className="form-group">
@@ -180,7 +203,7 @@ function FooterLinksForm() {
                             value={formData.name}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="e.g., Privacy Policy Link"
+                            placeholder="e.g., About Us Link"
                             required
                         />
                         <small className="form-text">
@@ -196,45 +219,63 @@ function FooterLinksForm() {
                             value={formData.link_text}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="Text displayed in footer"
+                            placeholder="Text displayed in footer (e.g., About Us)"
                             required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Page Type</label>
+                        <label>Link Type *</label>
                         <select
-                            name="page_type"
-                            value={formData.page_type}
-                            onChange={handleChange}
-                            className="form-control"
-                        >
-                            <option value="">-- Select Page Type (Optional) --</option>
-                            {pageTypes.map((type) => (
-                                <option key={type} value={type}>
-                                    {type}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group">
-                        <label>Page *</label>
-                        <select
-                            name="page_id"
-                            value={formData.page_id}
+                            name="link_type"
+                            value={formData.link_type}
                             onChange={handleChange}
                             className="form-control"
                             required
                         >
-                            <option value="">-- Select Page --</option>
-                            {pages.map((page) => (
-                                <option key={page.id} value={page.id}>
-                                    {page.page_title || page.title}
-                                </option>
-                            ))}
+                            <option value="custom_url">Custom URL (Hardcoded page or external link)</option>
+                            <option value="page">CMS Page (Created in Pages section)</option>
                         </select>
                     </div>
+
+                    {formData.link_type === 'custom_url' ? (
+                        <div className="form-group">
+                            <label>URL *</label>
+                            <input
+                                type="text"
+                                name="custom_url"
+                                value={formData.custom_url}
+                                onChange={handleChange}
+                                className="form-control"
+                                placeholder="/about, /contact, /blogs, or https://..."
+                                required
+                            />
+                            <small className="form-text">
+                                Examples: /about, /contact, /booking, https://drive.google.com/file/...
+                            </small>
+                        </div>
+                    ) : (
+                        <div className="form-group">
+                            <label>Page *</label>
+                            <select
+                                name="page_id"
+                                value={formData.page_id}
+                                onChange={handleChange}
+                                className="form-control"
+                                required
+                            >
+                                <option value="">-- Select Page --</option>
+                                {pages.map((page) => (
+                                    <option key={page.id} value={page.id}>
+                                        {page.page_title || page.title} ({page.slug})
+                                    </option>
+                                ))}
+                            </select>
+                            <small className="form-text">
+                                These are pages created in the Pages section
+                            </small>
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label className="toggle-label">
@@ -249,6 +290,9 @@ function FooterLinksForm() {
                                 <span className="toggle-slider"></span>
                             </label>
                         </label>
+                        <small className="form-text">
+                            Recommended for external links (Google Drive, etc.)
+                        </small>
                     </div>
                 </div>
 

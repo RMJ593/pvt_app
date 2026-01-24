@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './TopMenu.css';
+import { extractArray } from '../../config/api';
 
 function TopMenuForm() {
     const navigate = useNavigate();
@@ -11,16 +12,15 @@ function TopMenuForm() {
     const [formData, setFormData] = useState({
         name: '',
         link_text: '',
-        page_type: '',
+        link_type: 'custom_url', // 'custom_url' or 'page'
         page_id: '',
+        custom_url: '',
         open_new_tab: false
     });
 
     const [pages, setPages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const pageTypes = ['Page', 'Blog', 'Portfolio', 'Gallery', 'Contact', 'Custom'];
 
     useEffect(() => {
         fetchPages();
@@ -31,25 +31,38 @@ function TopMenuForm() {
 
     const fetchPages = async () => {
         try {
-            const response = await axios.get('/pages');
-            if (response.data.success) {
-                setPages(response.data.data);
-            }
+            const token = localStorage.getItem('auth_token');
+            const response = await axios.get('/pages', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const pagesData = extractArray(response);
+            setPages(pagesData);
         } catch (error) {
             console.error('Error fetching pages:', error);
+            setPages([]);
         }
     };
 
     const fetchLink = async () => {
         try {
-            const response = await axios.get(`/menu-links/${id}`);
+            const token = localStorage.getItem('auth_token');
+            const response = await axios.get(`/menu-links/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
             if (response.data.success) {
                 const link = response.data.data;
+                
+                // Determine if it's a page link or custom URL
+                const isPageLink = link.page_id && link.page_id !== null;
+                
                 setFormData({
                     name: link.title || '',
-                    link_text: link.link_text || '',
-                    page_type: link.page_type || '',
+                    link_text: link.link_text || link.title || '',
+                    link_type: isPageLink ? 'page' : 'custom_url',
                     page_id: link.page_id || '',
+                    custom_url: !isPageLink ? link.url : '',
                     open_new_tab: link.target === '_blank'
                 });
             }
@@ -73,18 +86,32 @@ function TopMenuForm() {
         setError('');
 
         try {
-            // Get the selected page's slug
-            const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
-            const pageSlug = selectedPage?.slug || '';
+            const token = localStorage.getItem('auth_token');
+
+            let finalUrl = '';
+            let finalPageId = null;
+
+            if (formData.link_type === 'page') {
+                // Link to a CMS page
+                const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
+                if (selectedPage) {
+                    finalUrl = `/page/${selectedPage.slug}`;
+                    finalPageId = formData.page_id;
+                }
+            } else {
+                // Custom URL (hardcoded pages)
+                finalUrl = formData.custom_url;
+                finalPageId = null;
+            }
 
             const dataToSend = {
                 title: formData.name,
                 link_text: formData.link_text,
-                page_type: formData.page_type,
-                page_id: formData.page_id || null,
-                url: pageSlug ? `/page/${pageSlug}` : '',
+                page_type: null,
+                page_id: finalPageId,
+                url: finalUrl,
                 target: formData.open_new_tab ? '_blank' : '_self',
-                link_type: 'top_menu',  // ✅ ADDED: Mark as top menu link
+                link_type: 'nav_link',
                 menu_id: 1,
                 order: 1,
                 is_active: true,
@@ -95,9 +122,19 @@ function TopMenuForm() {
 
             let response;
             if (isEditMode) {
-                response = await axios.put(`/menu-links/${id}`, dataToSend);
+                response = await axios.put(`/menu-links/${id}`, dataToSend, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
             } else {
-                response = await axios.post('/menu-links', dataToSend);
+                response = await axios.post('/menu-links', dataToSend, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
             }
 
             console.log('Response:', response.data);
@@ -135,6 +172,14 @@ function TopMenuForm() {
                 </div>
             )}
 
+            <div className="info-box">
+                <h3>💡 Quick Examples:</h3>
+                <p>
+                    <strong>Hardcoded Pages:</strong> /, /about, /our-menus, /contact<br/>
+                    <strong>CMS Pages:</strong> Select from "Page" dropdown (e.g., Terms & Conditions)
+                </p>
+            </div>
+
             <form onSubmit={handleSubmit} className="top-menu-form">
                 <div className="form-section">
                     <h2>Link Information</h2>
@@ -147,7 +192,7 @@ function TopMenuForm() {
                             value={formData.name}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="e.g., Main About Page"
+                            placeholder="e.g., Home Link, About Us Link"
                             required
                         />
                         <small className="form-text">
@@ -163,46 +208,64 @@ function TopMenuForm() {
                             value={formData.link_text}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="Text displayed on menu"
+                            placeholder="Text displayed on menu (e.g., HOME, ABOUT US)"
                             required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Page Type *</label>
+                        <label>Link Type *</label>
                         <select
-                            name="page_type"
-                            value={formData.page_type}
+                            name="link_type"
+                            value={formData.link_type}
                             onChange={handleChange}
                             className="form-control"
                             required
                         >
-                            <option value="">-- Select Page Type --</option>
-                            {pageTypes.map((type) => (
-                                <option key={type} value={type}>
-                                    {type}
-                                </option>
-                            ))}
+                            <option value="custom_url">Custom URL (Hardcoded page)</option>
+                            <option value="page">CMS Page (Created in Pages section)</option>
                         </select>
                     </div>
 
-                    <div className="form-group">
-                        <label>Page *</label>
-                        <select
-                            name="page_id"
-                            value={formData.page_id}
-                            onChange={handleChange}
-                            className="form-control"
-                            required
-                        >
-                            <option value="">-- Select Page --</option>
-                            {pages.map((page) => (
-                                <option key={page.id} value={page.id}>
-                                    {page.page_title || page.title}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {formData.link_type === 'custom_url' ? (
+                        <div className="form-group">
+                            <label>URL *</label>
+                            <input
+                                type="text"
+                                name="custom_url"
+                                value={formData.custom_url}
+                                onChange={handleChange}
+                                className="form-control"
+                                placeholder="/, /about, /our-menus, /contact"
+                                required
+                            />
+                            <small className="form-text">
+                                Use "/" for homepage<br/>
+                                Examples: /about, /our-menus, /contact, /blogs
+                            </small>
+                        </div>
+                    ) : (
+                        <div className="form-group">
+                            <label>Page *</label>
+                            <select
+                                name="page_id"
+                                value={formData.page_id}
+                                onChange={handleChange}
+                                className="form-control"
+                                required
+                            >
+                                <option value="">-- Select Page --</option>
+                                {pages.map((page) => (
+                                    <option key={page.id} value={page.id}>
+                                        {page.page_title || page.title} ({page.slug})
+                                    </option>
+                                ))}
+                            </select>
+                            <small className="form-text">
+                                These are pages created in the Pages section
+                            </small>
+                        </div>
+                    )}
 
                     <div className="form-group">
                         <label className="toggle-label">
