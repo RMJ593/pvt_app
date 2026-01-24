@@ -275,6 +275,49 @@
     box-shadow: 0 4px 12px rgba(228, 229, 144, 0.3);
 }
 
+/* Footer Background Image */
+.footer-elegant {
+    position: relative;
+    overflow: hidden;
+}
+
+.footer-background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+.footer-background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85); /* Dark overlay for readability */
+    z-index: 1;
+}
+
+/* Ensure all footer content is above background */
+.footer-elegant-container,
+.footer-elegant-bottom {
+    position: relative;
+    z-index: 2;
+}
+
+/* No Links Message */
+.no-links-message {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    font-style: italic;
+    margin: 0;
+    padding: 1rem 0;
+}
 /* Responsive Design */
 @media (max-width: 1200px) {
     .footer-elegant-container {

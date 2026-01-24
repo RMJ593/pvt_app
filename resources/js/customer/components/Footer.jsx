@@ -9,11 +9,13 @@ function Footer() {
     const [settings, setSettings] = useState(null);
     const [footerLinks, setFooterLinks] = useState([]);
     const [pages, setPages] = useState({});
+    const [gallery, setGallery] = useState([]);
     
     useEffect(() => {
         fetchSettings();
         fetchFooterLinks();
         fetchPages();
+        fetchGallery();
     }, []);
 
     const fetchSettings = async () => {
@@ -60,11 +62,33 @@ function Footer() {
         }
     };
 
+    const fetchGallery = async () => {
+        try {
+            const response = await axios.get('/gallery');
+            const galleryData = extractArray(response);
+            setGallery(galleryData);
+        } catch (error) {
+            console.error('Error fetching gallery:', error);
+            setGallery([]);
+        }
+    };
+
     const getLogoUrl = () => {
         const logoPath = settings?.website_logo;
         if (!logoPath) return null;
         if (logoPath.startsWith('http')) return logoPath;
         return getStorageUrl(logoPath);
+    };
+
+    const getGalleryImageUrl = (imageNumber) => {
+        const galleryItem = gallery.find(item => 
+            item.title?.includes(`image${imageNumber}`) || 
+            item.id === imageNumber
+        );
+        if (galleryItem?.image_path) {
+            return getStorageUrl(galleryItem.image_path);
+        }
+        return null;
     };
 
     const handleFooterLinkClick = (link) => {
@@ -106,21 +130,24 @@ function Footer() {
 
     // Get main color for styling
     const mainColor = settings?.main_color || '#e4e590';
+    const footerBackgroundUrl = getGalleryImageUrl(13);
 
     return (
         <footer className="footer-elegant" style={{ '--main-color': mainColor }}>
+            {/* Background Image */}
+            {footerBackgroundUrl && (
+                <div 
+                    className="footer-background-image"
+                    style={{ backgroundImage: `url(${footerBackgroundUrl})` }}
+                />
+            )}
+            <div className="footer-background-overlay"></div>
+
             <div className="footer-elegant-container">
                 {/* Left Section - Quick Links */}
                 <div className="footer-elegant-section footer-links-section">
                     <nav className="footer-nav-elegant">
-                        <button 
-                            onClick={() => navigate('/')}
-                            className="footer-nav-link"
-                        >
-                            Home
-                        </button>
-                        
-                        {/* Dynamic Footer Links from Database */}
+                        {/* Dynamic Footer Links from Database ONLY */}
                         {footerLinks.length > 0 ? (
                             footerLinks.map((link) => (
                                 <button
@@ -132,30 +159,8 @@ function Footer() {
                                 </button>
                             ))
                         ) : (
-                            <>
-                                {/* Fallback links if no footer links in database */}
-                                <button onClick={() => navigate('/about')} className="footer-nav-link">
-                                    About Us
-                                </button>
-                                <button onClick={() => navigate('/contact')} className="footer-nav-link">
-                                    Contact Us
-                                </button>
-                            </>
+                            <p className="no-links-message">No footer links available</p>
                         )}
-                        
-                        <button 
-                            onClick={() => window.open('https://drive.google.com/your-menu-pdf', '_blank')}
-                            className="footer-download-btn"
-                        >
-                            DOWNLOAD MENU
-                        </button>
-                        
-                        <button 
-                            onClick={() => navigate('/booking')}
-                            className="footer-book-btn"
-                        >
-                            BOOK A TABLE
-                        </button>
                     </nav>
                 </div>
 

@@ -192,13 +192,16 @@ function AdminLayout({ children, onLogout, username = "Super Admin", userEmail =
                 <header className="top-header">
                     <div className="header-container">
                         <div className="header-left">
-                            {/* Add menu toggle button here for mobile */}
-                            <button 
-                                onClick={() => setSidebarOpen(!sidebarOpen)} 
-                                className="mobile-menu-toggle"
-                            >
-                                <Menu size={24} />
-                            </button>
+                            {/* Show menu button when sidebar is closed */}
+                            {!sidebarOpen && (
+                                <button 
+                                    onClick={() => setSidebarOpen(true)} 
+                                    className="header-menu-btn"
+                                    title="Open sidebar"
+                                >
+                                    <Menu size={24} />
+                                </button>
+                            )}
                         </div>
                         <div className="header-center">
                             <button className="sync-button">Sync with Website</button>

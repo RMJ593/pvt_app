@@ -105,18 +105,20 @@ function TopMenuForm() {
             }
 
             const dataToSend = {
-                title: formData.name,
+                title: formData.link_text, // Use link_text as title
                 link_text: formData.link_text,
-                page_type: null,
+                page_type: 'Page', // Add default page type
                 page_id: finalPageId,
-                url: finalUrl,
+                url: finalUrl || '#', // Ensure URL is never empty
                 target: formData.open_new_tab ? '_blank' : '_self',
                 link_type: 'nav_link',
                 menu_id: 1,
                 order: 1,
-                is_active: true,
-                is_group: false
+                is_active: 1, // Use 1 instead of true
+                is_group: 0 // Use 0 instead of false
             };
+
+            console.log('Final data being sent:', dataToSend);
 
             console.log('Submitting top menu link:', dataToSend);
 

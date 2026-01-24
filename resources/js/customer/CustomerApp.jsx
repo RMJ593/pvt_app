@@ -12,6 +12,7 @@ import AboutPage from './pages/AboutPage';
 import PopupAd from './components/PopupAd';
 import AllBlogs from './pages/AllBlogs';
 import BlogDetail from './pages/BlogDetail';
+import OurChefsPage from './pages/OurChefsPage';
 
 import './styles/customer.css';
 
@@ -34,6 +35,7 @@ function CustomerApp() {
                 <Route path="/blog/:id" element={<BlogDetail />} /> {/* Fallback for ID-based routing */}
                 <Route path="/contact" element={<ContactUsPage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/our-chefs" element={<OurChefsPage />} />
             </Routes>
         </>
     );
