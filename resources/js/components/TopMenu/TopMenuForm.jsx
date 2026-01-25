@@ -112,8 +112,8 @@ function TopMenuForm() {
                 url: finalUrl || '#', // Ensure URL is never empty
                 target: formData.open_new_tab ? '_blank' : '_self',
                 link_type: 'nav_link',
-                menu_id: 1,
-                order: 1,
+                menu_id: null, // Changed from 1 to null - let backend handle it
+                order: 0, // Changed from 1 to 0
                 is_active: 1, // Use 1 instead of true
                 is_group: 0 // Use 0 instead of false
             };
@@ -148,9 +148,16 @@ function TopMenuForm() {
             console.error('Error saving link:', error);
             console.error('Error details:', error.response?.data);
             
+            // Show detailed validation errors
             if (error.response?.data?.errors) {
-                const errors = Object.values(error.response.data.errors).flat();
-                setError(errors.join(', '));
+                const errorDetails = error.response.data.errors;
+                console.log('📋 Validation Errors:', errorDetails);
+                
+                const errors = Object.entries(errorDetails).map(([field, messages]) => {
+                    return `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+                }).join('\n');
+                
+                setError(`Validation failed:\n${errors}`);
             } else {
                 setError(error.response?.data?.message || 'Failed to save menu link');
             }
