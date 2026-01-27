@@ -7,7 +7,7 @@ import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
 function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
     const navigate = useNavigate();
     const [topMenuLinks, setTopMenuLinks] = useState([]);
-    const [pages, setPages] = useState([]);
+    const [pages, setPages] = useState({});
     
     useEffect(() => {
         if (isOpen) {
@@ -20,10 +20,11 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
         try {
             const response = await axios.get('/menu-links');
             const allLinks = extractArray(response);
-            // Filter only active top menu links
-            const activeTopLinks = allLinks.filter(
-                link => link.is_active && link.link_type === 'top_menu'
-            );
+            // Filter only active top menu links and sort by order
+            const activeTopLinks = allLinks
+                .filter(link => link.is_active && link.link_type === 'top_menu')
+                .sort((a, b) => a.order - b.order);
+            console.log('✅ Top Menu Links Loaded:', activeTopLinks);
             setTopMenuLinks(activeTopLinks);
         } catch (error) {
             console.error('Error fetching top menu links:', error);
@@ -35,11 +36,10 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
         try {
             const response = await axios.get('/pages');
             const allPages = extractArray(response);
-            const activePages = allPages.filter(page => page.is_active);
             
             // Create a map of pages by ID for easy lookup
             const pagesMap = {};
-            activePages.forEach(page => {
+            allPages.forEach(page => {
                 pagesMap[page.id] = page;
             });
             
@@ -50,60 +50,50 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
         }
     };
 
-    const handleLinkClick = (link) => {
-        // Check if it's a page link
+    const handleTopMenuLinkClick = (link) => {
+        // Handle CMS Page link (page_id exists)
         if (link.page_id && pages[link.page_id]) {
             const page = pages[link.page_id];
-            
-            // Special handling for Contact Us page
-            if (page.slug === 'contact-us' || page.slug === 'contact') {
-                navigate('/contact');
-                onClose();
-                return;
-            }
-            
-            // Special handling for About Us page
-            if (page.slug === 'about-us' || page.slug === 'about') {
-                navigate('/about');
-                onClose();
-                return;
-            }
-            
             navigate(`/page/${page.slug}`, { state: { page } });
-        } 
-        // Check if URL starts with # (internal section)
-        else if (link.url && link.url.startsWith('#')) {
-            const sectionId = link.url.replace('#', '');
-            onNavigate(sectionId);
+            onClose();
+            return;
         }
-        // Check if URL starts with / (internal route)
-        else if (link.url && link.url.startsWith('/')) {
-            navigate(link.url);
-        }
-        // External link
-        else if (link.url) {
-            if (link.target === '_blank') {
-                window.open(link.url, '_blank');
-            } else {
-                window.location.href = link.url;
+        
+        // Handle Custom URL (hardcoded pages)
+        if (link.url) {
+            // Check if URL starts with # (internal section/anchor)
+            if (link.url.startsWith('#')) {
+                const sectionId = link.url.replace('#', '');
+                navigate('/');
+                setTimeout(() => {
+                    const element = document.getElementById(sectionId);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 100);
+                onClose();
+                return;
+            }
+            
+            // Check if URL starts with / (internal route)
+            if (link.url.startsWith('/')) {
+                navigate(link.url);
+                onClose();
+                return;
+            }
+            
+            // External URL
+            if (link.url !== '#') {
+                if (link.target === '_blank') {
+                    window.open(link.url, '_blank');
+                } else {
+                    window.location.href = link.url;
+                }
+                onClose();
+                return;
             }
         }
         
-        onClose();
-    };
-
-    const handleOurMenusClick = () => {
-        navigate('/our-menus');
-        onClose();
-    };
-
-    const handleAboutClick = () => {
-        navigate('/about');
-        onClose();
-    };
-
-    const handleContactClick = () => {
-        navigate('/contact');
         onClose();
     };
 
@@ -114,52 +104,25 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
 
             {/* Sidebar */}
             <div className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
-                <button className="sidebar-close" onClick={onClose}>�</button>
+                <button className="sidebar-close" onClick={onClose}>×</button>
                 
                 <nav className="sidebar-nav">
-                    {/* Main Navigation - Always show first */}
-                    <h3 className="sidebar-section-title">Explore</h3>
+                    <h3 className="sidebar-section-title">Menu</h3>
                     
-                    <button
-                        onClick={handleAboutClick}
-                        className="sidebar-link sidebar-link-highlight"
-                    >
-                        <span className="diamond">?</span>
-                        About Us
-                    </button>
-
-                    <button
-                        onClick={handleOurMenusClick}
-                        className="sidebar-link sidebar-link-highlight"
-                    >
-                        <span className="diamond">?</span>
-                        Our Menus
-                    </button>
-
-                    <button
-                        onClick={handleContactClick}
-                        className="sidebar-link sidebar-link-highlight"
-                    >
-                        <span className="diamond">?</span>
-                        Contact Us
-                    </button>
-
-                    {topMenuLinks.length > 0 && (
-                        <>
-                            <div className="sidebar-divider"></div>
-                            <h3 className="sidebar-section-title">Menu</h3>
-                            
-                            {topMenuLinks.map((link) => (
-                                <button
-                                    key={link.id}
-                                    onClick={() => handleLinkClick(link)}
-                                    className="sidebar-link"
-                                >
-                                    <span className="diamond">?</span>
-                                    {link.title}
-                                </button>
-                            ))}
-                        </>
+                    {/* Dynamic Top Menu Links from Database ONLY */}
+                    {topMenuLinks.length > 0 ? (
+                        topMenuLinks.map((link) => (
+                            <button
+                                key={link.id}
+                                onClick={() => handleTopMenuLinkClick(link)}
+                                className="sidebar-link sidebar-link-highlight"
+                            >
+                                <span className="diamond">◆</span>
+                                {link.link_text || link.title}
+                            </button>
+                        ))
+                    ) : (
+                        <p className="no-links-message">No menu links available</p>
                     )}
                 </nav>
 
@@ -170,7 +133,11 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
                         <p className="sidebar-address">{settings.contact_address}</p>
                     )}
 
-                    <p className="sidebar-timing">Daily : 05:00PM to 10:00PM</p>
+                    {settings?.shop_start_time && settings?.shop_close_time && (
+                        <p className="sidebar-timing">
+                            Daily : {settings.shop_start_time} to {settings.shop_close_time}
+                        </p>
+                    )}
 
                     {settings?.contact_email && (
                         <p className="sidebar-email">{settings.contact_email}</p>
