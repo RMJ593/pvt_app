@@ -24,9 +24,9 @@ class Blog extends Model
         'meta_description',
         'robots',
         'og_type',
-        'is_active',
+        'is_active'
         // 'status',
-        'author'
+        // 'author'
     ];
 
     protected $casts = [

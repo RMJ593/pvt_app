@@ -45,15 +45,18 @@ class MenuLinkController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'menu_id' => 'required|exists:menus,id',
+            'menu_id' => 'nullable|exists:menus,id',
             'parent_id' => 'nullable|exists:menu_links,id',
             'title' => 'required|string|max:255',
+            'link_text' => 'nullable|string|max:255',
             'url' => 'required|string|max:255',
             'link_type' => 'nullable|string|in:nav_link,top_menu,footer_link',
             'page_id' => 'nullable|exists:pages,id',
+            'page_type' => 'nullable|string|max:255',
             'target' => 'nullable|string|in:_self,_blank',
             'order' => 'nullable|integer',
-            'is_active' => 'nullable|boolean'
+            'is_active' => 'nullable|boolean',
+            'is_group' => 'nullable|boolean'
         ]);
 
         if ($validator->fails()) {
@@ -65,10 +68,18 @@ class MenuLinkController extends Controller
         }
 
         try {
-            $data = $request->only(['menu_id', 'parent_id', 'title', 'url', 'link_type', 'page_id', 'target', 'order']);
+            $data = $request->only([
+                'menu_id', 'parent_id', 'title', 'link_text', 'url', 
+                'link_type', 'page_id', 'page_type', 'target', 'order'
+            ]);
+            
+            // Set defaults
             $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : true;
+            $data['is_group'] = $request->has('is_group') ? (bool)$request->is_group : false;
             $data['target'] = $data['target'] ?? '_self';
             $data['link_type'] = $data['link_type'] ?? 'top_menu';
+            $data['link_text'] = $data['link_text'] ?? $data['title'];
+            $data['order'] = $data['order'] ?? 0;
 
             $link = MenuLink::create($data);
             $link->load(['page']);
@@ -123,15 +134,18 @@ class MenuLinkController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'menu_id' => 'sometimes|required|exists:menus,id',
+            'menu_id' => 'nullable|exists:menus,id',
             'parent_id' => 'nullable|exists:menu_links,id',
             'title' => 'sometimes|required|string|max:255',
+            'link_text' => 'nullable|string|max:255',
             'url' => 'sometimes|required|string|max:255',
             'link_type' => 'nullable|string|in:nav_link,top_menu,footer_link',
             'page_id' => 'nullable|exists:pages,id',
+            'page_type' => 'nullable|string|max:255',
             'target' => 'nullable|string|in:_self,_blank',
             'order' => 'nullable|integer',
-            'is_active' => 'nullable|boolean'
+            'is_active' => 'nullable|boolean',
+            'is_group' => 'nullable|boolean'
         ]);
 
         if ($validator->fails()) {
@@ -143,10 +157,17 @@ class MenuLinkController extends Controller
         }
 
         try {
-            $data = $request->only(['menu_id', 'parent_id', 'title', 'url', 'link_type', 'page_id', 'target', 'order']);
+            $data = $request->only([
+                'menu_id', 'parent_id', 'title', 'link_text', 'url', 
+                'link_type', 'page_id', 'page_type', 'target', 'order'
+            ]);
             
             if ($request->has('is_active')) {
                 $data['is_active'] = (bool)$request->is_active;
+            }
+            
+            if ($request->has('is_group')) {
+                $data['is_group'] = (bool)$request->is_group;
             }
 
             $link->update($data);

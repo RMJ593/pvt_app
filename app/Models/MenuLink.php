@@ -10,16 +10,21 @@ class MenuLink extends Model
         'menu_id',
         'parent_id',
         'title',
+        'link_text',
         'url',
         'link_type',
         'page_id',
+        'page_type',
         'target',
         'order',
-        'is_active'
+        'is_active',
+        'is_group'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'is_group' => 'boolean',
+        'order' => 'integer'
     ];
 
     protected $with = ['page'];
