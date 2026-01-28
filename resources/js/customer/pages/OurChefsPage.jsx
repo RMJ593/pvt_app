@@ -13,12 +13,10 @@ function OurChefsPage() {
     const [settings, setSettings] = useState(null);
     const [gallery, setGallery] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [menuItems, setMenuItems] = useState([]);
 
     useEffect(() => {
         fetchSettings();
         fetchGallery();
-        fetchMenuItems();
     }, []);
 
     const fetchSettings = async () => {
@@ -45,17 +43,6 @@ function OurChefsPage() {
         } catch (error) {
             console.error('Error fetching gallery:', error);
             setGallery([]);
-        }
-    };
-
-    const fetchMenuItems = async () => {
-        try {
-            const response = await axios.get('/menu-links');
-            const items = extractArray(response);
-            setMenuItems(items.filter(item => item.link_type === 'nav_link' && item.is_active));
-        } catch (error) {
-            console.error('Error fetching menu items:', error);
-            setMenuItems([]);
         }
     };
 
@@ -99,7 +86,6 @@ function OurChefsPage() {
             <Sidebar 
                 isOpen={sidebarOpen} 
                 onClose={() => setSidebarOpen(false)}
-                menuItems={menuItems}
                 settings={settings}
                 onNavigate={handleNavigation}
             />

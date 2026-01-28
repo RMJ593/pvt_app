@@ -111,7 +111,7 @@ function TopMenuForm() {
                 page_id: finalPageId,
                 url: finalUrl || '#', // Ensure URL is never empty
                 target: formData.open_new_tab ? '_blank' : '_self',
-                link_type: 'nav_link',
+                link_type: 'top_menu',
                 menu_id: null, // Changed from 1 to null - let backend handle it
                 order: 0, // Changed from 1 to 0
                 is_active: 1, // Use 1 instead of true
