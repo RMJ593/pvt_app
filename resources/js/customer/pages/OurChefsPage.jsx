@@ -69,13 +69,22 @@ function OurChefsPage() {
     };
 
     const getGalleryImageUrl = (imageNumber) => {
+        console.log(`🔍 Looking for gallery image #${imageNumber}`);
+        
         const galleryItem = gallery.find(item => 
             item.title?.includes(`image${imageNumber}`) || 
             item.id === imageNumber
         );
-        if (galleryItem?.image_path) {
-            return getStorageUrl(galleryItem.image_path);
+        
+        console.log(`🔍 Found gallery item for #${imageNumber}:`, galleryItem);
+        
+        if (galleryItem?.image) {  // ← CHANGED from image_path to image
+            const url = galleryItem.image;  // ← Already a full Cloudinary URL
+            console.log(`✅ Returning URL:`, url);
+            return url;
         }
+        
+        console.log(`❌ No image found for #${imageNumber}`);
         return null;
     };
 

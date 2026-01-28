@@ -6,17 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Blog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class BlogController extends Controller
 {
     public function index()
     {
         try {
-            // Load blogs without forcing category relationship
             $blogs = Blog::latest()->get();
-            
-            // Manually load categories for blogs that have them
             $blogs->load('category');
             
             return response()->json([
@@ -41,7 +37,6 @@ class BlogController extends Controller
                 ->orWhere('slug', $identifier)
                 ->firstOrFail();
             
-            // Load category if it exists
             $blog->load('category');
             
             return response()->json([
@@ -80,44 +75,26 @@ class BlogController extends Controller
 
             // Upload main image to Cloudinary
             if ($request->hasFile('image')) {
-                $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
-                    'folder' => 'blogs',
-                    'transformation' => [
-                        'width' => 800,
-                        'height' => 1000,
-                        'crop' => 'limit',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                $validated['image'] = $uploadedFileUrl;
+                $uploadResult = cloudinary()->upload($request->file('image')->getRealPath(), [
+                    'folder' => 'blogs'
+                ]);
+                $validated['image'] = $uploadResult->getSecurePath();
             }
 
             // Upload banner image to Cloudinary
             if ($request->hasFile('banner_image')) {
-                $bannerUrl = Cloudinary::upload($request->file('banner_image')->getRealPath(), [
-                    'folder' => 'blogs/banners',
-                    'transformation' => [
-                        'width' => 1880,
-                        'height' => 600,
-                        'crop' => 'limit',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                $validated['banner_image'] = $bannerUrl;
+                $uploadResult = cloudinary()->upload($request->file('banner_image')->getRealPath(), [
+                    'folder' => 'blogs/banners'
+                ]);
+                $validated['banner_image'] = $uploadResult->getSecurePath();
             }
 
             // Upload meta image to Cloudinary
             if ($request->hasFile('meta_image')) {
-                $metaUrl = Cloudinary::upload($request->file('meta_image')->getRealPath(), [
-                    'folder' => 'blogs/meta',
-                    'transformation' => [
-                        'width' => 1200,
-                        'height' => 630,
-                        'crop' => 'limit',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                $validated['meta_image'] = $metaUrl;
+                $uploadResult = cloudinary()->upload($request->file('meta_image')->getRealPath(), [
+                    'folder' => 'blogs/meta'
+                ]);
+                $validated['meta_image'] = $uploadResult->getSecurePath();
             }
 
             // Generate slug
@@ -172,21 +149,14 @@ class BlogController extends Controller
 
             // Upload new main image if provided
             if ($request->hasFile('image')) {
-                // Delete old image from Cloudinary if exists
                 if ($blog->image && strpos($blog->image, 'cloudinary') !== false) {
                     $this->deleteCloudinaryImage($blog->image);
                 }
-
-                $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath(), [
-                    'folder' => 'blogs',
-                    'transformation' => [
-                        'width' => 800,
-                        'height' => 1000,
-                        'crop' => 'limit',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                $validated['image'] = $uploadedFileUrl;
+                
+                $uploadResult = cloudinary()->upload($request->file('image')->getRealPath(), [
+                    'folder' => 'blogs'
+                ]);
+                $validated['image'] = $uploadResult->getSecurePath();
             }
 
             // Upload new banner image if provided
@@ -194,17 +164,11 @@ class BlogController extends Controller
                 if ($blog->banner_image && strpos($blog->banner_image, 'cloudinary') !== false) {
                     $this->deleteCloudinaryImage($blog->banner_image);
                 }
-
-                $bannerUrl = Cloudinary::upload($request->file('banner_image')->getRealPath(), [
-                    'folder' => 'blogs/banners',
-                    'transformation' => [
-                        'width' => 1880,
-                        'height' => 600,
-                        'crop' => 'limit',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                $validated['banner_image'] = $bannerUrl;
+                
+                $uploadResult = cloudinary()->upload($request->file('banner_image')->getRealPath(), [
+                    'folder' => 'blogs/banners'
+                ]);
+                $validated['banner_image'] = $uploadResult->getSecurePath();
             }
 
             // Upload new meta image if provided
@@ -212,17 +176,11 @@ class BlogController extends Controller
                 if ($blog->meta_image && strpos($blog->meta_image, 'cloudinary') !== false) {
                     $this->deleteCloudinaryImage($blog->meta_image);
                 }
-
-                $metaUrl = Cloudinary::upload($request->file('meta_image')->getRealPath(), [
-                    'folder' => 'blogs/meta',
-                    'transformation' => [
-                        'width' => 1200,
-                        'height' => 630,
-                        'crop' => 'limit',
-                        'quality' => 'auto'
-                    ]
-                ])->getSecurePath();
-                $validated['meta_image'] = $metaUrl;
+                
+                $uploadResult = cloudinary()->upload($request->file('meta_image')->getRealPath(), [
+                    'folder' => 'blogs/meta'
+                ]);
+                $validated['meta_image'] = $uploadResult->getSecurePath();
             }
 
             // Update slug if title changed
@@ -286,19 +244,17 @@ class BlogController extends Controller
     private function deleteCloudinaryImage($imageUrl)
     {
         try {
-            // Extract public ID from Cloudinary URL
             $parts = explode('/', $imageUrl);
             $filename = end($parts);
             $publicId = pathinfo($filename, PATHINFO_FILENAME);
             
-            // Find the folder path
             $folderStart = strpos($imageUrl, '/blogs/');
             if ($folderStart !== false) {
                 $pathAfterVersion = substr($imageUrl, $folderStart + 1);
                 $publicId = pathinfo($pathAfterVersion, PATHINFO_DIRNAME) . '/' . $publicId;
             }
             
-            Cloudinary::destroy($publicId);
+            cloudinary()->destroy($publicId);
         } catch (\Exception $e) {
             \Log::error('Failed to delete Cloudinary image: ' . $e->getMessage());
         }

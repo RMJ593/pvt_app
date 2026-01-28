@@ -11,6 +11,11 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
     
     useEffect(() => {
         if (isOpen) {
+            // Reset state first to ensure fresh data
+            setTopMenuLinks([]);
+            setPages({});
+            
+            // Then fetch fresh data
             fetchTopMenuLinks();
             fetchPages();
         }
@@ -18,16 +23,42 @@ function Sidebar({ isOpen, onClose, menuItems, settings, onNavigate }) {
 
     const fetchTopMenuLinks = async () => {
         try {
+            console.log('🔍 FETCH: Starting to fetch menu links...');
             const response = await axios.get('/menu-links');
+            console.log('🔍 FETCH: Raw API response:', response.data);
+            
             const allLinks = extractArray(response);
+            console.log('🔍 FETCH: All links after extractArray:', allLinks);
+            console.log('🔍 FETCH: Total links count:', allLinks.length);
+            
+            // Log each link in detail
+            allLinks.forEach((link, index) => {
+                console.log(`🔍 FETCH: Link ${index + 1}:`, {
+                    id: link.id,
+                    title: link.title,
+                    link_text: link.link_text,
+                    is_active: link.is_active,
+                    link_type: link.link_type,
+                    url: link.url
+                });
+            });
+            
             // Filter only active top menu links and sort by order
             const activeTopLinks = allLinks
-                .filter(link => link.is_active && link.link_type === 'top_menu')
+                .filter(link => {
+                    const matches = link.is_active && link.link_type === 'top_menu';
+                    console.log(`🔍 FILTER: Link "${link.title}" - is_active: ${link.is_active}, link_type: "${link.link_type}", matches: ${matches}`);
+                    return matches;
+                })
                 .sort((a, b) => a.order - b.order);
-            console.log('✅ Top Menu Links Loaded:', activeTopLinks);
+            
+            console.log('🔍 FILTER: Filtered top menu links:', activeTopLinks);
+            console.log('🔍 FILTER: Final count:', activeTopLinks.length);
+            
             setTopMenuLinks(activeTopLinks);
+            console.log('✅ FETCH: Top Menu Links Set!');
         } catch (error) {
-            console.error('Error fetching top menu links:', error);
+            console.error('❌ FETCH ERROR:', error);
             setTopMenuLinks([]);
         }
     };

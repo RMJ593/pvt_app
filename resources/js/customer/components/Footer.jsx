@@ -85,8 +85,8 @@ function Footer() {
             item.title?.includes(`image${imageNumber}`) || 
             item.id === imageNumber
         );
-        if (galleryItem?.image_path) {
-            return getStorageUrl(galleryItem.image_path);
+        if (galleryItem?.image) {  // ← CHANGED from image_path to image
+            return galleryItem.image;  // ← Already a full Cloudinary URL
         }
         return null;
     };
