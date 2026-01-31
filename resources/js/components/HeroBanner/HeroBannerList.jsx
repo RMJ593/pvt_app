@@ -131,7 +131,7 @@ function HeroBannerList() {
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Heading †‘</th>
+                                <th>Heading ï¿½ï¿½</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -163,7 +163,7 @@ function HeroBannerList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    ghghgh
+                                                    Edit
                                                 </Link>
                                                 <label className="toggle-switch-small">
                                                     <input
@@ -178,7 +178,7 @@ function HeroBannerList() {
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    ghghgh
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

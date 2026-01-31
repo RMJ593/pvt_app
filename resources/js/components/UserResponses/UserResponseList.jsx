@@ -162,14 +162,14 @@ function UserResponseList() {
                                                     className="action-btn view-btn"
                                                     title="View"
                                                 >
-                                                    vvvbv
+                                                    View
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(response.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    fgfgg
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

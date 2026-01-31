@@ -75,26 +75,38 @@ class BlogController extends Controller
 
             // Upload main image to Cloudinary
             if ($request->hasFile('image')) {
-                $uploadResult = cloudinary()->upload($request->file('image')->getRealPath(), [
-                    'folder' => 'blogs'
-                ]);
-                $validated['image'] = $uploadResult->getSecurePath();
+                $uploadResult = cloudinary()->uploadApi()->upload(
+                    $request->file('image')->getRealPath(),
+                    [
+                        'folder' => 'blogs',
+                        'resource_type' => 'image'
+                    ]
+                );
+                $validated['image'] = $uploadResult['secure_url'];
             }
 
             // Upload banner image to Cloudinary
             if ($request->hasFile('banner_image')) {
-                $uploadResult = cloudinary()->upload($request->file('banner_image')->getRealPath(), [
-                    'folder' => 'blogs/banners'
-                ]);
-                $validated['banner_image'] = $uploadResult->getSecurePath();
+                $uploadResult = cloudinary()->uploadApi()->upload(
+                    $request->file('banner_image')->getRealPath(),
+                    [
+                        'folder' => 'blogs/banners',
+                        'resource_type' => 'image'
+                    ]
+                );
+                $validated['banner_image'] = $uploadResult['secure_url'];
             }
 
             // Upload meta image to Cloudinary
             if ($request->hasFile('meta_image')) {
-                $uploadResult = cloudinary()->upload($request->file('meta_image')->getRealPath(), [
-                    'folder' => 'blogs/meta'
-                ]);
-                $validated['meta_image'] = $uploadResult->getSecurePath();
+                $uploadResult = cloudinary()->uploadApi()->upload(
+                    $request->file('meta_image')->getRealPath(),
+                    [
+                        'folder' => 'blogs/meta',
+                        'resource_type' => 'image'
+                    ]
+                );
+                $validated['meta_image'] = $uploadResult['secure_url'];
             }
 
             // Generate slug
@@ -153,10 +165,14 @@ class BlogController extends Controller
                     $this->deleteCloudinaryImage($blog->image);
                 }
                 
-                $uploadResult = cloudinary()->upload($request->file('image')->getRealPath(), [
-                    'folder' => 'blogs'
-                ]);
-                $validated['image'] = $uploadResult->getSecurePath();
+                $uploadResult = cloudinary()->uploadApi()->upload(
+                    $request->file('image')->getRealPath(),
+                    [
+                        'folder' => 'blogs',
+                        'resource_type' => 'image'
+                    ]
+                );
+                $validated['image'] = $uploadResult['secure_url'];
             }
 
             // Upload new banner image if provided
@@ -165,10 +181,14 @@ class BlogController extends Controller
                     $this->deleteCloudinaryImage($blog->banner_image);
                 }
                 
-                $uploadResult = cloudinary()->upload($request->file('banner_image')->getRealPath(), [
-                    'folder' => 'blogs/banners'
-                ]);
-                $validated['banner_image'] = $uploadResult->getSecurePath();
+                $uploadResult = cloudinary()->uploadApi()->upload(
+                    $request->file('banner_image')->getRealPath(),
+                    [
+                        'folder' => 'blogs/banners',
+                        'resource_type' => 'image'
+                    ]
+                );
+                $validated['banner_image'] = $uploadResult['secure_url'];
             }
 
             // Upload new meta image if provided
@@ -177,10 +197,14 @@ class BlogController extends Controller
                     $this->deleteCloudinaryImage($blog->meta_image);
                 }
                 
-                $uploadResult = cloudinary()->upload($request->file('meta_image')->getRealPath(), [
-                    'folder' => 'blogs/meta'
-                ]);
-                $validated['meta_image'] = $uploadResult->getSecurePath();
+                $uploadResult = cloudinary()->uploadApi()->upload(
+                    $request->file('meta_image')->getRealPath(),
+                    [
+                        'folder' => 'blogs/meta',
+                        'resource_type' => 'image'
+                    ]
+                );
+                $validated['meta_image'] = $uploadResult['secure_url'];
             }
 
             // Update slug if title changed
@@ -254,7 +278,7 @@ class BlogController extends Controller
                 $publicId = pathinfo($pathAfterVersion, PATHINFO_DIRNAME) . '/' . $publicId;
             }
             
-            cloudinary()->destroy($publicId);
+            cloudinary()->uploadApi()->destroy($publicId);
         } catch (\Exception $e) {
             \Log::error('Failed to delete Cloudinary image: ' . $e->getMessage());
         }

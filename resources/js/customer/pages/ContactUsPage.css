@@ -246,7 +246,7 @@
 }
 
 .btn-send:hover:not(:disabled) {
-    background: #c9a02e;
+    background: var(--main-color, #d4af37);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
 }

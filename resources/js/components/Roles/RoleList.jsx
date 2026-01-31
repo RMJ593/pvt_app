@@ -104,7 +104,7 @@ function RoleList() {
                                                 className="btn-edit"
                                                 title="Edit"
                                             >
-                                                hggh
+                                                Edit
                                             </Link>
 
                                             <button
@@ -112,7 +112,7 @@ function RoleList() {
                                                 className="btn-delete"
                                                 title="Delete"
                                             >
-                                                hjhj
+                                                Delete
                                             </button>
                                         </div>
                                     </td>

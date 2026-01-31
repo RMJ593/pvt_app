@@ -218,7 +218,7 @@ function PageList() {
                                                     className="btn-edit"
                                                     title="Edit"
                                                 >
-                                                    ✏️
+                                                    Edit
                                                 </Link>
 
                                                 {/* Delete Button */}
@@ -227,7 +227,7 @@ function PageList() {
                                                     className="btn-delete"
                                                     title="Delete"
                                                 >
-                                                    🗑️
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

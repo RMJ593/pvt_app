@@ -190,7 +190,7 @@ function TopMenuList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    vhvbv
+                                                    Edit
                                                 </Link>
                                                 <label className="toggle-switch" title="Toggle Active/Inactive">
                                                     <input
@@ -205,7 +205,7 @@ function TopMenuList() {
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    hhjhjhj
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

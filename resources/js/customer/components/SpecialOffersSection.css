@@ -76,7 +76,7 @@
     transform: translateY(-50%);
     width: 50px;
     height: 50px;
-    background: rgba(212, 175, 55, 0.9);
+    background: var(--main-color, #d4af37);
     border: none;
     border-radius: 50%;
     color: #000;
@@ -117,7 +117,7 @@
     cursor: grab;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(212, 175, 55, 0.5) rgba(255, 255, 255, 0.1);
+    scrollbar-color: var(--main-color, #d4af37) rgba(255, 255, 255, 0.1);
 }
 
 .offers-scroll-container:active {
@@ -134,12 +134,12 @@
 }
 
 .offers-scroll-container::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.5);
+    background: var(--main-color, #d4af37);
     border-radius: 10px;
 }
 
 .offers-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.7);
+    background: var(--main-color, #d4af37)
 }
 
 /* Offer Card */

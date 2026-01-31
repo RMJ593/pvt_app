@@ -22,7 +22,7 @@
 }
 
 .about-us-label {
-    color: #d4af37;
+    color: var(--main-color, #e4e590);
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
@@ -58,20 +58,20 @@
 .contact-phone {
     font-size: 20px;
     font-weight: 600;
-    color: #d4af37;
+    color: var(--main-color, #e4e590);
     text-decoration: none;
     transition: color 0.3s ease;
     display: inline-block;
 }
 
 .contact-phone:hover {
-    color: #f0c959;
+    color: var(--main-color, #e4e590);
 }
 
 .btn-read-more {
     display: inline-block;
     padding: 14px 32px;
-    background-color: #d4af37;
+    background-color: var(--main-color, #e4e590);
     color: #000000;
     text-decoration: none;
     font-weight: 600;
@@ -83,7 +83,7 @@
 }
 
 .btn-read-more:hover {
-    background-color: #f0c959;
+    background-color: var(--main-color, #e4e590);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
 }

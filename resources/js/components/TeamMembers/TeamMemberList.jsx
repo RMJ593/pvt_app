@@ -143,7 +143,7 @@ function TeamMemberList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    ghhgh
+                                                    Edit
                                                 </Link>
                                                 <label className="toggle-switch" title="Toggle Active/Inactive">
                                                     <input
@@ -158,7 +158,7 @@ function TeamMemberList() {
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    gfgfgfg
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

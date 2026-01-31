@@ -1,21 +1,37 @@
 .menu-section {
-    background-color: #000000;
-    padding: 100px 20px;
-    color: #ffffff;
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 .menu-container {
-    max-width: 420px;
+    max-width: 1200px;
     margin: 0 auto;
     text-align: center;
+    position: relative;
+    z-index: 1;
 }
 
 .menu-subtitle {
+    color: var(--main-color, #d4af37);
     font-size: 14px;
     letter-spacing: 3px;
-    color: var(--main-color, #e4e590);
-    margin-bottom: 20px;
-    font-weight: 400;
+    margin-bottom: 15px;
+    font-weight: 500;
 }
 
 .menu-divider {
@@ -23,105 +39,92 @@
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin: 20px 0 30px;
-}
-
-.menu-divider span {
-    color: var(--main-color, #e4e590);
+    margin: 25px 0;
+    color: var(--main-color, #d4af37);
     font-size: 12px;
 }
 
 .menu-title {
-    font-size: 48px;
+    font-size: 42px;
     font-weight: 300;
-    margin-bottom: 80px;
+    margin-bottom: 60px;
     color: #ffffff;
     font-family: 'Playfair Display', serif;
+    letter-spacing: 1px;
 }
 
 .menu-categories-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
     margin-top: 40px;
 }
 
 .menu-category-card {
-    background-color: #000000;
-    border: 1px solid rgba(228, 229, 144, 0.2);
-    padding: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    backdrop-filter: blur(10px);
     position: relative;
-    transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
 .menu-category-card:hover {
-    transform: translateY(-10px);
-    border-color: var(--main-color, #e4e590);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.3);
 }
 
 .category-ornament {
-    width: 100%;
-    height: 20px;
-    background-image: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 5px,
-        var(--main-color, #e4e590) 5px,
-        var(--main-color, #e4e590) 6px,
-        transparent 6px,
-        transparent 10px,
-        var(--main-color, #e4e590) 10px,
-        var(--main-color, #e4e590) 11px
+    height: 6px;
+    background: linear-gradient(90deg, 
+        var(--main-color, #d4af37) 0%, 
+        rgba(212, 175, 55, 0.3) 50%, 
+        var(--main-color, #d4af37) 100%
     );
-    background-size: 20px 20px;
-    opacity: 0.4;
-    position: relative;
-}
-
-.category-ornament::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-image: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 3px,
-        var(--main-color, #e4e590) 3px,
-        var(--main-color, #e4e590) 4px
-    );
-    opacity: 0.3;
 }
 
 .top-ornament {
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .bottom-ornament {
-    margin-top: 20px;
-    margin-bottom: 30px;
+    margin-top: 0;
 }
 
 .category-image-wrapper {
     width: 100%;
     height: 350px;
     overflow: hidden;
-    margin: 0;
-    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    position: relative;
 }
 
 .category-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 4px;
+    transition: transform 0.4s ease;
+}
+
+.menu-category-card:hover .category-image {
+    transform: scale(1.1);
+}
+
+.category-subheading {
+    color: #b0b0b0;
+    font-size: 14px;
+    margin: 20px 0 10px;
+    padding: 0 25px;
 }
 
 .category-name {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 400;
     color: #ffffff;
-    margin: 30px 0 25px;
+    margin: 20px 0 25px;
+    padding: 0 25px;
     font-family: 'Playfair Display', serif;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -129,32 +132,50 @@
 
 .view-menu-btn {
     background-color: transparent;
-    color: var(--main-color, #e4e590);
-    border: 1px solid var(--main-color, #e4e590);
+    color: var(--main-color, #d4af37);
+    border: 2px solid var(--main-color, #d4af37);
     padding: 12px 40px;
     font-size: 13px;
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-bottom: 40px;
-    font-weight: 500;
+    margin-bottom: 30px;
+    font-weight: 600;
+    border-radius: 4px;
+    text-transform: uppercase;
 }
 
 .view-menu-btn:hover {
-    background-color: var(--main-color, #e4e590);
+    background-color: var(--main-color, #d4af37);
     color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+/* Loading and Error States */
+.loading-spinner,
+.error-message,
+.no-categories {
+    text-align: center;
+    padding: 4rem 2rem;
+    font-size: 1.125rem;
+    color: #b0b0b0;
+}
+
+.error-message {
+    color: #ff6b6b !important;
 }
 
 /* Responsive Design */
 @media screen and (max-width: 1024px) {
     .menu-categories-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 40px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
     }
 
     .menu-title {
-        font-size: 40px;
-        margin-bottom: 60px;
+        font-size: 36px;
+        margin-bottom: 50px;
     }
 }
 
@@ -170,7 +191,7 @@
 
     .menu-categories-grid {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 30px;
     }
 
     .category-image-wrapper {
@@ -178,20 +199,29 @@
     }
 
     .category-name {
-        font-size: 28px;
+        font-size: 24px;
     }
 }
 
 @media screen and (max-width: 480px) {
+    .menu-section {
+        padding: 60px 15px;
+    }
+
     .menu-title {
         font-size: 28px;
     }
 
     .category-name {
-        font-size: 24px;
+        font-size: 22px;
     }
 
     .category-image-wrapper {
-        height: 250px;
+        height: 280px;
+    }
+
+    .view-menu-btn {
+        padding: 10px 30px;
+        font-size: 12px;
     }
 }

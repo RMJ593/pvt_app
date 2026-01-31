@@ -163,7 +163,7 @@ function UserList() {
                                                 className="btn-edit"
                                                 title="Edit"
                                             >
-                                                cbvbvb
+                                                Edit
                                             </Link>
 
                                             {/* Delete Button */}
@@ -172,7 +172,7 @@ function UserList() {
                                                 className="btn-delete"
                                                 title="Delete"
                                             >
-                                                ghghgh
+                                                Delete
                                             </button>
                                         </div>
                                     </td>

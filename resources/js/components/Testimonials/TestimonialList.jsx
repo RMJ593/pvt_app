@@ -120,14 +120,14 @@ function TestimonialList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    hghgh
+                                                    Edit
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(testimonial.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    vhhgh
+                                                    Delete
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input

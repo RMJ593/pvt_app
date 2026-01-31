@@ -140,14 +140,14 @@ function BlogList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    hghg
+                                                    Edit
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(blog.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    ghgh
+                                                    Delete
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input

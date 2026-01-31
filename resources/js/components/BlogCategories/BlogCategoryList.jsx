@@ -137,14 +137,14 @@ function BlogCategoryList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    hhj
+                                                    Edit
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(category.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    hjhjh
+                                                    Delete
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input

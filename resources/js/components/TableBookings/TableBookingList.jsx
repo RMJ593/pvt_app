@@ -188,14 +188,14 @@ function TableBookingList() {
                                                     className="action-btn view-btn"
                                                     title="View"
                                                 >
-                                                    hjhj
+                                                    View
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(booking.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    kjkjk
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>

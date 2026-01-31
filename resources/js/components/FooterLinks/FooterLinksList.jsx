@@ -134,7 +134,7 @@ function FooterLinksList() {
                                                 className="btn-edit"
                                                 title="Edit"
                                             >
-                                                bbhbn
+                                                Edit
                                             </Link>
 
                                             {/* Delete Button */}
@@ -143,7 +143,7 @@ function FooterLinksList() {
                                                 className="btn-delete"
                                                 title="Delete"
                                             >
-                                                ghgh
+                                                Delete
                                             </button>
 
                                             {/* Toggle Switch */}

@@ -9,7 +9,7 @@ function DomainSettings() {
         white_color: '#ffffff',
         color_one: '#a7a7a7',
         color_two: '#0e0d0b',
-        color_three: '#699b653',
+        color_three: '#699b65',
         color_four: '#171819',
         color_five: '#0c0d0c',
         color_six: '#1a1b1c',
@@ -108,7 +108,16 @@ function DomainSettings() {
             }
         } catch (error) {
             console.error('Update error:', error);
-            setMessage('Failed to update settings.');
+            
+            // 🔍 LOG THE ACTUAL ERROR RESPONSE
+            if (error.response) {
+                console.error('Error response data:', error.response.data);
+                console.error('Error response status:', error.response.status);
+                console.error('Error response headers:', error.response.headers);
+                setMessage(`Failed: ${error.response.data.message || 'Unknown error'}`);
+            } else {
+                setMessage('Failed to update settings.');
+            }
         } finally {
             setLoading(false);
         }

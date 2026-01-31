@@ -4,6 +4,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: #000000;
 }
 
 .blog-detail-loading {
@@ -12,7 +13,8 @@
     align-items: center;
     justify-content: center;
     font-size: 1.125rem;
-    color: #666;
+    color: #cccccc;
+    background-color: #000000;
 }
 
 /* Hero Section */
@@ -42,7 +44,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7));
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8));
 }
 
 .blog-detail-hero-content {
@@ -57,7 +59,7 @@
 .blog-detail-category {
     display: inline-block;
     background-color: var(--main-color, #d4af37);
-    color: white;
+    color: #000000;
     padding: 0.5rem 1.5rem;
     border-radius: 25px;
     font-size: 0.75rem;
@@ -98,7 +100,7 @@
 .blog-detail-content-wrapper {
     flex: 1;
     padding: 4rem 2rem;
-    background-color: #f9f9f9;
+    background-color: #000000;
 }
 
 .blog-detail-container {
@@ -108,11 +110,12 @@
 
 /* Article */
 .blog-detail-article {
-    background-color: white;
+    background-color: #1a1a1a;
     border-radius: 12px;
     padding: 3rem;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(255, 255, 255, 0.05);
     margin-bottom: 3rem;
+    border: 1px solid #2a2a2a;
 }
 
 .blog-detail-featured-image {
@@ -129,7 +132,7 @@
 
 .blog-detail-intro {
     font-size: 1.125rem;
-    color: #555;
+    color: #cccccc;
     line-height: 1.8;
     font-style: italic;
     border-left: 4px solid var(--main-color, #d4af37);
@@ -139,7 +142,7 @@
 
 .blog-detail-body {
     font-size: 1rem;
-    color: #333;
+    color: #e0e0e0;
     line-height: 1.8;
 }
 
@@ -148,14 +151,14 @@
 .blog-detail-body h3,
 .blog-detail-body h4 {
     font-family: 'Playfair Display', serif;
-    color: #222;
+    color: #ffffff;
     margin-top: 2rem;
     margin-bottom: 1rem;
 }
 
 .blog-detail-body h2 {
     font-size: 2rem;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid #2a2a2a;
     padding-bottom: 0.5rem;
 }
 
@@ -189,7 +192,7 @@
     padding-left: 1.5rem;
     margin: 2rem 0;
     font-style: italic;
-    color: #555;
+    color: #cccccc;
 }
 
 .blog-detail-body a {
@@ -206,13 +209,13 @@
 .blog-detail-tags {
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 2px solid #f0f0f0;
+    border-top: 2px solid #2a2a2a;
 }
 
 .blog-detail-tags h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 1rem;
 }
 
@@ -224,7 +227,7 @@
 
 .tag {
     display: inline-block;
-    background-color: rgba(212, 175, 55, 0.1);
+    background-color: rgba(212, 175, 55, 0.15);
     color: var(--main-color, #d4af37);
     padding: 0.5rem 1rem;
     border-radius: 20px;
@@ -240,7 +243,7 @@
 .related-blogs-title {
     font-size: 2rem;
     font-weight: 700;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 2rem;
     text-align: center;
     font-family: 'Playfair Display', serif;
@@ -253,24 +256,25 @@
 }
 
 .related-blog-card {
-    background-color: white;
+    background-color: #1a1a1a;
     border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
+    border: 1px solid #2a2a2a;
 }
 
 .related-blog-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
 }
 
 .related-blog-image-wrapper {
     width: 100%;
     height: 200px;
     overflow: hidden;
-    background-color: #f0f0f0;
+    background-color: #0a0a0a;
 }
 
 .related-blog-image {
@@ -290,8 +294,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
-    color: #999;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    color: #666;
 }
 
 .related-blog-placeholder svg {
@@ -307,7 +311,7 @@
 .related-blog-content h3 {
     font-size: 1.125rem;
     font-weight: 700;
-    color: #333;
+    color: #ffffff;
     margin-bottom: 0.75rem;
     line-height: 1.4;
     font-family: 'Playfair Display', serif;
@@ -315,7 +319,7 @@
 
 .related-blog-content p {
     font-size: 0.875rem;
-    color: #666;
+    color: #cccccc;
     line-height: 1.6;
     margin-bottom: 1rem;
 }

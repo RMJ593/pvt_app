@@ -183,7 +183,7 @@ function MailTemplateList() {
                                                 className="btn-edit"
                                                 title="Edit"
                                             >
-                                                hbhghg
+                                                Edit
                                             </Link>
 
                                             {/* Delete Button */}
@@ -192,7 +192,7 @@ function MailTemplateList() {
                                                 className="btn-delete"
                                                 title="Delete"
                                             >
-                                                gghgh
+                                                Delete
                                             </button>
                                         </div>
                                     </td>

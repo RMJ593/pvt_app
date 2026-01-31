@@ -142,14 +142,14 @@ function CategoryList() {
                                                     className="action-btn edit-btn"
                                                     title="Edit"
                                                 >
-                                                    ✏️
+                                                    Edit
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(category.id)}
                                                     className="action-btn delete-btn"
                                                     title="Delete"
                                                 >
-                                                    🗑️
+                                                    Delete
                                                 </button>
                                                 <label className="toggle-switch-small" title="Toggle Active Status">
                                                     <input
