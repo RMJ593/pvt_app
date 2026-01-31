@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ChefsSelectionSection.css';
 
 function ChefsSelectionSection({ id }) {
+    const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [activeCategory, setActiveCategory] = useState(null);
     const [chefSelectionDishes, setChefSelectionDishes] = useState([]);
@@ -80,6 +82,10 @@ function ChefsSelectionSection({ id }) {
         
         // Otherwise, it's a local storage path
         return `/storage/${imagePath}`;
+    };
+
+    const handleViewAllMenu = () => {
+        navigate('/our-menus');
     };
 
     const filteredDishes = activeCategory 
@@ -173,7 +179,9 @@ function ChefsSelectionSection({ id }) {
                 )}
 
                 <div className="view-all-btn-wrapper">
-                    <button className="view-all-btn">VIEW ALL MENU</button>
+                    <button className="view-all-btn" onClick={handleViewAllMenu}>
+                        VIEW ALL MENU
+                    </button>
                 </div>
             </div>
         </section>
