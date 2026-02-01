@@ -101,17 +101,22 @@ else\n\
     echo "❌ Storage symlink missing!"\n\
 fi\n\
 \n\
-# Clear caches\n\
+# Clear config only (no DB needed)\n\
 php artisan config:clear\n\
-php artisan cache:clear\n\
 \n\
-# Run migrations\n\
+# Run migrations FIRST (this creates the cache table)\n\
 php artisan migrate --force\n\
 \n\
-# Cache configs\n\
+# NOW safe to clear cache (table exists now)\n\
+php artisan cache:clear\n\
+\n\
+# Cache config\n\
 php artisan config:cache\n\
 \n\
-echo "🎬 Starting Apache..."\n\
+echo "🎬 Starting Apache on port $PORT..."\n\
+export PORT=${PORT:-80}\n\
+sed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf\n\
+sed -i "s/:80/:$PORT/" /etc/apache2/sites-enabled/*.conf\n\
 apache2-foreground' > /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
