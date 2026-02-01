@@ -9,29 +9,31 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+        
     public function up(): void
     {
-        Schema::create('menu_links', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('menu_id')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('title');
-            $table->string('link_text')->nullable();
-            $table->string('url');
-            $table->string('link_type')->default('top_menu'); // 'nav_link', 'top_menu', 'footer_link'
-            $table->unsignedBigInteger('page_id')->nullable();
-            $table->string('page_type')->nullable();
-            $table->string('target')->default('_self'); // '_self' or '_blank'
-            $table->integer('order')->default(0);
-            $table->boolean('is_active')->default(true);
-            $table->boolean('is_group')->default(false);
-            $table->timestamps();
+        if (!Schema::hasTable('menu_links')) {
+            Schema::create('menu_links', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('menu_id')->nullable();
+                $table->unsignedBigInteger('parent_id')->nullable();
+                $table->string('title');
+                $table->string('link_text')->nullable();
+                $table->string('url');
+                $table->string('link_type')->default('top_menu');
+                $table->unsignedBigInteger('page_id')->nullable();
+                $table->string('page_type')->nullable();
+                $table->string('target')->default('_self');
+                $table->integer('order')->default(0);
+                $table->boolean('is_active')->default(true);
+                $table->boolean('is_group')->default(false);
+                $table->timestamps();
 
-            // Foreign keys
-            $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
-            $table->foreign('parent_id')->references('id')->on('menu_links')->onDelete('cascade');
-            $table->foreign('page_id')->references('id')->on('pages')->onDelete('set null');
-        });
+                $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
+                $table->foreign('parent_id')->references('id')->on('menu_links')->onDelete('cascade');
+                $table->foreign('page_id')->references('id')->on('pages')->onDelete('set null');
+            });
+        }
     }
 
     /**
