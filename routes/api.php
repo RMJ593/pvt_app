@@ -243,7 +243,7 @@ Route::get('/debug-logs', function() {
 });
 
 Route::get('/test-gallery', function() {
-    $gallery = \App\Models\Gallery::all();
+    $gallery = \App\Models\GalleryImage::all();
     return response()->json([
         'total_images' => $gallery->count(),
         'images' => $gallery->map(function($img) {

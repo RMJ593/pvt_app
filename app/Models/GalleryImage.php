@@ -12,7 +12,7 @@ class GalleryImage extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'gallery';
+    protected $table = 'gallery_images';
 
     /**
      * The attributes that are mass assignable.
