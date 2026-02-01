@@ -16,10 +16,7 @@ class SettingsController extends Controller
             $settings = Setting::first();
 
             if (!$settings) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No settings found'
-                ], 404);
+                $settings = Setting::create(['key' => 'site_name', 'value' => 'My Restaurant']);
             }
 
             // Convert to array and include ALL fields
