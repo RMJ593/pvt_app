@@ -9,13 +9,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('menu_links', function (Blueprint $table) {
-            $table->foreignId('menu_id')->after('id')->constrained()->onDelete('cascade');
-            $table->foreignId('parent_id')->nullable()->after('menu_id')->constrained('menu_links')->onDelete('cascade');
-            $table->string('title')->after('parent_id');
-            $table->string('url')->after('title');
-            $table->string('target')->default('_self')->after('url'); // _self or _blank
-            $table->integer('order')->default(0)->after('target');
-            $table->boolean('is_active')->default(true)->after('order');
+            if (!Schema::hasColumn('menu_links', 'menu_id')) {
+                $table->foreignId('menu_id')->after('id')->constrained()->onDelete('cascade');
+            }
+            if (!Schema::hasColumn('menu_links', 'parent_id')) {
+                $table->foreignId('parent_id')->nullable()->after('menu_id')->constrained('menu_links')->onDelete('cascade');
+            }
+            if (!Schema::hasColumn('menu_links', 'title')) {
+                $table->string('title')->after('parent_id');
+            }
+            if (!Schema::hasColumn('menu_links', 'url')) {
+                $table->string('url')->after('title');
+            }
+            if (!Schema::hasColumn('menu_links', 'target')) {
+                $table->string('target')->default('_self')->after('url');
+            }
+            if (!Schema::hasColumn('menu_links', 'order')) {
+                $table->integer('order')->default(0)->after('target');
+            }
+            if (!Schema::hasColumn('menu_links', 'is_active')) {
+                $table->boolean('is_active')->default(true)->after('order');
+            }
         });
     }
 
