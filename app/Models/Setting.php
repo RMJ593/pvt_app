@@ -9,6 +9,11 @@ class Setting extends Model
     protected $table = 'settings';
 
     protected $fillable = [
+        'key',
+        'value',
+        'type',
+        'group',
+        
         // Theme Colors
         'main_color',
         'white_color',
