@@ -58,7 +58,7 @@ function HeroBannerList() {
             formData.append('_method', 'PUT');
 
             const response = await axios.post(
-                `/api/hero-banners/${id}`,
+                `/hero-banners/${id}`,
                 formData
             );
 

@@ -160,7 +160,7 @@ function HeroBannerForm() {
             if (isEditMode) {
                 formDataToSend.append('_method', 'PUT');
                 response = await axios.post(
-                    `/api/hero-banners/${id}`,
+                    `/hero-banners/${id}`,
                     formDataToSend,
                     {
                         headers: { 'Content-Type': 'multipart/form-data' }
@@ -168,7 +168,7 @@ function HeroBannerForm() {
                 );
             } else {
                 response = await axios.post(
-                    '/api/hero-banners',
+                    '/hero-banners',
                     formDataToSend,
                     {
                         headers: { 'Content-Type': 'multipart/form-data' }

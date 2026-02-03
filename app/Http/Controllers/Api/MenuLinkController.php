@@ -15,24 +15,24 @@ class MenuLinkController extends Controller
     public function index(Request $request)
     {
         $query = MenuLink::with(['menu', 'parent', 'children', 'page']);
-        
+
         // Filter by menu_id if provided
         if ($request->has('menu_id')) {
             $query->where('menu_id', $request->menu_id);
         }
-        
+
         // Filter by link_type if provided
         if ($request->has('link_type')) {
             $query->where('link_type', $request->link_type);
         }
-        
+
         // Get only top-level links (no parent)
         if ($request->has('top_level') && $request->top_level) {
             $query->whereNull('parent_id');
         }
-        
+
         $links = $query->orderBy('order', 'asc')->get();
-        
+
         return response()->json([
             'success' => true,
             'data' => $links
@@ -69,11 +69,12 @@ class MenuLinkController extends Controller
 
         try {
             $data = $request->only([
-                'menu_id', 'parent_id', 'title', 'link_text', 'url', 
+                'menu_id', 'parent_id', 'title', 'link_text', 'url',
                 'link_type', 'page_id', 'page_type', 'target', 'order'
             ]);
-            
+
             // Set defaults
+            $data['menu_id'] = $data['menu_id'] ?? 1; // Default to Main Menu (ID 1)
             $data['is_active'] = $request->has('is_active') ? (bool)$request->is_active : true;
             $data['is_group'] = $request->has('is_group') ? (bool)$request->is_group : false;
             $data['target'] = $data['target'] ?? '_self';
@@ -158,14 +159,14 @@ class MenuLinkController extends Controller
 
         try {
             $data = $request->only([
-                'menu_id', 'parent_id', 'title', 'link_text', 'url', 
+                'menu_id', 'parent_id', 'title', 'link_text', 'url',
                 'link_type', 'page_id', 'page_type', 'target', 'order'
             ]);
-            
+
             if ($request->has('is_active')) {
                 $data['is_active'] = (bool)$request->is_active;
             }
-            
+
             if ($request->has('is_group')) {
                 $data['is_group'] = (bool)$request->is_group;
             }
@@ -218,7 +219,7 @@ class MenuLinkController extends Controller
             ], 500);
         }
     }
-    
+
     public function toggle(Request $request, $id)
     {
         $link = MenuLink::find($id);
