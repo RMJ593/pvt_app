@@ -17,6 +17,7 @@ echo "✅ Storage symlink exists"
 # Laravel setup
 php artisan config:clear
 php artisan migrate --force
+php artisan db:seed --class=AdminUserSeeder --force
 php artisan cache:clear
 php artisan config:cache
 
