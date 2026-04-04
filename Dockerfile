@@ -17,9 +17,10 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql mysqli mbstring exif pcntl bcmath gd
 
-# Enable Apache modules
-RUN a2dismod mpm_event || true && \
-    a2enmod mpm_prefork rewrite
+# Fix Apache MPM conflict
+RUN a2dismod mpm_event mpm_worker || true
+RUN a2enmod mpm_prefork
+RUN a2enmod rewrite
 
 # Get Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -56,7 +57,7 @@ RUN chmod -R 775 storage bootstrap/cache \
 # Remove public/storage if it exists (to avoid conflicts)
 RUN rm -rf public/storage
 
-# Create the symlink manually (MORE RELIABLE than artisan)
+# Create the symlink manually
 RUN ln -s /var/www/html/storage/app/public /var/www/html/public/storage
 
 # Verify symlink was created and works
@@ -74,7 +75,6 @@ RUN echo '<Directory /var/www/html/public/storage>\n\
     Require all granted\n\
 </Directory>\n\
 \n\
-# Alias for storage if symlink fails\n\
 Alias /storage /var/www/html/storage/app/public\n\
 <Directory /var/www/html/storage/app/public>\n\
     Options Indexes FollowSymLinks\n\
@@ -82,19 +82,20 @@ Alias /storage /var/www/html/storage/app/public\n\
     Require all granted\n\
 </Directory>' >> /etc/apache2/apache2.conf
 
+# Verify Apache config is valid
+RUN apache2ctl -t
+
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
 set -e\n\
 echo "🚀 Starting application..."\n\
 \n\
-# Force recreate symlink if missing\n\
 if [ ! -L "/var/www/html/public/storage" ]; then\n\
     echo "📎 Creating storage symlink..."\n\
     rm -rf /var/www/html/public/storage\n\
     ln -s /var/www/html/storage/app/public /var/www/html/public/storage\n\
 fi\n\
 \n\
-# Verify symlink\n\
 if [ -L "/var/www/html/public/storage" ]; then\n\
     echo "✅ Storage symlink exists"\n\
     ls -la /var/www/html/public/storage\n\
@@ -102,29 +103,22 @@ else\n\
     echo "❌ Storage symlink missing!"\n\
 fi\n\
 \n\
-# Clear config only (no DB needed)\n\
 php artisan config:clear\n\
-\n\
-# Run migrations FIRST (this creates the cache table)\n\
 php artisan migrate --force\n\
-\n\
-# NOW safe to clear cache (table exists now)\n\
 php artisan cache:clear\n\
-\n\
-# Cache config\n\
 php artisan config:cache\n\
 \n\
 echo "🎬 Starting Apache on port $PORT..."\n\
-export PORT=${PORT:-80}\n\
+export PORT=${PORT:-8080}\n\
 sed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf\n\
 sed -i "s/:80/:$PORT/" /etc/apache2/sites-enabled/*.conf\n\
-apache2-foreground' > /entrypoint.sh
+exec apache2-foreground' > /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
 # Set final ownership
 RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["/entrypoint.sh"]
