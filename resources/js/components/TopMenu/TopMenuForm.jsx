@@ -10,9 +10,8 @@ function TopMenuForm() {
     const isEditMode = !!id;
 
     const [formData, setFormData] = useState({
-        name: '',
         link_text: '',
-        link_type: 'custom_url', // 'custom_url' or 'page'
+        link_type: 'custom_url',
         page_id: '',
         custom_url: '',
         open_new_tab: false
@@ -35,11 +34,9 @@ function TopMenuForm() {
             const response = await axios.get('/pages', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
-            const pagesData = extractArray(response);
-            setPages(pagesData);
-        } catch (error) {
-            console.error('Error fetching pages:', error);
+            setPages(extractArray(response));
+        } catch (err) {
+            console.error('Error fetching pages:', err);
             setPages([]);
         }
     };
@@ -50,34 +47,31 @@ function TopMenuForm() {
             const response = await axios.get(`/menu-links/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             if (response.data.success) {
                 const link = response.data.data;
-                
-                // Determine if it's a page link or custom URL
-                const isPageLink = link.page_id && link.page_id !== null;
-                
+                const isPageLink = !!link.page_id;
+
                 setFormData({
-                    name: link.title || '',
                     link_text: link.link_text || link.title || '',
                     link_type: isPageLink ? 'page' : 'custom_url',
                     page_id: link.page_id || '',
-                    custom_url: !isPageLink ? link.url : '',
+                    custom_url: !isPageLink ? (link.url || '') : '',
                     open_new_tab: link.target === '_blank'
                 });
             }
-        } catch (error) {
-            console.error('Error fetching link:', error);
+        } catch (err) {
+            console.error('Error fetching link:', err);
             setError('Failed to load menu link');
         }
     };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
+        setFormData(prev => ({
+            ...prev,
             [name]: type === 'checkbox' ? checked : value
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -85,81 +79,91 @@ function TopMenuForm() {
         setLoading(true);
         setError('');
 
+        // --- Frontend validation ---
+        if (!formData.link_text.trim()) {
+            setError('Link Text is required.');
+            setLoading(false);
+            return;
+        }
+
+        if (formData.link_type === 'custom_url' && !formData.custom_url.trim()) {
+            setError('URL is required for Custom URL type.');
+            setLoading(false);
+            return;
+        }
+
+        if (formData.link_type === 'page' && !formData.page_id) {
+            setError('Please select a page.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const token = localStorage.getItem('auth_token');
 
-            let finalUrl = '';
+            // Resolve URL and page_id based on link type
+            let finalUrl = '#';
             let finalPageId = null;
 
             if (formData.link_type === 'page') {
-                // Link to a CMS page
                 const selectedPage = pages.find(p => p.id === parseInt(formData.page_id));
                 if (selectedPage) {
                     finalUrl = `/page/${selectedPage.slug}`;
-                    finalPageId = formData.page_id;
+                    finalPageId = parseInt(formData.page_id);
                 }
             } else {
-                // Custom URL (hardcoded pages)
-                finalUrl = formData.custom_url;
-                finalPageId = null;
+                finalUrl = formData.custom_url.trim();
             }
 
-            const dataToSend = {
-                title: formData.link_text, // Use link_text as title
-                link_text: formData.link_text,
-                page_type: 'Page', // Add default page type
-                page_id: finalPageId,
-                url: finalUrl || '#', // Ensure URL is never empty
-                target: formData.open_new_tab ? '_blank' : '_self',
-                link_type: 'top_menu',
-                menu_id: null, // Changed from 1 to null - let backend handle it
-                order: 0, // Changed from 1 to 0
-                is_active: 1, // Use 1 instead of true
-                is_group: 0 // Use 0 instead of false
+            /*
+             * FIX: Send only fields the backend actually needs.
+             *   - Removed the redundant `name` field (backend doesn't have it).
+             *   - `link_text` is used as `title` in the backend — no duplication.
+             *   - `menu_id` is omitted entirely so it stays null (avoids FK crash on menu id 1).
+             *   - `is_active` / `is_group` sent as real booleans.
+             */
+            const payload = {
+                link_text:  formData.link_text.trim(),
+                url:        finalUrl,
+                page_id:    finalPageId,
+                page_type:  finalPageId ? 'Page' : null,
+                target:     formData.open_new_tab ? '_blank' : '_self',
+                link_type:  'top_menu',
+                order:      0,
+                is_active:  true,
+                is_group:   false
             };
 
-            console.log('Final data being sent:', dataToSend);
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
 
-            console.log('Submitting top menu link:', dataToSend);
-
-            let response;
-            if (isEditMode) {
-                response = await axios.put(`/menu-links/${id}`, dataToSend, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            } else {
-                response = await axios.post('/menu-links', dataToSend, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-
-            console.log('Response:', response.data);
+            const response = isEditMode
+                ? await axios.put(`/menu-links/${id}`, payload, { headers })
+                : await axios.post('/menu-links', payload, { headers });
 
             if (response.data.success) {
                 navigate('/staff/top-menu');
-            }
-        } catch (error) {
-            console.error('Error saving link:', error);
-            console.error('Error details:', error.response?.data);
-            
-            // Show detailed validation errors
-            if (error.response?.data?.errors) {
-                const errorDetails = error.response.data.errors;
-                console.log('📋 Validation Errors:', errorDetails);
-                
-                const errors = Object.entries(errorDetails).map(([field, messages]) => {
-                    return `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
-                }).join('\n');
-                
-                setError(`Validation failed:\n${errors}`);
             } else {
-                setError(error.response?.data?.message || 'Failed to save menu link');
+                setError(response.data.message || 'Failed to save menu link');
+            }
+        } catch (err) {
+            console.error('Error saving link:', err);
+
+            if (err.response?.data?.errors) {
+                // 422 Validation errors from backend
+                const msgs = Object.entries(err.response.data.errors)
+                    .map(([field, messages]) =>
+                        `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
+                    )
+                    .join('\n');
+                setError(`Validation failed:\n${msgs}`);
+            } else if (err.response?.data?.error) {
+                // 500 with exposed error string (now returned by fixed controller)
+                setError(`Server error: ${err.response.data.error}`);
+            } else {
+                setError(err.response?.data?.message || 'Failed to save menu link');
             }
         } finally {
             setLoading(false);
@@ -176,38 +180,22 @@ function TopMenuForm() {
             </div>
 
             {error && (
-                <div className="alert alert-error">
+                <div className="alert alert-error" style={{ whiteSpace: 'pre-line' }}>
                     {error}
                 </div>
             )}
 
             <div className="info-box">
-                <h3>💡 Quick Examples:</h3>
+                <h3>💡 Quick Examples</h3>
                 <p>
-                    <strong>Hardcoded Pages:</strong> /, /about, /our-menus, /contact<br/>
-                    <strong>CMS Pages:</strong> Select from "Page" dropdown (e.g., Terms & Conditions)
+                    <strong>Custom URL:</strong> /, /about, /our-menus, /contact<br />
+                    <strong>CMS Page:</strong> Select from the "Page" dropdown below
                 </p>
             </div>
 
             <form onSubmit={handleSubmit} className="top-menu-form">
                 <div className="form-section">
                     <h2>Link Information</h2>
-
-                    <div className="form-group">
-                        <label>Name To Identify *</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="form-control"
-                            placeholder="e.g., Home Link, About Us Link"
-                            required
-                        />
-                        <small className="form-text">
-                            This is for internal identification only
-                        </small>
-                    </div>
 
                     <div className="form-group">
                         <label>Link Text *</label>
@@ -217,9 +205,12 @@ function TopMenuForm() {
                             value={formData.link_text}
                             onChange={handleChange}
                             className="form-control"
-                            placeholder="Text displayed on menu (e.g., HOME, ABOUT US)"
+                            placeholder="Text displayed in the menu (e.g. HOME, ABOUT US)"
                             required
                         />
+                        <small className="form-text">
+                            This text appears in the navigation menu
+                        </small>
                     </div>
 
                     <div className="form-group">
@@ -231,8 +222,8 @@ function TopMenuForm() {
                             className="form-control"
                             required
                         >
-                            <option value="custom_url">Custom URL (Hardcoded page)</option>
-                            <option value="page">CMS Page (Created in Pages section)</option>
+                            <option value="custom_url">Custom URL (hardcoded page)</option>
+                            <option value="page">CMS Page (created in Pages section)</option>
                         </select>
                     </div>
 
@@ -249,7 +240,7 @@ function TopMenuForm() {
                                 required
                             />
                             <small className="form-text">
-                                Use "/" for homepage<br/>
+                                Use <code>/</code> for the homepage.<br />
                                 Examples: /about, /our-menus, /contact, /blogs
                             </small>
                         </div>
@@ -271,7 +262,7 @@ function TopMenuForm() {
                                 ))}
                             </select>
                             <small className="form-text">
-                                These are pages created in the Pages section
+                                Pages created in the Pages section
                             </small>
                         </div>
                     )}

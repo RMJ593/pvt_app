@@ -9,6 +9,7 @@ class HeroBanner extends Model
     protected $fillable = [
         'title',
         'subtitle',
+        'description',
         'image_path',
         'button_text',
         'button_link',
