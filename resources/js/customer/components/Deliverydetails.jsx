@@ -43,7 +43,7 @@ function DeliveryDetails() {
 
     const fetchColors = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/settings`);
+            const response = await axios.get('/settings');
             if (response.data.success) {
                 const d = response.data.data;
                 setColors({
