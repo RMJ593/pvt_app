@@ -125,7 +125,6 @@ function Home() {
 
     return (
         <div className="customer-site">
-            <TopBar settings={settings} />
 
             <Sidebar
                 isOpen={sidebarOpen}
@@ -308,7 +307,7 @@ function Home() {
             </section>
 
             {/* ── REST OF SECTIONS ── */}
-            <MenuSection id="menu" />
+            {/* <MenuSection id="menu" /> */}
             <AboutUsSection id="about" />
             <SpecialDishesSection id="special-dishes" />
             <ChefsSelectionSection id="chefs-selection" />

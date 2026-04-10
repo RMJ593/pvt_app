@@ -16,8 +16,7 @@ import TestimonialList from './components/Testimonials/TestimonialList';
 import TestimonialForm from './components/Testimonials/TestimonialForm';
 import GalleryList from './components/Gallery/GalleryList';
 import GalleryForm from './components/Gallery/GalleryForm';
-import HeroBannerList from './components/HeroBanner/HeroBannerList';
-import HeroBannerForm from './components/HeroBanner/HeroBannerForm';
+import HeroBanner from './components/HeroBanner/HeroBanner';
 import PageList from './components/Pages/PageList';
 import PageForm from './components/Pages/PageForm';
 import TopMenuList from './components/TopMenu/TopMenuList';
@@ -123,8 +122,6 @@ function AdminApp() {
                                 <Route path="top-menu/:id/edit" element={<TopMenuForm />} />
                                 
                                 <Route path="hero-banners" element={<HeroBannerList />} />
-                                <Route path="hero-banners/create" element={<HeroBannerForm />} />
-                                <Route path="hero-banners/:id/edit" element={<HeroBannerForm />} />
                                 
                                 <Route path="pages" element={<PageList />} />
                                 <Route path="pages/create" element={<PageForm />} />
