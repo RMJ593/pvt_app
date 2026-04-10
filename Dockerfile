@@ -30,7 +30,7 @@ WORKDIR /var/www/html
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
-RUN npm ci && npm run build
+RUN npm ci && npm run build --force
 
 RUN mkdir -p storage/app/public/hero-banners \
     storage/app/public/videos \
