@@ -3,17 +3,11 @@ import axios from 'axios';
 import API_BASE_URL from '../../config/api';
 import './AboutUsSection.css';
 
-// const API_BASE_URL =
-//     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-//         ? 'http://127.0.0.1:8000'
-//         : 'https://pvtapp-production-255e.up.railway.app';
-
 const getStorageUrl = (imagePath) => {
     if (!imagePath) return null;
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
     return `${API_BASE_URL}/storage/${imagePath}`;
 };
-
 function AboutUsSection() {
     const [defaultImage, setDefaultImage] = useState(null);
     const [colors, setColors] = useState({
@@ -30,20 +24,16 @@ function AboutUsSection() {
 
     const fetchSettings = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/settings`);
+            const response = await axios.get('/settings');  // ← just this line changes
             if (response.data.success) {
                 const data = response.data.data;
-
                 setColors({
                     color_one: data.color_one || '#a7a7a7',
                     color_four: data.color_four || '#171819',
                     color_eight: data.color_eight || '#121111',
                     black_color: data.black_color || '#000000',
                 });
-
-                if (data.default_image) {
-                    setDefaultImage(data.default_image);
-                }
+                if (data.default_image) setDefaultImage(data.default_image);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
