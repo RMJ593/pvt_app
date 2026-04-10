@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE_URL from '../../config/api';
 import './AboutUsSection.css';
 
-const API_BASE_URL =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://127.0.0.1:8000'
-        : 'https://pvtapp-production-255e.up.railway.app';
+// const API_BASE_URL =
+//     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+//         ? 'http://127.0.0.1:8000'
+//         : 'https://pvtapp-production-255e.up.railway.app';
 
 const getStorageUrl = (imagePath) => {
     if (!imagePath) return null;

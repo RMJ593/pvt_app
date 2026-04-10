@@ -205,8 +205,8 @@ function AdminLayout({ children, onLogout, username = "Super Admin", userEmail =
                         </div>
                         <div className="header-center">
                             <button className="sync-button">Sync with Website</button>
-                            <a href="https://tphrc-int-project-cjld.onrender.com" target="_blank" rel="noopener noreferrer" className="website-link">
-                                https://tphrc-int-project-cjld.onrender.com
+                            <a href="https://pvtapp-production-255e.up.railway.app" target="_blank" rel="noopener noreferrer" className="website-link">
+                                https://pvtapp-production-255e.up.railway.app
                             </a>
                         </div>
                         <div className="header-right">
