@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TopBar from '../components/TopBar';
 import Sidebar from '../components/Sidebar';
 import WhatsAppButton from '../components/WhatsAppButton';
 import AboutUsSection from '../components/AboutUsSection';
-import MenuSection from '../components/MenuSection';
 import Footer from '../components/Footer';
 import SpecialDishesSection from '../components/SpecialDishesSection';
 import ChefsSelectionSection from '../components/ChefsSelectionSection';
-import SpecialOffersSection from '../components/SpecialOffersSection';
+import Deliverydetails from '../components/Deliverydetails';
 import BookingFormContent from '../components/BookingFormContent';
-import BlogsSection from '../components/BlogsSection';
-import VideoStatsSection from '../components/VideoStatsSection';
 import { getStorageUrl, extractArray } from '../../config/api';
 import './Home.css';
 
@@ -311,12 +307,9 @@ function Home() {
             <AboutUsSection id="about" />
             <SpecialDishesSection id="special-dishes" />
             <ChefsSelectionSection id="chefs-selection" />
-            <SpecialOffersSection id="special-offers" />
+            <Deliverydetails id="delivery-details" />
             <BookingFormContent />
-            <VideoStatsSection />
-            <BlogsSection />
             <Footer />
-
             <WhatsAppButton phone={settings?.whatsapp_number || '876543219'} />
         </div>
     );

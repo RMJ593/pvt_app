@@ -10,8 +10,6 @@ import BookingPage from './pages/BookingPage';
 import ContactUsPage from './pages/ContactUsPage';
 import AboutPage from './pages/AboutPage';
 import PopupAd from './components/PopupAd';
-import AllBlogs from './pages/AllBlogs';
-import BlogDetail from './pages/BlogDetail';
 import OurChefsPage from './pages/OurChefsPage';
 
 import './styles/customer.css';
@@ -30,9 +28,6 @@ function CustomerApp() {
                 <Route path="/menu/category/:categoryId" element={<CategoryDetail />} />
                 <Route path="/our-menus" element={<OurMenus />} />
                 <Route path="/booking" element={<BookingPage />} />
-                <Route path="/blogs" element={<AllBlogs />} />
-                <Route path="/blog/:slug" element={<BlogDetail />} />
-                <Route path="/blog/:id" element={<BlogDetail />} /> {/* Fallback for ID-based routing */}
                 <Route path="/contact" element={<ContactUsPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/our-chefs" element={<OurChefsPage />} />

@@ -1,0 +1,129 @@
+/* DeliveryDetails.css */
+
+.dd-section {
+    width: 100%;
+    padding: 80px 0;
+}
+
+.dd-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.dd-small-heading {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+}
+
+.dd-big-heading {
+    font-size: 2.6rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 56px;
+    line-height: 1.15;
+}
+
+.dd-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dd-step {
+    padding: 32px 28px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dd-step:first-child {
+    border-left: none;
+    padding-left: 0;
+}
+
+.dd-step-num {
+    display: block;
+    font-size: 3rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.08);
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+}
+
+.dd-step-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 10px;
+    line-height: 1.3;
+}
+
+.dd-step-desc {
+    font-size: 13px;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+}
+
+/* Tablet */
+@media (max-width: 860px) {
+    .dd-steps-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dd-step {
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 28px 20px;
+    }
+
+    .dd-step:nth-child(1),
+    .dd-step:nth-child(2) {
+        border-top: none;
+    }
+
+    .dd-step:first-child {
+        padding-left: 20px;
+    }
+
+    .dd-big-heading {
+        font-size: 2rem;
+        margin-bottom: 40px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+    .dd-container {
+        padding: 0 20px;
+    }
+
+    .dd-section {
+        padding: 56px 0;
+    }
+
+    .dd-steps-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dd-step {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 24px 0;
+    }
+
+    .dd-step:first-child {
+        border-top: none;
+        padding-left: 0;
+    }
+
+    .dd-big-heading {
+        font-size: 1.6rem;
+        margin-bottom: 32px;
+    }
+
+    .dd-step-num {
+        font-size: 2.4rem;
+    }
+}

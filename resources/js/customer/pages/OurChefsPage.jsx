@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TopBar from '../components/TopBar';
 import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
 import WhatsAppButton from '../components/WhatsAppButton';
@@ -90,7 +89,6 @@ function OurChefsPage() {
 
     return (
         <div className="our-chefs-page-wrapper">
-            <TopBar settings={settings} />
 
             <Sidebar 
                 isOpen={sidebarOpen} 

@@ -1,0 +1,139 @@
+/* AboutUsSection.css */
+
+.pvt-about-section {
+    width: 100%;
+    padding: 60px 0;
+}
+
+.pvt-about-wrap {
+    display: flex;
+    align-items: stretch;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Left Column — Image */
+.pvt-about-img-col {
+    flex: 1;
+    min-height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pvt-about-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pvt-img-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1a1a1a;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Right Column — Content */
+.pvt-about-content-col {
+    flex: 1.1;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: transparent;
+}
+
+/* Who We Are label */
+.pvt-who-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+}
+
+/* Tagline / heading */
+.pvt-tagline {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 20px;
+}
+
+/* Description paragraph */
+.pvt-desc {
+    font-size: 14px;
+    line-height: 1.8;
+    margin: 0 0 32px;
+}
+
+/* 2x2 feature boxes grid */
+.pvt-boxes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.pvt-feature-box {
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.pvt-feature-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+}
+
+.pvt-feature-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+    opacity: 0.75;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .pvt-about-wrap {
+        flex-direction: column;
+    }
+
+    .pvt-about-img-col {
+        min-height: 280px;
+    }
+
+    .pvt-about-content-col {
+        padding: 32px 24px;
+    }
+
+    .pvt-tagline {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pvt-boxes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pvt-about-content-col {
+        padding: 24px 16px;
+    }
+
+    .pvt-tagline {
+        font-size: 1.3rem;
+    }
+}

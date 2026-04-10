@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import TopBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import './MainMenu.css';
 import { API_BASE_URL, getStorageUrl, extractArray } from '../../config/api';
@@ -122,7 +121,7 @@ function MainMenu() {
 
     return (
         <div className="main-menu-page">
-            <TopBar settings={settings} />
+            
 
             {/* Hero Section */}
             <section className="menu-hero" style={getBackgroundStyle()}>

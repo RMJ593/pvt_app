@@ -121,7 +121,7 @@ function AdminApp() {
                                 <Route path="top-menu/create" element={<TopMenuForm />} />
                                 <Route path="top-menu/:id/edit" element={<TopMenuForm />} />
                                 
-                                <Route path="hero-banners" element={<HeroBannerList />} />
+                                <Route path="hero-banners" element={<HeroBanner />} />
                                 
                                 <Route path="pages" element={<PageList />} />
                                 <Route path="pages/create" element={<PageForm />} />
