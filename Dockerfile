@@ -30,6 +30,8 @@ WORKDIR /var/www/html
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm ci && npm run build --force
 
 RUN mkdir -p storage/app/public/hero-banners \
